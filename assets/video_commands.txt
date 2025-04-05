@@ -8,6 +8,8 @@ ffmpeg -y -i "input.mov" -preset slow -tune film -vsync passthrough -an -c:v lib
 
 MP4Box -dash 2000 -rap -frag-rap  -bs-switching no -profile "dashavc264:live" "output_5000.mp4" "output_3000.mp4"  "output_audio.m4a" -out "output/output.mpd" -> converter ambos videos de qualidade media e alta para chunks e o arquivo .mpd
 
+*adicionar videos de teste*
+
 
 
 
