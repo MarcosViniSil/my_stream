@@ -1,0 +1,42 @@
+version: '3.7'
+
+services:
+  minio:
+    image: quay.io/minio/minio
+    container_name: minio-s3
+    ports:
+      - 9000:9001
+    environment:
+      - MINIO_ROOT_USER=root
+      - MINIO_ROOT_PASSWORD=root1234
+    volumes:
+      - ~/minio/data:/data
+    command: server /data --console-address ":9001"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      - RABBITMQ_DEFAULT_USER=root
+      - RABBITMQ_DEFAULT_PASS=root123
+    volumes:
+      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq/
+
+  mysql:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: jumpStart
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+      - ./sql-scripts:/docker-entrypoint-initdb.d
+
+volumes:
+  mysql_data:
