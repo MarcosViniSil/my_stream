@@ -4,6 +4,8 @@ load_dotenv()
 import os
 import secrets
 
+BUCKET_NAME = os.environ["BUCKET_NAME"] 
+
 def saveVideoOnBucket(pathFile):
 
     if pathFile == "":
@@ -13,14 +15,13 @@ def saveVideoOnBucket(pathFile):
 
     source_file = pathFile
 
-    bucket_name = "python-test-bucket"
-    destination_file = genrateHashForFileName(pathFile)
+    destination_file = generateHashForFileName(pathFile)
 
-    createBucketIfNotExists(client,bucket_name)
+    createBucketIfNotExists(client,BUCKET_NAME)
 
-    sendFileToBucket(client,bucket_name,destination_file,source_file)
+    sendFileToBucket(client,BUCKET_NAME,destination_file,source_file)
 
-    return destination_file
+    return f"http://localhost:9001/browser/{BUCKET_NAME}/{destination_file}"
 
 
 def createConnection():
@@ -30,7 +31,7 @@ def createConnection():
             secret_key= os.environ["SECRET_KEY_AWS"],
             secure=False
         )
-    except Exception:
+    except Exception as e:
         raise ValueError("Erro ao se conectar com o servidor, tente novamente")
     return client
 
@@ -40,7 +41,7 @@ def createBucketIfNotExists(client,bucket_name):
     if not found:
         try:
             client.make_bucket(bucket_name)
-        except Exception:
+        except Exception as e:
             raise ValueError("Erro ao criar o bucket, tente novamente")
 
 
@@ -50,10 +51,9 @@ def sendFileToBucket(client,bucket_name,destination_file,source_file):
             bucket_name, destination_file, source_file,
         )
     except Exception as e:
-        print(e)
         raise ValueError("Erro ao enviar o arquivo para o bucket, tente novamente")
 
-def genrateHashForFileName(file_path):
+def generateHashForFileName(file_path):
     ext = os.path.splitext(file_path)[1]
     return f"{secrets.token_urlsafe(5)}{ext}"
 
