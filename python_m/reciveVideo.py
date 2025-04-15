@@ -4,7 +4,7 @@ import uvicorn
 
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse
-from saveVideoBucket import createConnection, createBucketIfNotExists, sendFileToBucket, generateHashForFileName, saveVideoOnBucket
+from saveVideoBucket import createConnection,deleteFileFromBucket, createBucketIfNotExists, sendFileToBucket, generateHashForFileName, saveVideoOnBucket
 
 
 app = FastAPI()
@@ -30,6 +30,8 @@ async def upload_video(file: UploadFile = File(...)):
     except Exception as e:
         return JSONResponse(status_code=400, content={"erro": f"{str(e)}"})
     
+    
+
     #TODO Logic save vide hash on data base
     #TODO logic to delete video from bucket if insert on data base fail
     
@@ -47,6 +49,7 @@ def removeLocalVideo(hashVideoBucket,file_path):
         os.remove(file_path)
     else:
         raise ValueError("Ocorreu um erro, video não foi salvo na nuvem, tente novamente")
+
 
 
 if __name__ == "__main__":

@@ -57,4 +57,11 @@ def generateHashForFileName(file_path):
     ext = os.path.splitext(file_path)[1]
     return f"{secrets.token_urlsafe(5)}{ext}"
 
+def deleteFileFromBucket(bucket_name, file_name):
+    try:
+        client = createConnection()
+        client.remove_object(bucket_name, file_name)
+    except Exception as e:
+        raise ValueError("Erro ao deletar o arquivo do bucket, tente novamente")
+
 
