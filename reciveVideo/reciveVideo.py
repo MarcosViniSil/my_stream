@@ -30,7 +30,6 @@ async def upload_video(file: UploadFile = File(...)):
     except Exception as e:
         return JSONResponse(status_code=400, content={"erro": f"{str(e)}"})
     
-    
 
     #TODO Logic save vide hash on data base
     #TODO logic to delete video from bucket if insert on data base fail
