@@ -12,6 +12,6 @@ MP4Box -dash 2000 -rap -frag-rap  -bs-switching no -profile "dashavc264:live" "o
 
 video para download -> https://www.youtube.com/watch?v=tJ2kw5bey8g&list=PLv26eHqk2BAb9OnJHvkWk70s_LqvO0aSb&index=1
 
-modelagem -> https://excalidraw.com/#room=94ac719743cb128b32bd,sqoPr2UfXTE1vG3R1RPHrw
+modelagem -> https://excalidraw.com/#room=f9555879974f2966a92d,RZ2Ft7q9VqAOU275AS0k1Q
 
 
