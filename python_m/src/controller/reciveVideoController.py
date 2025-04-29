@@ -1,19 +1,21 @@
 import os
 import shutil
+from src.service.bucket import Bucket
+from src.service.reciveVideo import ReciveVideo
 import uvicorn
 
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile,APIRouter
 from fastapi.responses import JSONResponse
-from saveVideoBucket import createConnection, createBucketIfNotExists, sendFileToBucket, generateHashForFileName, saveVideoOnBucket
 
 
-app = FastAPI()
-
+router = APIRouter()
+bucket = Bucket()
+reciveVideo = ReciveVideo(bucket)
 UPLOAD_DIR = "uploads"
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-@app.post("/upload/")
+@router.post("/upload/")
 async def upload_video(file: UploadFile = File(...)):
     if not file.filename.endswith(".mp4"):
         return JSONResponse(status_code=400, content={"error": "Apenas arquivos .mp4 são permitidos."})
@@ -26,7 +28,7 @@ async def upload_video(file: UploadFile = File(...)):
     hashVideo = saveVideo(file_path)
 
     try:
-        removeLocalVideo(hashVideo,file_path)
+        reciveVideo.removeLocalVideo(hashVideo,file_path)
     except Exception as e:
         return JSONResponse(status_code=400, content={"erro": f"{str(e)}"})
     
@@ -37,7 +39,7 @@ async def upload_video(file: UploadFile = File(...)):
 
 def saveVideo(file_path):
     try:
-        hashVideo = saveVideoOnBucket(file_path)
+        hashVideo = reciveVideo.saveVideoOnBucket(file_path)
         return hashVideo
     except Exception as e:
         return ""
