@@ -12,6 +12,6 @@ MP4Box -dash 2000 -rap -frag-rap  -bs-switching no -profile "dashavc264:live" "o
 
 video para download -> https://www.youtube.com/watch?v=tJ2kw5bey8g&list=PLv26eHqk2BAb9OnJHvkWk70s_LqvO0aSb&index=1
 
-
+ffprobe -i your_video.mp4 -show_streams -select_streams a -loglevel error -> verifica se um video .mp4 possui audio
 
 
