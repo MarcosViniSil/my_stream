@@ -30,8 +30,10 @@ services:
     image: mysql:latest
     restart: always
     environment:
+      MYSQL_USER_DATABASE: root
+      MYSQL_HOST_DATABASE: mysql 
       MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: jumpStart
+      MYSQL_DATABASE: my_stream
     ports:
       - "3306:3306"
     volumes:
