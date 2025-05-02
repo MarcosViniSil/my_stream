@@ -27,6 +27,15 @@ class Bucket:
 
         return f"http://localhost:9001/browser/{self.BUCKET_NAME}/{destination_file}"
 
+    def deleteVideoOnBucket(self,hashVideo: str) -> None:
+        if hashVideo == "":
+            raise ValueError("Arquivo não informado")
+
+        client = self.createConnection()
+
+        destination_file = hashVideo
+
+        self.removeFileFromBucket(client,self.BUCKET_NAME,destination_file)
 
     def createConnection(self) -> Minio:
         try:
@@ -61,4 +70,9 @@ class Bucket:
         ext = os.path.splitext(file_path)[1]
         return f"{secrets.token_urlsafe(5)}{ext}"
 
+    def removeFileFromBucket(self,client: Minio,bucket_name: str,destination_file: str):
+        try:
+            client.remove_object(bucket_name, destination_file)
+        except Exception as e:
+            raise ValueError("Erro ao remover o arquivo do bucket, tente novamente")
 
