@@ -1,4 +1,5 @@
 mysql_data
 __pycache__
+.vscode
 .env
 venv

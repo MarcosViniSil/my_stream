@@ -17,31 +17,49 @@ class ReciveVideo:
         if not file.filename.endswith(".mp4"):
             raise HTTPException(status_code=415, detail="Apenas arquivos .mp4 são permitidos.")
     
+        filePath = self.copyFileLocally(file)
+
+        hashVideo = self.saveVideoRemote(filePath)
+
+        self.removeLocalVideo(hashVideo,filePath)
+        
+        videoId = self.insertUrlVideoDb(hashVideo)
+
+        if videoId != "":
+            return {"message": "Vídeo recebido com sucesso!", "videoId": videoId}
+        else:
+            raise HTTPException(status_code=400, detail="Erro ao salvar url no banco")
+
+    def copyFileLocally(self,file) -> str:
         file_path = os.path.join(UPLOAD_DIR, file.filename)
-    
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-
-        hashVideo = ""
+        
+        return file_path
+    
+    def saveVideoRemote(self,file_path: str) -> str:
         try:
-            hashVideo = self.saveVideo(file_path)
+            hashVideo = self.bucket.saveVideoOnBucket(file_path)
+            return hashVideo
         except Exception as e:
-            print("deu erro:", e)
             raise HTTPException(status_code=400, detail="Erro ao salvar video em bucket na nuvem")
+    
+    def removeLocalVideo(self,hashVideoBucket: str,file_path: str) -> None:
 
         try:
-            self.removeLocalVideo(hashVideo,file_path)
+            os.remove(file_path)
         except Exception as e:
             try:
-                self.bucket.deleteVideoOnBucket(hashVideo.split("/")[-1])
+                self.bucket.deleteVideoOnBucket(hashVideoBucket.split("/")[-1])
             except Exception as e:
                 raise HTTPException(status_code=400, detail="Não foi possivel deletar vídeo local e quando foi necessario deletar vídeo em nuvem ocorreu outro erro")
             
             raise HTTPException(status_code=400, detail="Erro ao deletar video localmente")
         
-        videoId = ""
+    def insertUrlVideoDb(self,hashVideo : str) -> str:
         try:
             videoId = self.videoRepository.insertUrlDb(hashVideo)
+            return videoId
         except Exception as e:
             try:
                 self.bucket.deleteVideoOnBucket(hashVideo.split("/")[-1])
@@ -49,30 +67,4 @@ class ReciveVideo:
                 raise HTTPException(status_code=400, detail="Não foi possivel inserir url video no banco e quando foi necessario deletar vídeo em nuvem ocorreu outro erro")
                 
             raise HTTPException(status_code=400, detail="Erro ao salvar url no banco")
-
-        
-        if videoId != "":
-            return {"message": "Vídeo recebido com sucesso!", "videoId": videoId}
-        else:
-            raise HTTPException(status_code=400, detail="Erro ao salvar url no banco")
-
-    def saveVideo(self,file_path: str) -> str:
-        try:
-            hashVideo = self.bucket.saveVideoOnBucket(file_path)
-            return hashVideo
-        except Exception as e:
-            raise ValueError(f"{e}")
-    
-    def removeLocalVideo(self,hashVideoBucket: str,file_path: str) -> None:
-
-        if hashVideoBucket != "":
-            os.remove(file_path)
-        else:
-            raise ValueError("Ocorreu um erro, video não foi salvo na nuvem, tente novamente")
-        
-    def insertUrlVideoDb(self, url: str) -> None:
-        if url.replace(" ","") == "":
-            raise ValueError("url vazia, valor inválido")
-        
-        self.videoRepository.insertUrlDb(url)
     
