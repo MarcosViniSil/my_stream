@@ -1,4 +1,6 @@
 fastapi==0.115.12
 minio==7.2.15
+mysql-connector==2.2.9
+pydantic==2.11.4
 python-dotenv==1.1.0
-uvicorn==0.34.0
+uvicorn==0.34.2
