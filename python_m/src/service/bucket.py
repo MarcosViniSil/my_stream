@@ -10,7 +10,7 @@ class Bucket:
     def __init__(self):
         self.BUCKET_NAME = os.environ["BUCKET_NAME"] 
 
-    def saveVideoOnBucket(self, pathFile: str) -> str:
+    def saveFileOnBucket(self, pathFile: str) -> str:
 
         if pathFile == "":
             raise ValueError("Arquivo não informado")
@@ -26,14 +26,15 @@ class Bucket:
         self.sendFileToBucket(client,self.BUCKET_NAME,destination_file,source_file)
 
         return f"http://localhost:9001/browser/{self.BUCKET_NAME}/{destination_file}"
+    
 
-    def deleteVideoOnBucket(self,hashVideo: str) -> None:
-        if hashVideo == "":
+    def deleteFileOnBucket(self,fileCode: str) -> None:
+        if fileCode == "":
             raise ValueError("Arquivo não informado")
 
         client = self.createConnection()
 
-        destination_file = hashVideo
+        destination_file = fileCode
 
         self.removeFileFromBucket(client,self.BUCKET_NAME,destination_file)
 

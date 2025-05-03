@@ -1,6 +1,7 @@
+import math
 from src.repository.videoRepository import VideoRepository
 from src.service.bucket import Bucket
-from fastapi import HTTPException
+from fastapi import HTTPException,UploadFile
 import os
 import shutil
 
@@ -14,9 +15,13 @@ class ReciveVideo:
         self.videoRepository = videoRepository
 
     async def processReceivedVideo(self,file) -> dict:
-        if not file.filename.endswith(".mp4"):
+
+        if not self.isExtensionValid(file):
             raise HTTPException(status_code=415, detail="Apenas arquivos .mp4 são permitidos.")
-    
+        
+        if not self.isFileSizeAllowed(file.size):
+            raise HTTPException(status_code=400, detail="Tamanho de arquivo inválido, no máximo 5 gigabytes")
+        
         filePath = self.copyFileLocally(file)
 
         hashVideo = self.saveVideoRemote(filePath)
@@ -39,7 +44,7 @@ class ReciveVideo:
     
     def saveVideoRemote(self,file_path: str) -> str:
         try:
-            hashVideo = self.bucket.saveVideoOnBucket(file_path)
+            hashVideo = self.bucket.saveFileOnBucket(file_path)
             return hashVideo
         except Exception as e:
             raise HTTPException(status_code=400, detail="Erro ao salvar video em bucket na nuvem")
@@ -50,7 +55,7 @@ class ReciveVideo:
             os.remove(file_path)
         except Exception as e:
             try:
-                self.bucket.deleteVideoOnBucket(hashVideoBucket.split("/")[-1])
+                self.bucket.deleteFileOnBucket(hashVideoBucket.split("/")[-1])
             except Exception as e:
                 raise HTTPException(status_code=400, detail="Não foi possivel deletar vídeo local e quando foi necessario deletar vídeo em nuvem ocorreu outro erro")
             
@@ -62,9 +67,16 @@ class ReciveVideo:
             return videoId
         except Exception as e:
             try:
-                self.bucket.deleteVideoOnBucket(hashVideo.split("/")[-1])
+                self.bucket.deleteFileOnBucket(hashVideo.split("/")[-1])
             except Exception as e:
                 raise HTTPException(status_code=400, detail="Não foi possivel inserir url video no banco e quando foi necessario deletar vídeo em nuvem ocorreu outro erro")
                 
             raise HTTPException(status_code=400, detail="Erro ao salvar url no banco")
     
+    def isExtensionValid(self,file : UploadFile) -> bool:
+        contentType = file.headers["content-type"]
+        return contentType == "video/mp4" 
+
+    def isFileSizeAllowed(self,fileSize: int) -> bool :
+        fileSizeInGigaBytes = math.floor(fileSize / 1073741824)
+        return fileSizeInGigaBytes < 5
