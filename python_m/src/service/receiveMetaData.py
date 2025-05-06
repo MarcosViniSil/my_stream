@@ -7,6 +7,7 @@ import shutil
 from uuid import UUID
 import uuid
 import math
+from PIL import Image
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -35,7 +36,9 @@ class ReceiveMetadaService:
 
 
         filePath = self.copyFileLocally(file)
-
+        
+        self.resizeImage(400,300,filePath)
+        
         imageUrlOnBucket = self.saveImageRemote(filePath)
 
         self.removeImageLocally(imageUrlOnBucket,filePath)
@@ -84,6 +87,13 @@ class ReceiveMetadaService:
             print(e)    
             raise HTTPException(status_code=400, detail=str(e))
     
+    def resizeImage(self,width:int,height:int,imagePath:str) -> None:
+        img = Image.open(imagePath)
+
+        imgResized = img.resize((width,height))
+
+        imgResized.save(imagePath,quality = 70)
+
     def isValidUuid(self,val: UUID):
         try:
             uuid.UUID(str(val))

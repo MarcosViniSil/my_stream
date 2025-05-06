@@ -37,7 +37,7 @@ class ReciveVideo:
                 messageQueue = {"videoId":videoId,"videoUrl":hashVideo}
                 self.queueService.sendMessageQueue(messageQueue)
             except Exception as e:
-                self.removeFileRemote(hashVideo.split("/")[-1])
+                self.removeRemoteFile(hashVideo.split("/")[-1])
                 raise HTTPException(status_code=400, detail=str(e))
             return {"message": "Vídeo recebido com sucesso!", "videoId": videoId}
         else:
@@ -62,7 +62,7 @@ class ReciveVideo:
         try:
             os.remove(file_path)
         except Exception as e:
-            self.removeFileRemote(hashVideoBucket.split("/")[-1])
+            self.removeRemoteFile(hashVideoBucket.split("/")[-1])
             raise HTTPException(status_code=400, detail="Erro ao deletar video localmente")
         
     def insertUrlVideoDb(self,hashVideo : str) -> str:
@@ -70,10 +70,10 @@ class ReciveVideo:
             videoId = self.videoRepository.insertUrlDb(hashVideo)
             return videoId
         except Exception as e:
-            self.removeFileRemote(hashVideo.split("/")[-1])
+            self.removeRemoteFile(hashVideo.split("/")[-1])
             raise HTTPException(status_code=400, detail="Erro ao salvar url no banco")
     
-    def removeFileRemote(self,nameFile :str) -> None:
+    def removeRemoteFile(self,nameFile :str) -> None:
          try:
                 self.bucket.deleteFileOnBucket(nameFile)
          except Exception as e:
