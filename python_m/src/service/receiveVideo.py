@@ -34,7 +34,7 @@ class ReciveVideo:
 
         if videoId != "":
             try:
-                messageQueue = {"videoId":videoId,"urlVideo":hashVideo}
+                messageQueue = {"videoId":videoId,"videoUrl":hashVideo}
                 self.queueService.sendMessageQueue(messageQueue)
             except Exception as e:
                 self.removeFileRemote(hashVideo.split("/")[-1])
