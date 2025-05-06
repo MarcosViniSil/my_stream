@@ -1,4 +1,5 @@
 import math
+from src.service.queueService import QueueService
 from src.repository.videoRepository import VideoRepository
 from src.service.bucket import Bucket
 from fastapi import HTTPException,UploadFile
@@ -10,9 +11,10 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 class ReciveVideo:
 
-    def __init__(self,bucket: Bucket, videoRepository:VideoRepository):
+    def __init__(self,bucket: Bucket, videoRepository:VideoRepository,queueService:QueueService):
         self.bucket = bucket
         self.videoRepository = videoRepository
+        self.queueService = queueService
 
     async def processReceivedVideo(self,file) -> dict:
 
@@ -31,6 +33,12 @@ class ReciveVideo:
         videoId = self.insertUrlVideoDb(hashVideo)
 
         if videoId != "":
+            try:
+                messageQueue = {"videoId":videoId,"urlVideo":hashVideo}
+                self.queueService.sendMessageQueue(messageQueue)
+            except Exception as e:
+                self.removeFileRemote(hashVideo.split("/")[-1])
+                raise HTTPException(status_code=400, detail=str(e))
             return {"message": "Vídeo recebido com sucesso!", "videoId": videoId}
         else:
             raise HTTPException(status_code=400, detail="Erro ao salvar url no banco")
@@ -54,11 +62,7 @@ class ReciveVideo:
         try:
             os.remove(file_path)
         except Exception as e:
-            try:
-                self.bucket.deleteFileOnBucket(hashVideoBucket.split("/")[-1])
-            except Exception as e:
-                raise HTTPException(status_code=400, detail="Não foi possivel deletar vídeo local e quando foi necessario deletar vídeo em nuvem ocorreu outro erro")
-            
+            self.removeFileRemote(hashVideoBucket.split("/")[-1])
             raise HTTPException(status_code=400, detail="Erro ao deletar video localmente")
         
     def insertUrlVideoDb(self,hashVideo : str) -> str:
@@ -66,13 +70,15 @@ class ReciveVideo:
             videoId = self.videoRepository.insertUrlDb(hashVideo)
             return videoId
         except Exception as e:
-            try:
-                self.bucket.deleteFileOnBucket(hashVideo.split("/")[-1])
-            except Exception as e:
-                raise HTTPException(status_code=400, detail="Não foi possivel inserir url video no banco e quando foi necessario deletar vídeo em nuvem ocorreu outro erro")
-                
+            self.removeFileRemote(hashVideo.split("/")[-1])
             raise HTTPException(status_code=400, detail="Erro ao salvar url no banco")
     
+    def removeFileRemote(self,nameFile :str) -> None:
+         try:
+                self.bucket.deleteFileOnBucket(nameFile)
+         except Exception as e:
+                raise HTTPException(status_code=400, detail="Não foi possivel deletar vídeo em nuvem quando necessário")
+
     def isExtensionValid(self,file : UploadFile) -> bool:
         contentType = file.headers["content-type"]
         return contentType == "video/mp4" 
