@@ -9,7 +9,7 @@ routerM = APIRouter()
 
 @routerM.post("/upload/metadata")
 async def upload_metadata(
-    id: UUID = Form(...),
+    id = Form(...),
     videoTitle: str = Form(...),
     thumbnailImage: UploadFile = File(...),
     reciveMetadata: ReceiveMetadaService = Depends(getReceiveMetaData)

@@ -55,6 +55,7 @@ class ReciveVideo:
             hashVideo = self.bucket.saveFileOnBucket(file_path)
             return hashVideo
         except Exception as e:
+            os.remove(file_path)
             raise HTTPException(status_code=400, detail="Erro ao salvar video em bucket na nuvem")
     
     def removeLocalVideo(self,hashVideoBucket: str,file_path: str) -> None:
