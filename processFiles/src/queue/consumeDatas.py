@@ -30,7 +30,7 @@ class ConsumeQueue:
 
             def callback(ch, method, properties, body):
                 print(f"Mensagem recebida: {body.decode()}")
-                # Confirma que a mensagem foi processada
+        
                 ch.basic_ack(delivery_tag=method.delivery_tag)
 
             channel.basic_consume(queue="C", on_message_callback=callback)
