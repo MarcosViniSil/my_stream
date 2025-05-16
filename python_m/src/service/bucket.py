@@ -1,5 +1,8 @@
+import uuid
 from minio import Minio
 from dotenv import load_dotenv
+
+
 load_dotenv()
 import os
 import secrets
@@ -67,13 +70,16 @@ class Bucket:
         except Exception as e:
             raise ValueError("Erro ao enviar o arquivo para o bucket, tente novamente")
 
-    def generateHashForFileName(self,file_path: str):
+    def generateHashForFileName(self,file_path: str) -> str:
+        hashFile = uuid.uuid4()
         ext = os.path.splitext(file_path)[1]
-        return f"{secrets.token_urlsafe(5)}{ext}"
 
+        return f"{hashFile}{ext}"
+                
     def removeFileFromBucket(self,client: Minio,bucket_name: str,destination_file: str):
         try:
             client.remove_object(bucket_name, destination_file)
         except Exception as e:
             raise ValueError("Erro ao remover o arquivo do bucket, tente novamente")
+
 

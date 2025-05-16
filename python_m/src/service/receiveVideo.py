@@ -1,4 +1,4 @@
-import math
+from uuid import UUID
 from src.service.queueService import QueueService
 from src.repository.videoRepository import VideoRepository
 from src.service.bucket import Bucket
@@ -84,5 +84,6 @@ class ReciveVideo:
         return contentType == "video/mp4" 
 
     def isFileSizeAllowed(self,fileSize: int) -> bool :
-        fileSizeInGigaBytes = math.floor(fileSize / 1073741824)
-        return fileSizeInGigaBytes < 5
+        oneGigaByte = 1073741824
+        fileSizeInGigaBytes = fileSize / oneGigaByte
+        return fileSizeInGigaBytes < 5.0

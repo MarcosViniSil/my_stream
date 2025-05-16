@@ -26,10 +26,10 @@ CREATE TABLE tb_videoHistory(
 );
 
 CREATE TABLE tb_video(
-    videoId BINARY(16) PRIMARY KEY,
-    videoTitle VARCHAR(255) ,
-    thumbnailUrl VARCHAR(255) ,
-    videoUrl VARCHAR(255) ,
+    videoId BINARY(16) PRIMARY KEY UNIQUE,
+    videoTitle VARCHAR(255) UNIQUE ,
+    thumbnailUrl VARCHAR(255) UNIQUE,
+    videoUrl VARCHAR(255) UNIQUE,
     videoStatus VARCHAR(10) NOT NULL CHECK (videoStatus IN ('READY', 'PROCESSING','FAIL')),
     videoDuration INT ,
     lastStreaming DATE,

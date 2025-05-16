@@ -6,9 +6,11 @@ from src.service.bucket import Bucket
 from src.service.receiveMetaData import ReceiveMetadaService
 from src.service.receiveVideo import ReciveVideo
 
-bucket = Bucket()
+
 db = ConnectionDB()
 video_repository = VideoRepository(db)
+
+bucket = Bucket()
 queueService = QueueService()
 metadataRepository = MetaDataRepository(db)
 recive_video = ReciveVideo(bucket, video_repository,queueService)

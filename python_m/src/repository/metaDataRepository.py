@@ -1,8 +1,10 @@
 import uuid
 from fastapi import Depends
+import mysql.connector
 from uuid import UUID
 from src.enum.statusVideoEnum import VideoStatus
 from src.db.connectionDb import ConnectionDB
+from src.exception.duplicateColumnException import DuplicateColumnException
 
 class MetaDataRepository:
     
@@ -21,9 +23,18 @@ class MetaDataRepository:
             self.Db.myCursor.execute(sql, (videoTitle,urlThumbnail,videoIdBytes))
             self.Db.myDb.commit()
             self.Db.closeConnection()
+
+        except mysql.connector.errors.IntegrityError as e:
+            error_msg = str(e)
+            duplicate_column = None
+
+            if "for key" in error_msg:
+                duplicate_column = error_msg.split("for key ")[-1].strip(" '").split(".")[-1]
+
+            raise DuplicateColumnException(f"{duplicate_column}")
+
         except Exception as e:
-            print("a",e)
-            raise ValueError("Erro ao inserir metadados no banco de dados",e)
+            raise ValueError("Erro ao inserir metadados no banco de dados ",e)
         
     def isUUIDExistsOnDataBase(self, uuidVideo: UUID) -> bool:
         videoIdBytes = uuidVideo.bytes
@@ -37,5 +48,6 @@ class MetaDataRepository:
             return len(myresult) == 1 and videoIdBytes == myresult[0][0]
         except Exception as e:
             print("a",e)
-            raise ValueError("Erro ao inserir metadados no banco de dados",e)
+            raise ValueError("Erro ao verificar UUID",e)
+        
         

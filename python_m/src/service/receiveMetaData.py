@@ -1,4 +1,5 @@
 
+from src.exception.duplicateColumnException import DuplicateColumnException
 from src.repository.metaDataRepository import MetaDataRepository
 from src.service.bucket import Bucket
 from fastapi import HTTPException,UploadFile
@@ -6,7 +7,6 @@ import os
 import shutil
 from uuid import UUID
 import uuid
-import math
 from PIL import Image
 
 UPLOAD_DIR = "uploads"
@@ -67,25 +67,24 @@ class ReceiveMetadaService:
         try:
             os.remove(filePath)
         except Exception as e:
-            try:
-                self.bucket.deleteFileOnBucket(imageUrlOnBucket.split("/")[-1])
-            except Exception as e:
-                raise HTTPException(status_code=400, detail="Não foi possivel deletar imagem local e quando foi necessario deletar imagem em nuvem ocorreu outro erro")
-            
+            self.deleteFileRemote(imageUrlOnBucket.split("/")[-1])
             raise HTTPException(status_code=400, detail="Erro ao deletar imagem localmente")
         
     def insertMetaDatasDb(self,idVideo : UUID,videoTitle : str,videoUrlOnBucket : str) -> None:
         try:
             self.metaDataRepository.insertMetaData(idVideo,videoTitle,videoUrlOnBucket)
-        except Exception as e:
-            try:
-                self.bucket.deleteFileOnBucket(videoUrlOnBucket.split("/")[-1])
-            except Exception as e:
-                print(e)
-                raise HTTPException(status_code=400, detail="Não foi possivel inserir url imagem no banco e quando foi necessario deletar imagem em nuvem ocorreu outro erro")
-
-            print(e)    
-            raise HTTPException(status_code=400, detail=str(e))
+        except ValueError as e:
+            self.deleteFileRemote(videoUrlOnBucket.split("/")[-1])
+        except DuplicateColumnException as e:
+            self.deleteFileRemote(videoUrlOnBucket.split("/")[-1])
+            message = self.handleDuplicateColumn(str(e))  
+            raise HTTPException(status_code=400, detail=str(message))
+    
+    def handleDuplicateColumn(self,column: str) -> str:
+        if  column == "videoTitle":
+            return "Título de vídeo já existe"
+        else:
+            return "Ocorreu um erro"
     
     def resizeImage(self,width:int,height:int,imagePath:str) -> None:
         img = Image.open(imagePath)
@@ -101,13 +100,19 @@ class ReceiveMetadaService:
         except ValueError:
             
             return False
+    def deleteFileRemote(self,fileUrl: str) -> None:
+        try:
+            self.bucket.deleteFileOnBucket(fileUrl.split("/")[-1])
+        except Exception as e:
+            raise HTTPException(status_code=400, detail="Ocorreu um erro ao deletar imagem em nuvem")
     
     def isExtensionValid(self,file : UploadFile) -> bool:
         contentType = file.headers["content-type"]
         return contentType == "image/png" or contentType == "image/svg+xml" or contentType == "image/jpeg"
 
     def isFileSizeAllowed(self,fileSize: int) -> bool :
-        fileSizeInMegaBytes = math.floor(fileSize/1048576)
-        return fileSizeInMegaBytes < 50
+        oneMegaByte = 1048576
+        fileSizeInMegaBytes = fileSize / oneMegaByte
+        return fileSizeInMegaBytes < 50.0
     
     
