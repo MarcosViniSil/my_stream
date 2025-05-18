@@ -1,4 +1,6 @@
+from src.processing.processFile import ProcessFiles
 from src.queue.consumeDatas import ConsumeQueue
 
-consumeQueue = ConsumeQueue()
+processFiles = ProcessFiles()
+consumeQueue = ConsumeQueue(processFiles)
 consumeQueue.consumeMessageQueue()

@@ -1,16 +1,19 @@
 import pika
 from pika import BlockingConnection,PlainCredentials,BlockingConnection,ConnectionParameters,BasicProperties
 from dotenv import load_dotenv
+
+from src.processing.processFile import ProcessFiles
 load_dotenv()
 import os
 
 class ConsumeQueue:
 
-    def __init__(self):
+    def __init__(self,process: ProcessFiles):
         self.user       =   os.environ["USER_RABBITMQ"] 
         self.password   =   os.environ["PASSWORD_RABBITMQ"] 
         self.exchange   =   os.environ["EXCHANGE_RABBITMQ"] 
         self.routingKey =   os.environ["ROUTINGKEY_RABBITMQ"]
+        self.process = process
 
     def createConnection(self) -> BlockingConnection:
         try:
@@ -30,7 +33,7 @@ class ConsumeQueue:
 
             def callback(ch, method, properties, body):
                 print(f"Mensagem recebida: {body.decode()}")
-        
+                self.process.getMessageFromQueue(str(body.decode()))
                 ch.basic_ack(delivery_tag=method.delivery_tag)
 
             channel.basic_consume(queue="C", on_message_callback=callback)
