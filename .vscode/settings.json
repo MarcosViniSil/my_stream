@@ -8,6 +8,7 @@
     },
     "python.analysis.extraPaths": [
         "./python_m",
-        "./python_m"
+        "./python_m",
+        "./processFiles"
     ]
 }
