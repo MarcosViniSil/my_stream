@@ -3,6 +3,7 @@ from src.service.queueService import QueueService
 from src.repository.videoRepository import VideoRepository
 from src.service.bucket import Bucket
 from fastapi import HTTPException,UploadFile
+import subprocess
 import os
 import shutil
 
@@ -48,8 +49,22 @@ class ReciveVideo:
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         
+        if not self.isVideoContainAudio(str(file.filename)):
+             os.remove(file_path)
+             raise HTTPException(status_code=400, detail="O vídeo informado não possui áudio")
+       
         return file_path
     
+    def isVideoContainAudio(self,fileName: str) -> bool:
+        resultado = subprocess.run(["ffprobe", "-i",f"{UPLOAD_DIR}/{fileName}","-show_streams","-select_streams","a","-loglevel","error"], 
+                                   capture_output=True, text=True)
+        if resultado.stdout == "":
+            print("video sem áudio")
+            return False
+        else:
+            return True
+            print("video com áudio")
+
     def saveVideoRemote(self,file_path: str) -> str:
         try:
             hashVideo = self.bucket.saveFileOnBucket(file_path)
@@ -71,6 +86,7 @@ class ReciveVideo:
             videoId = self.videoRepository.insertUrlDb(hashVideo)
             return videoId
         except Exception as e:
+
             self.removeRemoteFile(hashVideo.split("/")[-1])
             raise HTTPException(status_code=400, detail="Erro ao salvar url no banco")
     

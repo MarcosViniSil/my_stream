@@ -28,6 +28,7 @@ class VideoRepository:
             uuid_obj = uuid.UUID(bytes=videoId)
             return str(uuid_obj)
         except Exception as e:
+            print(e)
             raise ValueError("Erro ao inserir url do vídeo",e)
         
 
