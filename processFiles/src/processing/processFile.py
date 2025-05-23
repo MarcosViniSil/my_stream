@@ -3,6 +3,8 @@ import json
 from dotenv import load_dotenv
 import boto3
 from botocore.client import Config
+import subprocess
+import shutil
 
 load_dotenv()
 
@@ -20,16 +22,55 @@ class ProcessFiles:
         message = message.replace("'", '"')
         try:
             data = json.loads(message)
-            self.videoId = data["videoId"]
+            videoId = str(data["videoId"])
             bucketName = str(data["videoUrl"]).split("/")[-2]
             fileName = str(data["videoUrl"]).split("/")[-1]
             
-            self.downloadFileFromBucket(bucketName,fileName)
+            pathDownload = self.downloadFileFromBucket(bucketName,fileName)
+            streamFolderName = self.convertVideoToStream(fileName,pathDownload)
+
+            self.sendStreamToBucket(streamFolderName,bucketName,videoId)
 
         except json.JSONDecodeError as e:
             print(f"Erro ao decodificar a mensagem: {e}")
 
-    def downloadFileFromBucket(self,bucketName:str,fileName: str) -> None:
+
+
+    def convertVideoToStream(self,nameFile:str,pathDownload:str) -> str:
+        nameFolder = nameFile
+        if nameFile.endswith(".mp4"):
+            nameFolder = os.path.splitext(nameFile)[0]
+        
+        os.makedirs(f"./{nameFolder}", exist_ok=True)
+        #ffmpeg -i input.mp4 -codec: copy -start_number 0 -hls_time 10 -hls_list_size 0 -f hls caminho/para/pasta/output.m3u8
+        resultado = subprocess.run(["ffmpeg", "-i",f"{pathDownload}","-codec:","copy",
+                                    "-start_number","0","-hls_time","10",
+                                    "-hls_list_size","0","-f","hls",f"./{nameFolder}/output.m3u8"], 
+                                   capture_output=True, text=True)
+        
+        #shutil.rmtree(f"./{nameFolder}")
+
+        return nameFolder
+        #print(resultado.stdout)
+        #print(resultado.stderr)
+
+    def sendStreamToBucket(self,folder_path:str,bucket_name:str,videoId: str):
+        try:
+            s3 = self.createConnection()
+            for root, _, files in os.walk(folder_path):
+               for file in files:
+                   local_path = os.path.join(root, file)
+                   relative_path = os.path.relpath(local_path, folder_path).replace("\\", "/")
+
+                   s3_key = f"{videoId}/{relative_path}" 
+
+                   s3.upload_file(local_path, bucket_name, s3_key)
+                   
+                   print(f"Enviado: {local_path} → {bucket_name}/{s3_key}")
+        except Exception as e:
+            print(e)        
+
+    def downloadFileFromBucket(self,bucketName:str,fileName: str) -> str:
         if fileName == "" or bucketName == "":
             print("Arquivo ou bucket inválido.")
             return
@@ -37,14 +78,12 @@ class ProcessFiles:
         try:
             s3 = self.createConnection()
             local_path = os.path.join(LOCAL_PATH, fileName)
-            print("bucketName ",bucketName)
-            print("fileName ",fileName)
             s3.download_file(bucketName, fileName, local_path)
-            
-            print(f"Arquivo '{fileName}' baixado para '{local_path}'.")
+            return local_path
 
         except Exception as e:
             print(f"Erro ao baixar o arquivo: {e}")
+
 
     def createConnection(self):
         try:

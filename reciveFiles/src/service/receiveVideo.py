@@ -59,11 +59,9 @@ class ReciveVideo:
         resultado = subprocess.run(["ffprobe", "-i",f"{UPLOAD_DIR}/{fileName}","-show_streams","-select_streams","a","-loglevel","error"], 
                                    capture_output=True, text=True)
         if resultado.stdout == "":
-            print("video sem áudio")
             return False
         else:
             return True
-            print("video com áudio")
 
     def saveVideoRemote(self,file_path: str) -> str:
         try:
