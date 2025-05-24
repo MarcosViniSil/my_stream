@@ -20,7 +20,6 @@ class StreamRepository:
             self.Db.myDb.commit()
             self.Db.closeConnection()
         except Exception as e:
-            print("foi aqui: ",e)
             raise ValueError(f"Erro ao atualizar dados do vídeo {videoId} ",e)
         
     def updateStatusVideoToFail(self, videoId:str) -> None:
@@ -37,4 +36,22 @@ class StreamRepository:
         except Exception as e:
             print(e)
             raise ValueError(f"Erro ao atualizar status para fail do vídeo {videoId} ",e)
-        
+    
+    def getEmailVideoOwner(self, videoId:str) -> str:
+        idVideoBytes = uuid.UUID(videoId).bytes
+        self.Db.createConnection()
+
+        sql = """
+                SELECT tu.userEmail FROM tb_video as tbv INNER JOIN tb_user AS tu ON tbv.idAdmin = tu.userId WHERE tbv.videoId = %s;
+              """
+        try:
+            self.Db.myCursor.execute(sql, (idVideoBytes,))
+            myresult = self.Db.myCursor.fetchone()
+            if len(myresult) == 0:
+                raise ValueError("Email não encontrado")
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+            return str(myresult[0])
+        except Exception as e:
+            print(e)
+            raise ValueError(f"Erro ao atualizar status para fail do vídeo {videoId} ",e)

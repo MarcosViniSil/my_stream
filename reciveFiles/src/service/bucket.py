@@ -24,7 +24,7 @@ class Bucket:
         self.createBucketIfNotExists(client, self.BUCKET_NAME)
         self.sendFileToBucket(client, self.BUCKET_NAME, destination_file, source_file)
 
-        return f"http://{self.BUCKET_NAME}/{destination_file}"
+        return f"http://localhost9001/{self.BUCKET_NAME}/{destination_file}"
 
     def deleteFileOnBucket(self, fileCode: str) -> None:
         if not fileCode:

@@ -62,4 +62,4 @@ ALTER TABLE tb_videoHistory ADD FOREIGN KEY (userId) REFERENCES tb_user(userId);
 
 -- UUID_TO_BIN(UUID(), 1) -> INSERT
 
-INSERT INTO tb_user (userId,userName,userRole,userEmail,userPassword) VALUES (UNHEX(REPLACE('3f06af63-a93c-11e4-9797-00505690773f', '-','')),'testUser','ADMIN','testemail@gmail.com','12345678');
+INSERT INTO tb_user (userId,userName,userRole,userEmail,userPassword) VALUES (UNHEX(REPLACE('3f06af63-a93c-11e4-9797-00505690773f', '-','')),'testUser','ADMIN','marcosoliversv@gmail.com','12345678');

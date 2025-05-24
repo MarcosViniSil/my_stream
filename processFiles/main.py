@@ -8,3 +8,5 @@ streamRepository = StreamRepository(db)
 processFiles = ProcessFiles(streamRepository)
 consumeQueue = ConsumeQueue(processFiles)
 consumeQueue.consumeMessageQueue()
+
+

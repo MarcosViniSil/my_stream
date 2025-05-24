@@ -8,6 +8,7 @@ import shutil
 import logging
 from datetime import date
 
+from src.email.sendEmail import sendEmail
 from src.repository.streamRepository import StreamRepository
 
 load_dotenv()
@@ -29,26 +30,67 @@ class ProcessFiles:
         message = message.replace("'", '"')
         try:
             data = json.loads(message)
-            print(data)
             videoId = str(data["videoId"])
             bucketName = str(data["videoUrl"]).split("/")[-2]
             fileName = str(data["videoUrl"]).split("/")[-1]
 
-            pathDownload = self.downloadFileFromBucket(bucketName, fileName)
-            streamFolderName = self.convertVideoToStream(fileName, pathDownload)
+            if videoId == None or bucketName == None or fileName == None:
+                raise ValueError("Processamento falhou, tente novamente")
 
-            self.sendStreamToBucket(streamFolderName, bucketName, videoId)
+            self.processFile(videoId,bucketName,fileName)
+            
+            self.deleteLocalVideoAfterProcessing(fileName)
 
-            urlStream = f"http://localhost:9000/{bucketName}/{videoId}/output.m3u8"
-            print(urlStream)
-            self.streamRepository.updateUrlVideo(urlStream,videoId)
+            self.deleteFileFromBucket(fileName,bucketName)
 
-        except json.JSONDecodeError as e:
-            print(f"Erro ao decodificar a mensagem: {e.msg}")
-        except ValueError as v:
-            print(f"Erro: {e.msg}")
+        except BaseException as r:
+            try:
+                if videoId != None:
+                    userEmail = self.streamRepository.getEmailVideoOwner(videoId)
+                    sendEmail(videoId,"Falhou ❌",str(r.args[0]),userEmail)
+            except Exception as r:
+                logging.error(f"Erro ao avisar usuário de email {userEmail} sobre falha no processamento do video de id {videoId}",r)
+                self.deleteLocalVideoAfterProcessing(fileName)
+
+    def deleteLocalVideoAfterProcessing(self,nameFile:str) -> None:
+        try:
+            pathD = ""
+            if nameFile.endswith(".mp4"):
+                pathD = os.path.splitext(nameFile)[0]
+            shutil.rmtree(f"./{pathD}")
+            os.remove(f"./file/{nameFile}")
+        except BaseException as r:
+            logging.error(f"Erro ao deletar vídeo de nome {nameFile} localmente",r)
+
+    def processFile(self,videoId:str,bucketName:str,fileName:str) -> None:
+        pathDownload = self.downloadFileFromBucket(bucketName, fileName)
+        
+        streamFolderName = self.convertVideoToStream(fileName, pathDownload)
+        self.sendStreamToBucket(streamFolderName, bucketName, videoId)
+        
+        pathStreamLocally = f"http://localhost:9000/{bucketName}/{videoId}/output.m3u8"
+        self.updateUrlVideoOnDb(pathStreamLocally,videoId)
+        
+        self.sendEmailUser(videoId)
+
+    def updateUrlVideoOnDb(self,pathStreamLocally:str,videoId:str):
+        logging.info(f"atualizando url no banco de dados do video de id {videoId}")
+        try:
+            self.streamRepository.updateUrlVideo(pathStreamLocally,videoId)
         except Exception as r:
-            print(f"Erro: {r}")
+            logging.error(f"Ocorreu um erro ao atualizar url do video de id {videoId}. Detalhes:",r)
+            raise ValueError("Erro ao atualizar video na base de dados, tente novamente")
+        
+        logging.info(f"url do video de id {videoId} atualizada com sucesso")
+
+    def sendEmailUser(self,videoId:str) -> None:
+        userEmail = self.streamRepository.getEmailVideoOwner(videoId)
+        logging.info(f"Enviando email sobre video de id {videoId} para {userEmail}")
+
+        sendEmail(videoId,"Disponível ✅","Vídeo recebido com sucesso",userEmail)
+
+        logging.info(f"Email enviado para email {userEmail}")
+    
 
     def convertVideoToStream(self, nameFile: str, pathDownload: str) -> str:
         nameFolder = nameFile
@@ -70,7 +112,6 @@ class ProcessFiles:
 
         if resultado.returncode != 0:
             logging.error(f"Erro na conversão, erro que ocorreu: {resultado.stderr}")
-            logging.error(resultado.stderr)
             raise ValueError("Ocorreu um erro ao converter o vídeo em streaming, tente novamente")
         else:
             logging.info(f"Conversão bem-sucedida. Arquivo HLS: {outputPath}")
@@ -100,11 +141,25 @@ class ProcessFiles:
     def downloadFileFromBucket(self, bucketName: str, fileName: str) -> str:
         if fileName == "" or bucketName == "":
             raise ValueError("Ocorreu um erro ao processar o vídeo recebido, tente novamente")
+        
+        logging.info(f"Baixando o arquivo {fileName} do bucket {bucketName}")
+        try:
+            s3 = self.createConnection()
+            local_path = os.path.join(LOCAL_PATH, fileName)
+            s3.download_file(bucketName, fileName, local_path)
+            logging.info(f"Arquivo {fileName} baixado com sucesso")
+            return local_path
+        except Exception as e:
 
-        s3 = self.createConnection()
-        local_path = os.path.join(LOCAL_PATH, fileName)
-        s3.download_file(bucketName, fileName, local_path)
-        return local_path
+            logging.error(f"Ocoreru um erro ao baixar arquivo {fileName} vindo do bucket {bucketName}")
+            raise ValueError("Ocorreu um erro ao iniciar o processamento do vídeo, tente novamente")
+
+    def deleteFileFromBucket(self, fileName:str, bucketName:str) -> None:
+        try:
+            s3 = self.createConnection()
+            s3.delete_object(Bucket=bucketName, Key=fileName)
+        except BaseException as r:
+            logging.error(f"Ocoreru um erro ao deletar arquivo {fileName} do buket {bucketName} após o processamento")
 
     def createConnection(self):
         try:
