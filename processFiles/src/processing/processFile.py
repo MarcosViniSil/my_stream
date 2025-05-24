@@ -8,6 +8,8 @@ import shutil
 import logging
 from datetime import date
 
+from src.repository.streamRepository import StreamRepository
+
 load_dotenv()
 
 LOCAL_PATH = "./file"
@@ -16,16 +18,18 @@ os.makedirs("./logs", exist_ok=True)
 
 class ProcessFiles:
 
-    def __init__(self):
+    def __init__(self, streamRepository:StreamRepository):
         self.videoId = None
         self.bucketName = None
         self.fileName = None
+        self.streamRepository = streamRepository
 
     def getMessageFromQueue(self, message: str) -> None:
         self.configureFileLog()
         message = message.replace("'", '"')
         try:
             data = json.loads(message)
+            print(data)
             videoId = str(data["videoId"])
             bucketName = str(data["videoUrl"]).split("/")[-2]
             fileName = str(data["videoUrl"]).split("/")[-1]
@@ -34,6 +38,10 @@ class ProcessFiles:
             streamFolderName = self.convertVideoToStream(fileName, pathDownload)
 
             self.sendStreamToBucket(streamFolderName, bucketName, videoId)
+
+            urlStream = f"http://localhost:9000/{bucketName}/{videoId}/output.m3u8"
+            print(urlStream)
+            self.streamRepository.updateUrlVideo(urlStream,videoId)
 
         except json.JSONDecodeError as e:
             print(f"Erro ao decodificar a mensagem: {e.msg}")
