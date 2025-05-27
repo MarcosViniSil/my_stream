@@ -1,4 +1,5 @@
 import uuid
+from uuid import UUID
 from src.enum.statusVideoEnum import VideoStatus
 from src.db.connectionDb import ConnectionDB
 from uuid import UUID
