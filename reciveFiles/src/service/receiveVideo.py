@@ -67,20 +67,23 @@ class ReciveVideo:
             return True
 
     def getVideoDuration(self, file: UploadFile) -> int:
-        resultado = subprocess.run([
+        result = subprocess.run([
             "ffprobe", "-v", "error",
             "-show_entries", "format=duration",
             "-of", "default=noprint_wrappers=1:nokey=1",
             f"{UPLOAD_DIR}/{file.filename}"
         ], capture_output=True, text=True)
 
-        if resultado.returncode != 0:
+        if result.returncode != 0:
             raise HTTPException(status_code=400, detail="Não foi possível obter a duração do vídeo")
 
-        duration_str = resultado.stdout.strip()
-        duration_int = int(float(duration_str)) 
-
-        return duration_int
+        resultStr = result.stdout.strip()
+        durationInSeconds = int(float(resultStr)) 
+        
+        if durationInSeconds < 10:
+            raise HTTPException(status_code=400, detail="O vídeo precisa ter pelo menos 10 segundos")
+        
+        return durationInSeconds
 
     def saveVideoRemote(self,file_path: str) -> str:
         try:
