@@ -10,7 +10,7 @@ class VideoRepository:
     def __init__(self, db: ConnectionDB):
         self.Db = db
 
-    def insertUrlDb(self, url: str) -> str:
+    def insertDatasVideo(self, url: str,videoDuration:int) -> str:
         idAdm = uuid.UUID('3f06af63-a93c-11e4-9797-00505690773f').bytes
  
         videoId = uuid.uuid4().bytes
@@ -19,11 +19,11 @@ class VideoRepository:
         #TODO -> change logic to recive id_user from body
 
         sql = """
-                INSERT INTO tb_video (videoId, videoUrl, videoStatus, isVideoAvailable, idAdmin) 
-                VALUES (%s, %s, %s, %s, %s);
+                INSERT INTO tb_video (videoId, videoUrl, videoStatus,videoDuration, isVideoAvailable, idAdmin) 
+                VALUES (%s, %s, %s,%s, %s, %s);
         """
         try:
-            self.Db.myCursor.execute(sql, (videoId, url, VideoStatus.PROCESSING.value, False, idAdm))
+            self.Db.myCursor.execute(sql, (videoId, url, VideoStatus.PROCESSING.value,videoDuration, False, idAdm))
             self.Db.myDb.commit()
             self.Db.closeConnection()
             uuid_obj = uuid.UUID(bytes=videoId)

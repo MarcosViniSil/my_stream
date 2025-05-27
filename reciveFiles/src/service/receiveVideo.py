@@ -17,7 +17,7 @@ class ReciveVideo:
         self.videoRepository = videoRepository
         self.queueService = queueService
 
-    async def processReceivedVideo(self,file) -> dict:
+    async def processReceivedVideo(self,file:UploadFile) -> dict:
 
         if not self.isExtensionValid(file):
             raise HTTPException(status_code=415, detail="Apenas arquivos .mp4 são permitidos.")
@@ -27,12 +27,15 @@ class ReciveVideo:
         
         filePath = self.copyFileLocally(file)
 
+    
         hashVideo = self.saveVideoRemote(filePath)
+
+        videoDurationSeconds = self.getVideoDuration(file)
 
         self.removeLocalVideo(hashVideo,filePath)
         
-        videoId = self.insertUrlVideoDb(hashVideo)
-
+        videoId = self.insertVideoDatasDb(hashVideo,videoDurationSeconds)
+        
         if videoId != "":
             try:
                 messageQueue = {"videoId":videoId,"videoUrl":hashVideo}
@@ -44,7 +47,7 @@ class ReciveVideo:
         else:
             raise HTTPException(status_code=400, detail="Erro ao salvar url no banco")
 
-    def copyFileLocally(self,file) -> str:
+    def copyFileLocally(self,file:UploadFile) -> str:
         file_path = os.path.join(UPLOAD_DIR, file.filename)
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
@@ -63,6 +66,22 @@ class ReciveVideo:
         else:
             return True
 
+    def getVideoDuration(self, file: UploadFile) -> int:
+        resultado = subprocess.run([
+            "ffprobe", "-v", "error",
+            "-show_entries", "format=duration",
+            "-of", "default=noprint_wrappers=1:nokey=1",
+            f"{UPLOAD_DIR}/{file.filename}"
+        ], capture_output=True, text=True)
+
+        if resultado.returncode != 0:
+            raise HTTPException(status_code=400, detail="Não foi possível obter a duração do vídeo")
+
+        duration_str = resultado.stdout.strip()
+        duration_int = int(float(duration_str)) 
+
+        return duration_int
+
     def saveVideoRemote(self,file_path: str) -> str:
         try:
             hashVideo = self.bucket.saveFileOnBucket(file_path)
@@ -79,9 +98,9 @@ class ReciveVideo:
             self.removeRemoteFile(hashVideoBucket.split("/")[-1])
             raise HTTPException(status_code=400, detail="Erro ao deletar video localmente")
         
-    def insertUrlVideoDb(self,hashVideo : str) -> str:
+    def insertVideoDatasDb(self,hashVideo : str,videoDuration:int) -> str:
         try:
-            videoId = self.videoRepository.insertUrlDb(hashVideo)
+            videoId = self.videoRepository.insertDatasVideo(hashVideo,videoDuration)
             return videoId
         except Exception as e:
 
