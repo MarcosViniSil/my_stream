@@ -71,7 +71,7 @@ class ProcessFiles:
         pathStreamLocally = f"http://localhost:9000/{bucketName}/{videoId}/output.m3u8"
         self.updateUrlVideoOnDb(pathStreamLocally,videoId)
         
-        self.sendEmailUser(videoId)
+        #self.sendEmailUser(videoId)
 
     def updateUrlVideoOnDb(self,pathStreamLocally:str,videoId:str):
         logging.info(f"atualizando url no banco de dados do video de id {videoId}")

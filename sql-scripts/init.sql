@@ -9,7 +9,7 @@ CREATE TABLE tb_user(
 );
 
 CREATE TABLE tb_userCodeVerification(
-    userCodeId BINARY(16) PRIMARY KEY,
+    userCodeId BINARY(16) PRIMARY KEY ,
     code VARCHAR(255) NOT NULL,
     codeType VARCHAR(255) NOT NULL,
     createdAt DATE NOT NULL,

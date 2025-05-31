@@ -47,6 +47,7 @@ class MetaDataRepository:
               """
             self.Db.myCursor.execute(sql, (videoIdBytes,))
             myresult = self.Db.myCursor.fetchall()
+            self.Db.closeConnection()
             return len(myresult) == 1 and videoIdBytes == myresult[0][0]
         except Exception as e:
             raise ValueError("Erro ao verificar UUID",e)
