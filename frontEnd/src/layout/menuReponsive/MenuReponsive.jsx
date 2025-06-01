@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { GiHamburgerMenu } from 'react-icons/gi';
-import { AiOutlineClose } from 'react-icons/ai';
 import { FaHome } from "react-icons/fa";
 import { CgProfile } from "react-icons/cg";
 import { FaHistory } from "react-icons/fa";
@@ -8,8 +7,7 @@ import { FaCloudUploadAlt } from "react-icons/fa";
 import { Link, useLocation } from 'react-router-dom';
 import styles from './MenuResponsive.module.css';
 
-function MenuResponsive() {
-  const [isOpen, setIsOpen] = useState(false);
+function MenuResponsive({ isOpen, setIsOpen }) {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const location = useLocation();
 

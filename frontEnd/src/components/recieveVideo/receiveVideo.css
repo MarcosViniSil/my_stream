@@ -1,0 +1,79 @@
+.wrapAllReceiveVideo {
+    height: calc(100vh - 470px);
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.wrapReceiveVideo {
+    width: min(90%, 40vw);
+    height: min(90%, 40vh);
+    border: 1px solid white;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+}
+
+.buttonSelectVideo,
+.buttonSendVideo {
+    all: unset;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.wrapTextButtonSend {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+    gap: 10px;
+    color: white;
+}
+
+.buttonSelectVideo {
+    margin-bottom: 15px;
+}
+
+.buttonSendVideo {
+    background-color: #272727;
+    color: white;
+    padding: 12px;
+    border-radius: 10px;
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.buttonSendVideo:hover {
+    background-color: #419181;
+    transition: ease-in 0.3s;
+}
+
+.statusVideo {
+    color: white;
+}
+
+.wrapButtonText{
+    text-align: center;
+    font-size: larger;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+@media (max-width: 868px) {
+    .wrapReceiveVideo {
+        width: min(90%, 90vw);
+        height: min(90%, 40vh);
+    }
+
+
+}

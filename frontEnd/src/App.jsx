@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import MenuResponsive from './layout/menuReponsive/MenuReponsive'
+import VideoUpload from './pages/upload/videoUpload'
 
 import './App.css';
 
@@ -8,7 +8,7 @@ function App() {
 
   return (
     <>
-      <MenuResponsive/>
+      <VideoUpload/>
     </>
   );
 }

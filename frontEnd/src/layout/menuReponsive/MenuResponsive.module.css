@@ -2,7 +2,7 @@
   background-color: #141414;
   color: #F0F0F0;
   height: 100vh;
-  width: 188px;
+  width: 200px;
   position: fixed;
   left: 0;
   top: 82px;
@@ -13,33 +13,18 @@
   transition: transform 0.3s ease-in-out;
 }
 
-@media (min-width: 769px) {
-  .nav {
-    transform: translateX(0);
-  }
-  .nav.close {
-    transform: translateX(-100%);
-  }
-}
 
-@media (max-width: 768px) {
-  .nav {
-    transform: translateX(-100%);
-  }
-  .nav.open {
-    transform: translateX(0);
-  }
-}
 
 .overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
+  margin-left: 220px;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.212);
   z-index: 99;
-  display: none;
+  
 }
 
 .overlay.open {
@@ -50,15 +35,18 @@
 }
 
 .logo {
-  font-size: 1.5rem;
-  font-weight: bold;
-  padding: 1.7rem;
-  margin-bottom: 2rem;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  background-color: #141414;
-  color: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 82px;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    color: white;
+    gap: 10px;
+    padding-left: 30px;
+
 }
 
 .menuIcon {
@@ -105,4 +93,22 @@
 
 .desactivate{
   background-color:transparent;
+}
+
+@media (min-width: 769px) {
+  .nav {
+    transform: translateX(0);
+  }
+  .nav.close {
+    transform: translateX(-100%);
+  }
+}
+
+@media (max-width: 768px) {
+  .nav {
+    transform: translateX(-100%);
+  }
+  .nav.open {
+    transform: translateX(0);
+  }
 }
