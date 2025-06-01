@@ -12,7 +12,7 @@ function ReceiveVideo() {
   const [fileSelected, setFileSelected] = useState("");
 
   const sendSuccess = (toastId) => {
-    toast.success("Arquivo enviado com sucesso!", {
+    toast.success("Vídeo enviado com sucesso!", {
       style: {
         background: '#346E62',
         color: '#fff'
@@ -39,8 +39,8 @@ function ReceiveVideo() {
     const file = acceptedFiles[0];
     if (file) {
       setSelectedFile(file);
-      toast.info(`Arquivo selecionado: ${file.name}`)
-      setFileSelected(`Arquivo selecionado: ${file.name}`)
+      toast.info(`Vídeo selecionado: ${file.name}`)
+      setFileSelected(`Vídeo selecionado: ${file.name}`)
     }
   }, []);
 
