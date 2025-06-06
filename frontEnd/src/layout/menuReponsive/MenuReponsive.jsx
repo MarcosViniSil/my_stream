@@ -62,9 +62,12 @@ function MenuResponsive({ isOpen, setIsOpen }) {
             <li key={to} className={styles.menuItem}>
               <Link
                 to={to}
-                className={`${styles.menuLink} ${location.pathname === to ? styles.active : styles.desactivate}`}
-                onClick={() => isMobile && setIsOpen(false)}
-              >
+                className={`${styles.menuLink} ${(to === '/upload' && ['/upload', '/meta-dados'].includes(location.pathname)) ||
+                    location.pathname === to
+                    ? styles.active
+                    : styles.desactivate
+                  }`}
+                onClick={() => isMobile && setIsOpen(false)}>
                 {icon} {label}
               </Link>
             </li>

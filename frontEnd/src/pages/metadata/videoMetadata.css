@@ -1,0 +1,25 @@
+.title{
+    color: white;
+    text-align: center;
+}
+
+.wrapSendMetaDatas {
+  margin-top: 40px;
+  text-align: center;
+}
+
+.wrapSendMetaDatas {
+  transition: margin-left 0.3s ease;
+  margin-left: 0;
+  padding: 10px;
+}
+
+.menu-open {
+  margin-left: 200px; 
+}
+
+@media (max-width: 768px) {
+  .menu-open {
+    margin-left: 0;
+  }
+}

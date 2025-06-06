@@ -1,7 +1,11 @@
-import { useState } from 'react';
-import VideoUpload from './pages/upload/videoUpload'
-import ReceiveVideo from './components/recieveVideo/ReceiveVideo'
+import { React  } from 'react';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import VideoUpload from './pages/upload/videoUpload'
+import MetaDataPage from './pages/metadata/videoMetadata'
+import ReceiveVideo from './components/recieveVideo/ReceiveVideo'
+import MetaData from './components/metaDatasVideo/metaData'
+
 
 import './App.css';
 
@@ -15,6 +19,7 @@ function App() {
         <Route path="/historico" element={<ReceiveVideo />} />
         <Route path="/upload" element={<VideoUpload />} />
         <Route path="*" element={<VideoUpload />} />
+        <Route path="/meta-dados" element={ <MetaDataPage/> }/> 
       </Routes>
     </BrowserRouter>
   );

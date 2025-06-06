@@ -1,0 +1,87 @@
+.wrapElementsMetaDatas{
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.wrapSendThumbNail{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.wrapReceiveThumbnail{
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid white;
+    border-radius: 10px;
+    padding: 7px;
+    gap: 10px;
+}
+
+.wrapReceiveTitleVideo{
+    margin-top: 40px;
+}
+
+.wrapReceiveTitleVideo{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#inputTitle{
+    background: #222;
+    color: #fff;
+    border: 2px solid #bbb;
+    border-radius: 10px;
+    padding: 12px 12px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.wrapInputTitle{
+    max-width: 350px;
+    border-radius: 10px;
+    padding: 5px;
+}
+
+.wrapAllMetaData{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.buttonSendMetaDatas {
+    background-color: #272727;
+    color: white;
+    padding: 12px;
+    border-radius: 10px;
+    margin-top: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+.buttonSendMetaDatas:hover {
+    background-color: #419181;
+    transition: ease-in 0.3s;
+}
+
+.statusPhoto{
+    color: #419181;
+}

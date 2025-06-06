@@ -4,12 +4,14 @@ import { uploadVideo } from "../../service/videoService";
 import { BsUpload } from "react-icons/bs";
 import { BsSend } from "react-icons/bs";
 import { Toaster, toast } from 'sonner';
+import { useNavigate } from "react-router-dom";
 
 import './receiveVideo.css';
 
 function ReceiveVideo() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileSelected, setFileSelected] = useState("");
+  const navigate = useNavigate();
 
   const sendSuccess = (toastId) => {
     toast.success("Vídeo enviado com sucesso!", {
@@ -35,6 +37,10 @@ function ReceiveVideo() {
     });
   }
 
+  const timeout = (delay) => {
+    return new Promise( res => setTimeout(res, delay) );
+}
+
   const onDrop = useCallback((acceptedFiles) => {
     const file = acceptedFiles[0];
     if (file) {
@@ -48,7 +54,7 @@ function ReceiveVideo() {
     onDrop,
     noClick: true,
     noKeyboard: true,
-    accept: { 'video/*': [] },
+    accept: { 'video/mp4': [] },
   });
 
   const handleUpload = async () => {
@@ -61,13 +67,19 @@ function ReceiveVideo() {
        toastId = toast.loading("Enviando vídeo para o servidor")
       
       const result = await uploadVideo(selectedFile);
+      if(!result['videoId']){
+        throw new Error("ocorreu um erro ao salvar o vídeo, tente novamente")
+      }
       sendSuccess(toastId)
       setFileSelected(``)
       setSelectedFile(null)
-      
-      //TODO manipulate id video and send user to another screen
+
+      await timeout(1000);
+
+      navigate(`/meta-dados?videoId=${result['videoId']}`);
 
     } catch (err) {
+      console.log(err.message)
       setSelectedFile(null)
       sendError(err.message,toastId)
       setFileSelected(``)

@@ -7,9 +7,6 @@ import './videoUpload.css'
 function VideoUpload() {
   const [isMenuOpen, setIsMenuOpen] = useState(true); 
 
-
-
-
   return (
     <>
       <MenuResponsive isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />
