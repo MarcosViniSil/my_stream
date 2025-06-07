@@ -10,13 +10,13 @@ import './metaData.css'
 
 function MetaData() {
     const [selectedFile, setSelectedFile] = useState(null);
-    const [fileSelected, setFileSelected] = useState("");
     const [title, setTitle] = useState('');
     const [countTitle, setCountTitle] = useState(0);
     const [previewUrl, setPreviewUrl] = useState(null);
 
     const navigate = useNavigate();
     const location = useLocation();
+    
     const sendSuccess = (toastId) => {
         toast.success("Imagem enviada com sucesso!", {
             style: {
@@ -61,7 +61,6 @@ function MetaData() {
             setSelectedFile(file);
             setPreviewUrl(URL.createObjectURL(file));
             toast.info(`Foto selecionada: ${file.name}`)
-            setFileSelected(`Foto selecionada: ${file.name}`)
         }
     }, []);
 
@@ -86,7 +85,6 @@ function MetaData() {
 
             await UploadMetaDatas(getVideoId(), title, selectedFile);
             sendSuccess(toastId)
-            setFileSelected(``)
             setSelectedFile(null)
 
             await timeout(1000);
@@ -95,9 +93,7 @@ function MetaData() {
 
         } catch (err) {
             console.log(err)
-            setSelectedFile(null)
             sendError(err.message, toastId)
-            setFileSelected(``)
         }
     };
 
