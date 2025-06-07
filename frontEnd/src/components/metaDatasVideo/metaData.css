@@ -1,21 +1,27 @@
-.wrapElementsMetaDatas{
+.wrapElementsMetaDatas {
     color: white;
     display: flex;
-    justify-content: center;
-    align-items: center;
     flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    margin-left: 20px;
 }
 
-.wrapSendThumbNail{
+.wrapSendThumbNail {
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-direction: column;
+    flex-direction: row;
     gap: 10px;
+    width: 100%;
 }
 
-.wrapReceiveThumbnail{
-    height: 80px;
+.wrapTitleReceiveThumbnail {
+    width: 50%;
+}
+
+.wrapReceiveThumbnail {
+    height: 30vh;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -23,21 +29,27 @@
     border-radius: 10px;
     padding: 7px;
     gap: 10px;
+    width: 50%;
 }
 
-.wrapReceiveTitleVideo{
+.wrapReceiveTitleVideo {
     margin-top: 40px;
 }
 
-.wrapReceiveTitleVideo{
+.wrapReceiveTitleVideo {
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-direction: column;
+    flex-direction: row;
     gap: 10px;
+    width: 100%;
 }
 
-#inputTitle{
+.wrapTitleReciveTitle {
+    width: 50%;
+}
+
+#inputTitle {
     background: #222;
     color: #fff;
     border: 2px solid #bbb;
@@ -46,21 +58,36 @@
     font-size: 15px;
     outline: none;
     transition: border-color 0.2s;
-    width: 100%;
+    width: 50%;
     box-sizing: border-box;
 }
 
-.wrapInputTitle{
-    max-width: 350px;
-    border-radius: 10px;
-    padding: 5px;
+.wrapButtonText {
+    color: #74ddc8;
 }
 
-.wrapAllMetaData{
+.wrapInputTitle {
+    border-radius: 10px;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 10px;
+    width: 50%;
+}
+
+.detailsImage {
+    color: white;
+    margin-top: 20px;
+}
+
+.wrapAllMetaData {
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
+    padding: 20px;
+    height: 60vh;
 }
 
 .buttonSendMetaDatas {
@@ -68,13 +95,14 @@
     color: white;
     padding: 12px;
     border-radius: 10px;
-    margin-top: 60px;
+    margin-top: 30px;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 10px;
     border: none;
     cursor: pointer;
+    align-self: flex-start;
 }
 
 .buttonSendMetaDatas:hover {
@@ -82,6 +110,67 @@
     transition: ease-in 0.3s;
 }
 
-.statusPhoto{
+.statusPhoto {
     color: #419181;
+}
+
+.countCaractersTitle {
+    text-align: end;
+    margin-top: 5px;
+}
+
+.wrapButtonSendMetaDatas {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+
+@media (max-width: 600px) {
+    .wrapSendThumbNail {
+        flex-direction: column;
+        margin-top: 10px;
+    }
+
+    .wrapReceiveThumbnail {
+        width: 100%;
+        height: 25vh;
+    }
+
+    .wrapReceiveTitleVideo {
+        flex-direction: column;
+        margin-top: 20px;
+    }
+
+    .wrapInputTitle {
+        width: 100%;
+    }
+
+    #inputTitle {
+        width: 100%;
+    }
+
+    .title {
+        margin-bottom: 25px;
+        margin-top: 20px;
+        font-size: 1.3em;
+    }
+
+    .wrapTitleReceiveThumbnail>h3 {
+        font-size: 1.1em;
+        
+    }
+    .wrapTitleReceiveThumbnail{
+        width: 100%;
+    }
+
+    .wrapTitleReciveTitle>h3 {
+        font-size: 1.1em;
+    }
+
+    .wrapTitleReciveTitle {
+        width: 100%;
+    }
+
 }

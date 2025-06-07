@@ -38,7 +38,9 @@
 .buttonSelectVideo {
     margin-bottom: 15px;
 }
-
+.wrapButtonTextVideo{
+    color: white;
+}
 .buttonSendVideo {
     background-color: #272727;
     color: white;
@@ -57,7 +59,7 @@
 }
 
 .statusVideo {
-    color: white;
+    color: #419181;
 }
 
 .wrapButtonText{

@@ -95,7 +95,7 @@ function ReceiveVideo() {
 
         <button className="buttonSelectVideo" type="button" onClick={open}>
           <div className="wrapTextButtonSend">
-            <p className="wrapButtonText"><BsUpload /> <u>Selecione</u> ou arraste e solte um vídeo</p>
+            <p className="wrapButtonTextVideo"><BsUpload /> <u>Selecione</u> ou arraste e solte um vídeo</p>
           </div>
 
         </button>

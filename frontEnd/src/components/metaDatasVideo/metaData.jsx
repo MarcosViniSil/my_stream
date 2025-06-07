@@ -12,6 +12,8 @@ function MetaData() {
     const [selectedFile, setSelectedFile] = useState(null);
     const [fileSelected, setFileSelected] = useState("");
     const [title, setTitle] = useState('');
+    const [countTitle, setCountTitle] = useState(0);
+    const [previewUrl, setPreviewUrl] = useState(null);
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -48,13 +50,16 @@ function MetaData() {
 
     const handleChange = (event) => {
         setTitle(event.target.value);
+        setCountTitle(event.target.value.length)
     };
 
 
     const onDrop = useCallback((acceptedFiles) => {
         const file = acceptedFiles[0];
         if (file) {
+            const file = acceptedFiles[0];
             setSelectedFile(file);
+            setPreviewUrl(URL.createObjectURL(file));
             toast.info(`Foto selecionada: ${file.name}`)
             setFileSelected(`Foto selecionada: ${file.name}`)
         }
@@ -72,15 +77,14 @@ function MetaData() {
     }
 
     const handleUpload = async () => {
-        if (!selectedFile) {
-            sendError("Nenhuma imagem selecionado")
+        if (!isFieldsValid(getVideoId(), title, selectedFile)) {
             return;
         }
         let toastId;
         try {
             toastId = toast.loading("Enviando imagem para o servidor")
 
-            const result = await UploadMetaDatas(getVideoId(), title, selectedFile);
+            await UploadMetaDatas(getVideoId(), title, selectedFile);
             sendSuccess(toastId)
             setFileSelected(``)
             setSelectedFile(null)
@@ -97,33 +101,64 @@ function MetaData() {
         }
     };
 
+    const isFieldsValid = (id, title, file) => {
+        if (!id) {
+            sendError("Ocoreru um erro ao localizar vídeo associado aos metadados, tente novamente")
+            return false;
+        }else if (!file) {
+            sendError("Arquivo não foi selecionado")
+            return false;
+        }else if (!title || String(title).replace(/\s+/g, "").length == 0) {
+            sendError("Título de vídeo vazio")
+            return false;
+        } else if (String(title).replace(/\s+/g, "").length > 100) {
+            sendError("O tamanho máximo de título é 100 caracteres")
+            return false;
+        } 
+
+        return true;
+    }
+
     return (
         <>
             <div className="wrapAllMetaData">
                 <Toaster position="top-right" />
                 <div className="wrapElementsMetaDatas">
                     <div className="wrapSendThumbNail">
-                        <h3>Envie uma foto para a capa do seu vídeo</h3>
-                        <div className="wrapReceiveThumbnail" {...getRootProps()}>
+                        <div className="wrapTitleReceiveThumbnail">
+                            <h3>Envie uma foto para a capa do seu vídeo</h3>
+                        </div>
+                        <div className="wrapReceiveThumbnail" {...getRootProps()}
+                            style={{
+                                backgroundImage: previewUrl ? `url(${previewUrl})` : 'none',
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                                opacity: 0.5,
+                            }}>
                             <input {...getInputProps()} />
                             <button className="buttonSelectVideo" type="button" onClick={open}>
                                 <div className="wrapTextButtonSend">
                                     <p className="wrapButtonText"><BsUpload /> <u>Selecione</u> ou arraste e solte uma imagem</p>
                                 </div>
                             </button>
-
                         </div>
-                        <p className="statusPhoto">{fileSelected}</p>
                     </div>
 
                     <div className="wrapReceiveTitleVideo">
-                        <h3>Adicione um título para o vídeo</h3>
+                        <div className="wrapTitleReciveTitle">
+                            <h3>Adicione um título para o vídeo</h3>
+                        </div>
                         <div className="wrapInputTitle">
-                            <input onChange={handleChange} id="inputTitle" name="inputTitle" placeholder="Título" maxLength={100} />
+                            <input onChange={handleChange} id="inputTitle" name="inputTitle" placeholder="Título do vídeo" maxLength={100} />
+                            <p className="countCaractersTitle">{countTitle}/100</p>
                         </div>
                     </div>
                 </div>
-                <button className="buttonSendMetaDatas" type="button" onClick={handleUpload}>Enviar metadados <BsSend /></button>
+                <div className="wrapButtonSendMetaDatas">
+                    <button className="buttonSendMetaDatas" type="button" onClick={handleUpload}>Enviar metadados <BsSend /></button>
+                </div>
+                
+                <p className="detailsImage">*A imagem que aparece é apenas uma pré visualização</p>
             </div>
 
         </>
