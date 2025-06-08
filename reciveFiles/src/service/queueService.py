@@ -12,7 +12,6 @@ class QueueService:
         self.exchange   =   os.environ["EXCHANGE_RABBITMQ"] 
         self.routingKey =   os.environ["ROUTINGKEY_RABBITMQ"]
 
-
     def sendMessageQueue(self,message : dict) -> None:
 
         connection = self.createConnection()

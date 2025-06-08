@@ -11,6 +11,7 @@
         "./python_m",
         "./processFiles",
         "./reciveFiles",
-        "./processFiles"
+        "./processFiles",
+        "./reciveFiles/src/controller"
     ]
 }
