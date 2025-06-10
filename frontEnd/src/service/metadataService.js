@@ -5,7 +5,7 @@ export async function UploadMetaDatas(id,title,photo) {
   formData.append("thumbnailImage", photo);
 
   try {
-    const response = await fetch("http://172.26.100.134:8000/upload/metadata", {
+    const response = await fetch("http://localhost:8000/upload/metadata", {
       method: "POST",
       body: formData,
     });
