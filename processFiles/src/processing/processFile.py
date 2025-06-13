@@ -9,6 +9,7 @@ import logging
 from datetime import date
 
 from src.email.sendEmail import sendEmail
+from src.exception.videoBucketException import VideoBucketException
 from src.repository.streamRepository import StreamRepository
 
 load_dotenv()
@@ -43,13 +44,24 @@ class ProcessFiles:
 
             self.deleteFileFromBucket(fileName,bucketName)
 
-        except BaseException as r:
+        except VideoBucketException as vb:
+            self.handleException(videoId,fileName)
             try:
-                if videoId != None:
-                    userEmail = self.streamRepository.getOwnerEmail(videoId)
-                    self.streamRepository.updateStatusVideoToFail(videoId);
-                    #sendEmail(videoId,"Falhou ❌",str(r.args[0]),userEmail)
-            except Exception as r:
+                self.deleteFileFromBucket(fileName,bucketName)
+            except BaseException as r:
+                logging.error(f"Ocorreu o erro {vb} e ao tentar deletar video de id {videoId} do bucket {bucketName} ocorreu o erro {r}")
+        
+        except BaseException as r:
+            self.handleException(videoId,fileName)
+
+    def handleException(self,videoId : str,fileName : str) -> None:
+        try:
+            if videoId != None:
+                userEmail = self.streamRepository.getOwnerEmail(videoId)
+                self.streamRepository.updateStatusVideoToFail(videoId);
+                #sendEmail(videoId,"Falhou ❌",str(r.args[0]),userEmail)
+                self.deleteLocalVideoAfterProcessing(fileName)
+        except Exception as r:
                 logging.error(f"Erro ao avisar usuário de email {userEmail} sobre falha no processamento do video de id {videoId}",r)
                 self.deleteLocalVideoAfterProcessing(fileName)
 
@@ -71,7 +83,6 @@ class ProcessFiles:
         
         pathStreamLocally = f"http://localhost:9000/{bucketName}/{videoId}/output.m3u8"
         self.updateUrlVideoOnDb(pathStreamLocally,videoId)
-        
         #self.sendEmailUser(videoId)
 
     def updateUrlVideoOnDb(self,pathStreamLocally:str,videoId:str) -> None:
@@ -80,7 +91,7 @@ class ProcessFiles:
             self.streamRepository.updateUrlVideo(pathStreamLocally,videoId)
         except Exception as r:
             logging.error(f"Ocorreu um erro ao atualizar url do video de id {videoId}. Detalhes:",r)
-            raise ValueError("Erro ao atualizar video na base de dados, tente novamente")
+            raise VideoBucketException("Erro ao atualizar video na base de dados, tente novamente")
         
         logging.info(f"url do video de id {videoId} atualizada com sucesso")
 
@@ -137,7 +148,7 @@ class ProcessFiles:
 
         except Exception as e:
             logging.error(f"ocorreu um erro ao enviar o stream de id {videoId} para o bucket {bucket_name}. Erro que ocorreu: {e}")
-            raise ValueError("Ocorreu um erro ao salvar o vídeo em nuvem, tente novamente")
+            raise VideoBucketException("Ocorreu um erro ao salvar o vídeo em nuvem, tente novamente")
 
     def downloadFileFromBucket(self, bucketName: str, fileName: str) -> str:
         if fileName == "" or bucketName == "":
