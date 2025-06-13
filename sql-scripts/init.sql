@@ -33,6 +33,7 @@ CREATE TABLE tb_video(
     videoStatus VARCHAR(10) NOT NULL CHECK (videoStatus IN ('READY', 'PROCESSING','FAIL')),
     videoDuration INT ,
     lastStreaming DATE,
+    videoDate DATE,
     isVideoAvailable BOOLEAN NOT NULL,
     idAdmin BINARY(16)
 );

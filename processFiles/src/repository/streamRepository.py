@@ -27,17 +27,17 @@ class StreamRepository:
         self.Db.createConnection()
 
         sql = """
-                UPDATE tb_video SET videoStatus = %s WHERE videoId = '%s';
+                UPDATE tb_video SET videoStatus = %s WHERE videoId = %s;
               """
         try:
-            self.Db.myCursor.execute(sql, (VideoStatus.FAIL,idVideoBytes))
+            self.Db.myCursor.execute(sql, (VideoStatus.FAIL.value,idVideoBytes))
             self.Db.myDb.commit()
             self.Db.closeConnection()
         except Exception as e:
             print(e)
             raise ValueError(f"Erro ao atualizar status para fail do vídeo {videoId} ",e)
     
-    def getEmailVideoOwner(self, videoId:str) -> str:
+    def getOwnerEmail(self, videoId:str) -> str:
         idVideoBytes = uuid.UUID(videoId).bytes
         self.Db.createConnection()
 

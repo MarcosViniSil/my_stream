@@ -46,8 +46,9 @@ class ProcessFiles:
         except BaseException as r:
             try:
                 if videoId != None:
-                    userEmail = self.streamRepository.getEmailVideoOwner(videoId)
-                    sendEmail(videoId,"Falhou ❌",str(r.args[0]),userEmail)
+                    userEmail = self.streamRepository.getOwnerEmail(videoId)
+                    self.streamRepository.updateStatusVideoToFail(videoId);
+                    #sendEmail(videoId,"Falhou ❌",str(r.args[0]),userEmail)
             except Exception as r:
                 logging.error(f"Erro ao avisar usuário de email {userEmail} sobre falha no processamento do video de id {videoId}",r)
                 self.deleteLocalVideoAfterProcessing(fileName)
@@ -73,7 +74,7 @@ class ProcessFiles:
         
         #self.sendEmailUser(videoId)
 
-    def updateUrlVideoOnDb(self,pathStreamLocally:str,videoId:str):
+    def updateUrlVideoOnDb(self,pathStreamLocally:str,videoId:str) -> None:
         logging.info(f"atualizando url no banco de dados do video de id {videoId}")
         try:
             self.streamRepository.updateUrlVideo(pathStreamLocally,videoId)
@@ -84,7 +85,7 @@ class ProcessFiles:
         logging.info(f"url do video de id {videoId} atualizada com sucesso")
 
     def sendEmailUser(self,videoId:str) -> None:
-        userEmail = self.streamRepository.getEmailVideoOwner(videoId)
+        userEmail = self.streamRepository.getOwnerEmail(videoId)
         logging.info(f"Enviando email sobre video de id {videoId} para {userEmail}")
 
         sendEmail(videoId,"Disponível ✅","Vídeo recebido com sucesso",userEmail)
@@ -151,7 +152,7 @@ class ProcessFiles:
             return local_path
         except Exception as e:
 
-            logging.error(f"Ocoreru um erro ao baixar arquivo {fileName} vindo do bucket {bucketName}")
+            logging.error(f"Ocorreu um erro ao baixar arquivo {fileName} vindo do bucket {bucketName}")
             raise ValueError("Ocorreu um erro ao iniciar o processamento do vídeo, tente novamente")
 
     def deleteFileFromBucket(self, fileName:str, bucketName:str) -> None:
