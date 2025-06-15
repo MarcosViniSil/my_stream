@@ -13,6 +13,7 @@
         "./reciveFiles",
         "./processFiles",
         "./reciveFiles/src/controller",
-        "./processFiles"
+        "./processFiles",
+        "./reciveFiles"
     ]
 }

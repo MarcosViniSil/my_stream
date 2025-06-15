@@ -1,7 +1,7 @@
 import pika
 from pika import BlockingConnection,PlainCredentials,BlockingConnection,ConnectionParameters,BasicProperties
 from dotenv import load_dotenv
-
+import time
 from src.processing.processFile import ProcessFiles
 load_dotenv()
 import os
@@ -16,19 +16,24 @@ class ConsumeQueue:
         self.process = process
 
     def createConnection(self) -> BlockingConnection:
-        try:
-            credentials = PlainCredentials(self.user, self.password)
-            connection = BlockingConnection(ConnectionParameters(host="localhost", credentials=credentials))
-            return connection
-        except Exception as e:
-            raise ValueError(f"Erro ao criar conexão com a fila de mensagens: {e}")
+        retries = 5
+        delay = 3  
+        for attempt in range(retries):
+            try:
+                credentials = PlainCredentials(self.user, self.password)
+                connection = BlockingConnection(ConnectionParameters(host="localhost", credentials=credentials))
+                return connection
+            except Exception as e:
+                print(f"[TENTATIVA {attempt+1}/{retries}] Erro ao conectar ao RabbitMQ: {e}")
+                time.sleep(delay)
+        raise ValueError("Não foi possível conectar ao RabbitMQ após várias tentativas.")
+
 
     def consumeMessageQueue(self) -> None:
         connection = self.createConnection()
         channel = connection.channel()
 
         try:
-    
             channel.queue_declare(queue="C", durable=True)
 
             def callback(ch, method, properties, body):
@@ -43,5 +48,10 @@ class ConsumeQueue:
 
         except Exception as e:
             print(f"Erro ao consumir mensagens: {e}")
+
         finally:
-            connection.close()
+            if connection.is_open:
+                try:
+                    connection.close()
+                except Exception as e:
+                    print(f"Erro ao fechar conexão: {e}")

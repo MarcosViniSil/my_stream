@@ -37,5 +37,28 @@ class VideoRepository:
             print(e)
             raise ValueError("Erro ao inserir url do vídeo",e)
         
+    def getListVideos(self,idUser:str, offSet: int) -> dict :
+        idAdm = uuid.UUID('3f06af63-a93c-11e4-9797-00505690773f').bytes
+ 
+        self.Db.createConnection()
+
+        #TODO -> change logic to recive id_user from body
+
+        sql = """
+                SELECT tbv.videoDate,tbv.videoTitle,tbv.videoStatus FROM tb_video AS tbv 
+                INNER JOIN tb_user AS tbu ON tbu.userId = tbv.idAdmin
+                ORDER BY tbv.videoDate DESC
+                LIMIT 5 OFFSET %s;
+        """
+        try:
+            self.Db.myCursor.execute(sql, (offSet,))
+            myresult = self.Db.myCursor.fetchall()
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+            return myresult
+        except Exception as e:
+            print(e)
+            raise ValueError("Erro ao buscar videos na base de dados",e)
+        
 
         
