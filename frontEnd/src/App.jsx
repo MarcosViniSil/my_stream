@@ -18,7 +18,7 @@ function App() {
         <Route path="/" element={<VideoPlayer />} />
         <Route path="/perfil" element={<ReceiveVideo />} />
         <Route path="/historico" element={<ReceiveVideo />} />
-        <Route path="/upload" element={<Pagination />} />
+        <Route path="/upload" element={<VideoUpload />} />
         <Route path="*" element={<VideoUpload />} />
         <Route path="/meta-dados" element={ <MetaDataPage/> }/> 
       </Routes>
