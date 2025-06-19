@@ -18,8 +18,10 @@ class QueueService:
         channel    = connection.channel()
         try:
             self.createQueue(channel)
+            print("mensagem enviada: ",str(message))
+            print(f"Exchange: {self.exchange}, Routing Key: {self.routingKey}")
             channel.basic_publish(exchange = self.exchange, routing_key = self.routingKey, body = str(message),
-            properties=BasicProperties(delivery_mode=2))
+            properties=BasicProperties(delivery_mode=2),mandatory=True)
             channel.close()
         except Exception as e:
             print(e)

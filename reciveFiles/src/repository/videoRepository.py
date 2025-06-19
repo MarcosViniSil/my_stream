@@ -5,6 +5,7 @@ from src.db.connectionDb import ConnectionDB
 from uuid import UUID
 import mysql.connector
 from datetime import datetime
+from fastapi import HTTPException
 
 class VideoRepository:
     
@@ -59,6 +60,66 @@ class VideoRepository:
         except Exception as e:
             print(e)
             raise ValueError("Erro ao buscar videos na base de dados",e)
+    
+    def getStatusVideo(self,videoId:str) -> VideoStatus :
+        videoIdBytes = uuid.UUID(videoId).bytes
+
+        self.Db.createConnection()
+
+        sql = """
+               SELECT videoStatus FROM tb_video WHERE videoId = %s;
+        """
+        try:
+            self.Db.myCursor.execute(sql, (videoIdBytes,))
+            result = self.Db.myCursor.fetchone()
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+            
+            if result:
+                return result[0]
+            return None
+
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=400, detail="Erro ao obter dados do vídeo(status)")
+            
+    def deleteVideoById(self,idVideo:str) -> None :
+        idVideoBytes = uuid.UUID(idVideo).bytes
+ 
+        self.Db.createConnection()
+
+        sql = """
+                DELETE FROM tb_video WHERE videoId = %s;
+        """
+        try:
+            self.Db.myCursor.execute(sql, (idVideoBytes,))
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=400, detail="Erro ao deletar vídeo")
         
+    def isVideoBelongsToUser(self,userId:str,videoId:str) -> bool:
+        userIdBytes = uuid.UUID(userId).bytes
+        videoIdBytes = uuid.UUID(videoId).bytes
+
+        self.Db.createConnection()
+
+        sql = """
+                SELECT tu.userId FROM tb_video as tbv INNER JOIN tb_user as tu ON tbv.idAdmin = tu.userId WHERE tbv.videoId = %s;
+        """
+        try:
+            self.Db.myCursor.execute(sql, (videoIdBytes,))
+            result = self.Db.myCursor.fetchone()
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+            
+            if result and result[0] == userIdBytes:
+                return True
+            return False
+
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=400, detail="Erro ao verificar dados do vídeo")
 
         

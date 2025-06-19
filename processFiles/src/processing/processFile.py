@@ -112,8 +112,8 @@ class ProcessFiles:
         os.makedirs(f"./{nameFolder}", exist_ok=True)
         outputPath = f"./{nameFolder}/output.m3u8"
         
-        cmd = ["ffmpeg","-i",pathDownload,"-vf","scale=854:480",
-                "-c:v","libx264","-b:v","1000k","-c:a","aac",
+        cmd = ["ffmpeg","-i",pathDownload,"-vf","scale=1280:720",
+                "-c:v","libx264","-b:v","3000k","-c:a","aac",
                 "-b:a","96k","-hls_time","10","-hls_list_size","0","-f","hls",outputPath,]
         
         logging.info(f"Iniciando conversão de {pathDownload} para 480p.")
