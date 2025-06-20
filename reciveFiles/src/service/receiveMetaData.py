@@ -19,6 +19,8 @@ class ReceiveMetadaService:
         self.metaDataRepository = metaDataRepository
 
     async def processMetaData(self, idVideo: str, videoTitle: str, file: UploadFile) -> dict:
+        #TODO receive user token and validate if user can change the metadatas of video id = idVideo
+        
         if not self.isExtensionValid(file):
             raise HTTPException(status_code=415,detail="Apenas arquivos .JPEG, .JPG, .PNG ou .svg são permitidos.",)
 

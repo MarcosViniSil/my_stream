@@ -1,6 +1,6 @@
-import { React, useCallback, useState } from "react";
+import { React, useCallback, useState,useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { UploadMetaDatas } from '../../service/metadataService.js'
+import { UploadMetaDatas, getVideoMetadatas } from '../../service/metadataService.js'
 import { useDropzone } from "react-dropzone";
 import { Toaster, toast } from 'sonner';
 import { BsUpload } from "react-icons/bs";
@@ -16,7 +16,34 @@ function MetaData() {
 
     const navigate = useNavigate();
     const location = useLocation();
-    
+
+    useEffect(() => {
+        const fetchMetaData = async () => {
+            const videoId = getVideoId();
+            if (!videoId) return;
+
+            try {
+                const metaData = await getVideoMetadatas(videoId);
+                if (!metaData) {
+                    return;
+                }
+
+                setTitle(metaData['title']);
+                setCountTitle(metaData['title'].length);
+
+                if (metaData['thumbnailUrl']) {
+                    setPreviewUrl(metaData['thumbnailUrl']);
+                }
+
+            } catch (error) {
+                console.error("Erro ao carregar metadados:", error);
+                toast.error("Falha ao carregar os metadados do vídeo.");
+            }
+        };
+
+        fetchMetaData();
+    }, []);
+
     const sendSuccess = (toastId) => {
         toast.success("Imagem enviada com sucesso!", {
             style: {
@@ -101,16 +128,16 @@ function MetaData() {
         if (!id) {
             sendError("Ocoreru um erro ao localizar vídeo associado aos metadados, tente novamente")
             return false;
-        }else if (!file) {
+        } else if (!file) {
             sendError("Arquivo não foi selecionado")
             return false;
-        }else if (!title || String(title).replace(/\s+/g, "").length == 0) {
+        } else if (!title || String(title).replace(/\s+/g, "").length == 0) {
             sendError("Título de vídeo vazio")
             return false;
         } else if (String(title).replace(/\s+/g, "").length > 100) {
             sendError("O tamanho máximo de título é 100 caracteres")
             return false;
-        } 
+        }
 
         return true;
     }
@@ -145,7 +172,7 @@ function MetaData() {
                             <h3>Adicione um título para o vídeo</h3>
                         </div>
                         <div className="wrapInputTitle">
-                            <input onChange={handleChange} id="inputTitle" name="inputTitle" placeholder="Título do vídeo" maxLength={100} />
+                            <input value={title} onChange={handleChange} id="inputTitle" name="inputTitle" placeholder="Título do vídeo" maxLength={100} />
                             <p className="countCaractersTitle">{countTitle}/100</p>
                         </div>
                     </div>
@@ -153,7 +180,7 @@ function MetaData() {
                 <div className="wrapButtonSendMetaDatas">
                     <button className="buttonSendMetaDatas" type="button" onClick={handleUpload}>Enviar metadados <BsSend /></button>
                 </div>
-                
+
                 <p className="detailsImage">*A imagem que aparece é apenas uma pré visualização</p>
             </div>
 
