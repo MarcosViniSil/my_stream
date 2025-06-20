@@ -52,4 +52,38 @@ class MetaDataRepository:
         except Exception as e:
             raise ValueError("Erro ao verificar UUID",e)
         
-        
+    def getMetadatasByVideoId(self, uuidVideo: str) -> dict:
+        try:
+            videoIdBytes = uuid.UUID(uuidVideo).bytes
+            self.Db.createConnection()
+            sql = """
+                SELECT thumbnailUrl,videoTitle FROM tb_video WHERE videoId = %s
+              """
+            self.Db.myCursor.execute(sql, (videoIdBytes,))
+            result = self.Db.myCursor.fetchone()
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+
+            if result:
+                thumbnailUrl = ""
+                title = ""
+                if result[0] is None:
+                    thumbnailUrl = ""
+                else:
+                    thumbnailUrl = str(result[0])
+                
+                if result[1] is None:
+                    title = ""
+                else:
+                    title = str(result[1])
+                
+                data = {
+                    "thumbnailUrl": thumbnailUrl,
+                    "title": title,
+                }
+                return data
+            else:
+                return None
+        except Exception as e:
+            print(e)
+            raise ValueError("Erro ao buscar metadados do vídeo")

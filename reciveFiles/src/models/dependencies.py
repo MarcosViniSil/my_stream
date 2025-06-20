@@ -6,7 +6,7 @@ from src.service.bucket import Bucket
 from src.service.receiveMetaData import ReceiveMetadaService
 from src.service.receiveVideo import ReciveVideo
 from src.service.userVideosService import UserVideosService
-
+from src.service.userMetadatasService import UserMetaDatasService
 
 db = ConnectionDB()
 video_repository = VideoRepository(db)
@@ -14,7 +14,9 @@ video_repository = VideoRepository(db)
 bucket = Bucket()
 queueService = QueueService()
 userVideosRepository = UserVideosService(video_repository,bucket)
+
 metadataRepository = MetaDataRepository(db)
+userMetadatas = UserMetaDatasService(metadataRepository)
 recive_video = ReciveVideo(bucket, video_repository,queueService)
 receiveMetadata = ReceiveMetadaService(bucket,metadataRepository)
 
@@ -26,3 +28,6 @@ def getReceiveMetaData():
 
 def getUserVideosRepository():
     return userVideosRepository
+
+def getUserMetadatas():
+    return userMetadatas
