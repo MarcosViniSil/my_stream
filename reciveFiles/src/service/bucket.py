@@ -33,6 +33,12 @@ class Bucket:
         client = self.createConnection()
         self.removeFileFromBucket(client, self.BUCKET_NAME, fileCode)
 
+    def deleteFolderOnBucket(self,folderName:str) -> None:
+        if not folderName:
+            raise ValueError("Pasta não informada")
+        client = self.createConnection()
+        self.removeFolderFromBucket(client,self.BUCKET_NAME,folderName)
+
     def createConnection(self):
         try:
             client = boto3.client(
@@ -72,3 +78,15 @@ class Bucket:
             client.delete_object(Bucket=bucket_name, Key=destination_file)
         except ClientError as e:
             raise ValueError("Erro ao remover o arquivo: " + str(e))
+    
+    def removeFolderFromBucket(self, client, bucket_name: str, prefix: str):
+        try:
+            response = client.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
+            if 'Contents' in response:
+                objects_to_delete = [{'Key': obj['Key']} for obj in response['Contents']]
+                client.delete_objects(
+                    Bucket=bucket_name,
+                    Delete={'Objects': objects_to_delete}
+                )
+        except ClientError as e:
+            raise ValueError("Erro ao remover a pasta: " + str(e))

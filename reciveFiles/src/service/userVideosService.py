@@ -3,11 +3,13 @@ from fastapi import HTTPException
 from src.repository.videoRepository import VideoRepository
 import datetime
 from src.enum.statusVideoEnum import VideoStatus
+from src.service.bucket import Bucket
 
 class UserVideosService:
 
-    def __init__(self,videoRepository:VideoRepository):
+    def __init__(self,videoRepository:VideoRepository,bucket: Bucket):
         self.videoRepository = videoRepository
+        self.bucket = bucket
 
     def getVideosList(self,tokenUser:str, offSet: int) -> dict:
         if offSet < 0:
@@ -21,9 +23,11 @@ class UserVideosService:
     def convertDictToArray(self,data:dict) -> dict:
         result = []
         for row in data:
-            date, title, status = row
+            videoId,date, title, status = row
+            videoIdString = str(uuid.UUID(bytes=videoId))
             dateFormated = datetime.datetime.strptime(str(date), '%Y-%m-%d').strftime('%d/%m/%Y')
             result.append({
+                "videoId":videoIdString,
                 "date": str(dateFormated),                
                 "title": title if title else "",  
                 "status": status
@@ -35,14 +39,34 @@ class UserVideosService:
         #TODO create logic to retrive userId by Token
         userId = '3f06af63-a93c-11e4-9797-00505690773f'
         
-        isVideoBelongsToUser = self.videoRepository.isVideoBelongsToUser(userId,videoId)
-        if not isVideoBelongsToUser:
-            raise HTTPException(status_code=403,detail="O vídeo solicitado não pertence ao usuário que solicitou")
+        videoDatas = ""
+        try:
+            videoDatas = self.videoRepository.getDatasToDeleteVideo(videoId)
+        except Exception as e:
+            raise HTTPException(status_code=400,detail="Ocorreu um erro ao buscar os dados do vídeo para exclusão")
         
-        statusVideo = self.videoRepository.getStatusVideo(videoId)
+        if videoDatas is None:
+            raise HTTPException(status_code=400,detail="Não foi possível buscar os dados do vídeo solicitado para exclusão")
+        
+        if not self.isVideoBelongsToUser(userId,videoDatas["userId"]):
+            raise HTTPException(status_code=403,detail="O vídeo não pertence ao usuário")
+
+        statusVideo = videoDatas["videoStatus"]
         if statusVideo == VideoStatus.PROCESSING.value:
             raise HTTPException(status_code=400,detail="O vídeo solicitado ainda está em processamento, aguarde ser concluído para exclusão")
-        
-        self.videoRepository.deleteVideoById(videoId)
+
+        try:
+            self.videoRepository.changeVideoToDeleted(videoId)
+        except Exception as e:
+             raise HTTPException(status_code=400,detail="Ocorreu um erro ao atualizar a base de dados, tente novamente")
 
         return {"message": "Vídeo deletado com sucesso"}
+
+    def isVideoBelongsToUser(self,userIdRequest:str,userIdDB:str) -> bool:
+        userIdBytes = uuid.UUID(userIdRequest).bytes
+        if userIdBytes != userIdDB:
+            return False
+
+        return True
+
+    

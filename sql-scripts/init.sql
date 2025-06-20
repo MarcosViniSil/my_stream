@@ -34,6 +34,7 @@ CREATE TABLE tb_video(
     videoDuration INT ,
     lastStreaming DATE,
     videoDate DATE,
+    isDeleted BOOLEAN,
     isVideoAvailable BOOLEAN NOT NULL,
     idAdmin BINARY(16)
 );

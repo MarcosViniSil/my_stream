@@ -13,7 +13,7 @@ video_repository = VideoRepository(db)
 
 bucket = Bucket()
 queueService = QueueService()
-userVideosRepository = UserVideosService(video_repository)
+userVideosRepository = UserVideosService(video_repository,bucket)
 metadataRepository = MetaDataRepository(db)
 recive_video = ReciveVideo(bucket, video_repository,queueService)
 receiveMetadata = ReceiveMetadaService(bucket,metadataRepository)
