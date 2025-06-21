@@ -20,7 +20,6 @@
   top: 0;
   left: 0;
   width: 100%;
-  margin-left: 220px;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.212);
   z-index: 99;
@@ -45,7 +44,11 @@
     flex-direction: row;
     color: white;
     gap: 10px;
-    padding-left: 30px;
+    padding-left: 20px;
+    width: 188px;
+    background-color: #141414;
+    border-radius: 5px;
+
 
 }
 

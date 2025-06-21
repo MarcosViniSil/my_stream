@@ -7,6 +7,7 @@ import ReceiveVideo from './components/recieveVideo/ReceiveVideo'
 import VideoPlayer from './components/playVideo/playVideo'
 import MetaData from './components/metaDatasVideo/metaData'
 import Pagination from './components/pagination/pagination'
+import ManagerVideos from '../src/pages/managerVideos/managerVideos'
 
 import './App.css';
 
@@ -18,7 +19,8 @@ function App() {
         <Route path="/" element={<VideoPlayer />} />
         <Route path="/perfil" element={<ReceiveVideo />} />
         <Route path="/historico" element={<ReceiveVideo />} />
-        <Route path="/upload" element={<VideoUpload />} />
+        <Route path="/uploads" element={<ManagerVideos />} />
+         <Route path="/upload" element={<VideoUpload />} />
         <Route path="*" element={<VideoUpload />} />
         <Route path="/meta-dados" element={ <MetaDataPage/> }/> 
       </Routes>
