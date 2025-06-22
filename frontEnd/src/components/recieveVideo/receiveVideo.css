@@ -5,6 +5,7 @@
     align-items: center;
     justify-content: center;
     flex-direction: column;
+   
 }
 
 .wrapReceiveVideo {
@@ -16,6 +17,7 @@
     align-items: center;
     justify-content: center;
     flex-direction: column;
+    
 
 }
 
@@ -39,6 +41,7 @@
     margin-bottom: 15px;
 }
 .wrapButtonTextVideo{
+    font-size: large;
     color: white;
 }
 .buttonSendVideo {

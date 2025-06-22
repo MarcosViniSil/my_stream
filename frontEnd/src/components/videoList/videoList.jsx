@@ -15,7 +15,7 @@ import {
   IconButton,
 } from '@chakra-ui/react';
 import { FiMoreVertical, FiEye, FiEdit2, FiTrash2 } from 'react-icons/fi';
-import './videoList.css'
+import styles from './videoList.module.css'
 
 export default function VideoList({ videos, onDelete, onEdit, onView, selected, onSelect }) {
   const getStatusStyles = (status) => {
@@ -48,6 +48,7 @@ export default function VideoList({ videos, onDelete, onEdit, onView, selected, 
   };
 
   return (
+    <div className={styles.container}>
     <Box overflowX="auto" borderWidth="0px" borderRadius="md" bg="#222" color="white" p={4}>
      <Table variant="simple" size="sm" sx={{ 'td, th': {borderBottomColor: '#222',},}}>
         <Thead>
@@ -132,5 +133,6 @@ export default function VideoList({ videos, onDelete, onEdit, onView, selected, 
         </Tbody>
       </Table>
     </Box>
+    </div>
   );
 }

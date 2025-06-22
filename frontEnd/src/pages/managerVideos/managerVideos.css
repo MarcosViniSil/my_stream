@@ -2,3 +2,29 @@
   margin-top: 0px;
   text-align: center;
 }
+.wrapButtonSendNewVideo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+#buttonSendNewVideo {
+    background-color: #44ad98;
+    color: white;
+    padding: 12px;
+    border-radius: 10px;
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    border: none;
+    cursor: pointer;
+    align-self: flex-start;
+}
+
+#buttonSendNewVideo:hover{
+  position: relative;
+  top: -2px;
+  transition: ease-in;
+}

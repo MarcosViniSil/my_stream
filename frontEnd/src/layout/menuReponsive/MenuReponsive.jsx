@@ -35,7 +35,7 @@ function MenuResponsive({ isOpen, setIsOpen }) {
     { to: "/", label: "Início", icon: <FaHome /> },
     { to: "/perfil", label: "Perfil", icon: <CgProfile /> },
     { to: "/historico", label: "Histórico", icon: <FaHistory /> },
-    { to: "/upload", label: "Upload", icon: <FaCloudUploadAlt /> },
+    { to: "/uploads", label: "Uploads", icon: <FaCloudUploadAlt /> },
   ];
 
   return (
@@ -52,7 +52,7 @@ function MenuResponsive({ isOpen, setIsOpen }) {
         <button className={styles.menuIcon} onClick={toggleMenu}>
           <GiHamburgerMenu />
         </button>
-        <p>My Stream</p>
+        
       </div>
 
 
@@ -62,7 +62,7 @@ function MenuResponsive({ isOpen, setIsOpen }) {
             <li key={to} className={styles.menuItem}>
               <Link
                 to={to}
-                className={`${styles.menuLink} ${(to === '/upload' && ['/upload', '/meta-dados'].includes(location.pathname)) ||
+                className={`${styles.menuLink} ${(to === '/uploads' && ['/upload', '/meta-dados','/uploads'].includes(location.pathname)) ||
                     location.pathname === to
                     ? styles.active
                     : styles.desactivate

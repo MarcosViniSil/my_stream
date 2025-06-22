@@ -2,9 +2,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   padding: 0;
   margin-top: 20px;
+  flex-wrap: wrap;
 }
 
 .pagination li {
@@ -22,6 +23,7 @@
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s;
+  white-space: nowrap; 
 }
 
 .page-item a:hover {
@@ -37,4 +39,26 @@
 .active a {
   background-color: #419181; 
   color: white;
+}
+
+#titlePagination {
+  color: white;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+@media (max-width: 600px) {
+  .page-item a {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+  }
+
+  .pagination {
+    gap: 4px;
+    margin-top: 10px;
+  }
+
+  #titlePagination {
+    font-size: 1rem;
+  }
 }

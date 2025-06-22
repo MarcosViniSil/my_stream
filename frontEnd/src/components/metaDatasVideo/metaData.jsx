@@ -71,7 +71,6 @@ function MetaData() {
     const getVideoId = () => {
         const search = location.search;
         const id = new URLSearchParams(search).get("videoId");
-        console.log(id)
         return id;
     }
 
@@ -116,7 +115,7 @@ function MetaData() {
 
             await timeout(1000);
 
-            navigate("/upload");
+            navigate("/uploads");
 
         } catch (err) {
             console.log(err)

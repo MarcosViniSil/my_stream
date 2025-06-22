@@ -19,6 +19,12 @@
 .wrapTitleReceiveThumbnail {
     width: 50%;
 }
+.wrapTitleReceiveThumbnail > h3 {
+    font-size: large;
+}
+.wrapTitleReciveTitle > h3{
+    font-size: large;
+}
 
 .wrapReceiveThumbnail {
     height: 30vh;

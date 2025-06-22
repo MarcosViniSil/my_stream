@@ -69,4 +69,12 @@ class UserVideosService:
 
         return True
 
-    
+    def getTotalVideosByUser(self,tokenUser:str) -> dict:
+        #TODO get id user by token
+        try:
+            videosQuantity = self.videoRepository.getNumberOfVideosByUser(tokenUser)
+            if videosQuantity:
+                return {"videosQuantity":videosQuantity}
+            raise HTTPException(status_code=400,detail="Ocorreu um erro ao verificar a quantidade de vídeos do usuário")
+        except Exception as e:
+            raise HTTPException(status_code=400,detail="Ocorreu um erro ao verificar a quantidade de vídeos do usuário")

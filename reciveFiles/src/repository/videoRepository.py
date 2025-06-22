@@ -118,5 +118,21 @@ class VideoRepository:
             print(e)
             raise ValueError("Erro ao deletar vídeo, tente novamente")
         
+    def getNumberOfVideosByUser(self,idUser:str) -> int:
+        idAdm = uuid.UUID('3f06af63-a93c-11e4-9797-00505690773f').bytes
+ 
+        self.Db.createConnection()
 
+        sql = """
+                SELECT COUNT(videoId) AS countVideo FROM tb_video WHERE idAdmin = %s AND isDeleted = FALSE;
+        """
+        try:
+            self.Db.myCursor.execute(sql, (idAdm,))
+            myresult = self.Db.myCursor.fetchone()
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+            return myresult[0]
+        except Exception as e:
+            print(e)
+            raise ValueError("Erro ao buscar quantidade de vídeos do usuário",e)
         

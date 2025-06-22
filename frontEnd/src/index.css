@@ -3,10 +3,11 @@
 * {
   margin: 0;
   padding: 0;
+  font-family: "Montserrat", sans-serif;
 }
 
 HTML {
-  font-family: "Montserrat", sans-serif;
+  
   font-optical-sizing: auto;
   background-color: #141414;
 }
@@ -14,10 +15,14 @@ HTML {
 .main-content {
   margin-left: 250px;
   padding: 1rem;
+  
 }
 
 @media (max-width: 768px) {
   .main-content {
     margin-left: 0;
   }
+}
+#root{
+  background-color: #141414;
 }
