@@ -23,3 +23,7 @@ async def get_metadatas_video(videoId : str,userMetadatasService: UserMetaDatasS
 @routerUserVideos.post("/user/videos/quantity")
 async def get_metadatas_video(tokenUser = Form(...),userVideosService: UserVideosService = Depends(getUserVideosRepository)):
     return userVideosService.getTotalVideosByUser(tokenUser)
+
+@routerUserVideos.get("/user/video/status/{videoId}")
+async def get_metadatas_video(videoId : str,userVideosService: UserVideosService = Depends(getUserVideosRepository)):
+    return userVideosService.getVideoStatus(videoId)

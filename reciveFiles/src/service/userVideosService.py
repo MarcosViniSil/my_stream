@@ -78,3 +78,13 @@ class UserVideosService:
             raise HTTPException(status_code=400,detail="Ocorreu um erro ao verificar a quantidade de vídeos do usuário")
         except Exception as e:
             raise HTTPException(status_code=400,detail="Ocorreu um erro ao verificar a quantidade de vídeos do usuário")
+
+    def getVideoStatus(self,videoId:str) -> dict:
+        if not videoId:
+            raise HTTPException(status_code=400,detail="Id do vídeo não foi informado")
+        
+        status = self.videoRepository.getVideoStatusById(videoId)
+        if status:
+            return {"status":status[0]}
+        else:
+            raise HTTPException(status_code=404,detail="status do vídeo não foi encontrado")

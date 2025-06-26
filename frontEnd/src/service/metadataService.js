@@ -38,3 +38,21 @@ export async function getVideoMetadatas(idVideo) {
     throw new Error(error.message || "Erro ao enviar o vídeo");
   }
 }
+
+export async function getStatusVideo(videoId) {
+
+  try {
+    const response = await fetch(`http://localhost:8000/user/video/status/${videoId}`, {
+      method: "GET",
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData?.detail || "Erro ao enviar o vídeo"); 
+    }
+
+    return response.json();
+  } catch (error) {
+    throw new Error(error.message || "Erro ao enviar o vídeo");
+  }
+}

@@ -88,3 +88,5 @@ export async function deleteVideo(videoId) {
     throw new Error(error.message || "Erro ao enviar o vídeo");
   }
 }
+
+

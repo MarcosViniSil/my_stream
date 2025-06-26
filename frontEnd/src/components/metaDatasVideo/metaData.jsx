@@ -1,6 +1,6 @@
-import { React, useCallback, useState,useEffect } from "react";
+import { React, useCallback, useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { UploadMetaDatas, getVideoMetadatas } from '../../service/metadataService.js'
+import { UploadMetaDatas, getVideoMetadatas, getStatusVideo } from '../../service/metadataService.js'
 import { useDropzone } from "react-dropzone";
 import { Toaster, toast } from 'sonner';
 import { BsUpload } from "react-icons/bs";
@@ -17,11 +17,41 @@ function MetaData() {
     const navigate = useNavigate();
     const location = useLocation();
 
+    const videoStatusIsValid = async (videoId) => {
+        try {
+            if (!videoId) {
+                return false
+            }
+            const status = await getStatusVideo(videoId);
+            if (!status) {
+                return false;
+            }
+
+            if (status['status'] == 'FAIL') {
+                return false
+            }
+
+            return true
+        } catch (error) {
+            console.error("Erro ao carregar metadados:", error);
+            toast.error("Falha ao carregar os metadados do vídeo.");
+            return false
+        }
+    }
+
+    const isVideoCanBeManager = async (videoId) => {
+        const status = await videoStatusIsValid(videoId);
+        return status
+    };
     useEffect(() => {
         const fetchMetaData = async () => {
+
             const videoId = getVideoId();
             if (!videoId) return;
-
+            
+            if (!await isVideoCanBeManager(videoId)) {
+                navigate("/uploads");
+            }
             try {
                 const metaData = await getVideoMetadatas(videoId);
                 if (!metaData) {

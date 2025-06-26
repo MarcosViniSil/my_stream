@@ -135,4 +135,21 @@ class VideoRepository:
         except Exception as e:
             print(e)
             raise ValueError("Erro ao buscar quantidade de vídeos do usuário",e)
-        
+    
+    def getVideoStatusById(self, videoId:str) -> VideoStatus:
+        idVideoBytes = uuid.UUID(videoId).bytes
+ 
+        self.Db.createConnection()
+
+        sql = """
+                SELECT videoStatus FROM tb_video WHERE videoId = %s;
+        """
+        try:
+            self.Db.myCursor.execute(sql, (idVideoBytes,))
+            result = self.Db.myCursor.fetchone()
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+            return result
+        except Exception as e:
+            print(e)
+            raise ValueError("Erro ao buscar status do vídeo solicitado")
