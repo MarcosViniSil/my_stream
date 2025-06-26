@@ -8,6 +8,7 @@ import VideoPlayer from './components/playVideo/playVideo'
 import MetaData from './components/metaDatasVideo/metaData'
 import Pagination from './components/pagination/pagination'
 import ManagerVideos from '../src/pages/managerVideos/managerVideos'
+import Home from '../src/pages/home/home'
 
 import './App.css';
 
@@ -16,7 +17,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<VideoPlayer />} />
+        <Route path="/" element={<Home />} />
         <Route path="/perfil" element={<ReceiveVideo />} />
         <Route path="/historico" element={<ReceiveVideo />} />
         <Route path="/uploads" element={<ManagerVideos />} />

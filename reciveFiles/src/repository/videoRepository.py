@@ -6,7 +6,6 @@ from uuid import UUID
 import mysql.connector
 from datetime import datetime
 
-
 class VideoRepository:
     
     def __init__(self, db: ConnectionDB):
@@ -153,3 +152,30 @@ class VideoRepository:
         except Exception as e:
             print(e)
             raise ValueError("Erro ao buscar status do vídeo solicitado")
+        
+    def getVideos(self,offset:int) -> dict:
+        self.Db.createConnection()
+
+        sql = """
+               SELECT tbv.videoDate,tu.userName,tbv.videoTitle,tbv.thumbnailUrl,tbv.videoDuration FROM tb_video AS tbv 
+               INNER JOIN tb_user AS tu ON tu.userId = tbv.idAdmin
+               WHERE tbv.isDeleted = FALSE AND tbv.isVideoAvailable = TRUE 
+               AND tbv.videoStatus = 'READY' AND tbv.videoTitle <> '' AND tbv.thumbnailUrl <> ''
+               AND tu.userName <> '' AND tbv.videoDuration > 0
+               ORDER BY tbv.videoDate DESC, tbv.videoId DESC
+               LIMIT 10 OFFSET %s;
+
+              """
+        try:
+            self.Db.myCursor.execute(sql, (offset,))
+            rows = self.Db.myCursor.fetchall()
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+            if len(rows) == 0:
+                return None
+            
+            return rows
+        
+        except Exception as e:
+            print(e)
+            raise ValueError("Erro ao buscar vídeos da página inicial")

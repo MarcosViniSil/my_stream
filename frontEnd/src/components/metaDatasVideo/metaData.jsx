@@ -39,17 +39,13 @@ function MetaData() {
         }
     }
 
-    const isVideoCanBeManager = async (videoId) => {
-        const status = await videoStatusIsValid(videoId);
-        return status
-    };
     useEffect(() => {
         const fetchMetaData = async () => {
 
             const videoId = getVideoId();
             if (!videoId) return;
-            
-            if (!await isVideoCanBeManager(videoId)) {
+
+            if (!await videoStatusIsValid(videoId)) {
                 navigate("/uploads");
             }
             try {

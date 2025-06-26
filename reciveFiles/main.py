@@ -4,20 +4,20 @@ from src.controller.listUserVideos import routerUserVideos
 from src.controller.receiveMetadata import routerM
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
+import re
 
 app = FastAPI()
 
-origins = [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://localhost:5175",
-    "http://localhost:5172",
-    #"http://mydomain",
-]
+# origins = [
+#     "http://localhost:5173",
+#     "http://localhost:5174",
+#     "http://localhost:5177",
+#     #"http://mydomain",
+# ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origin_regex=r"http://localhost:\d+",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

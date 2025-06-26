@@ -27,3 +27,7 @@ async def get_metadatas_video(tokenUser = Form(...),userVideosService: UserVideo
 @routerUserVideos.get("/user/video/status/{videoId}")
 async def get_metadatas_video(videoId : str,userVideosService: UserVideosService = Depends(getUserVideosRepository)):
     return userVideosService.getVideoStatus(videoId)
+
+@routerUserVideos.get("/videos/{offset}")
+async def get_metadatas_video(offset : int,userVideosService: UserVideosService = Depends(getUserVideosRepository)):
+    return userVideosService.getVideosInitialPage(offset=offset)

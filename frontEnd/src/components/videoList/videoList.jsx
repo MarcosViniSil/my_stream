@@ -45,8 +45,6 @@ export default function VideoList({ videos, onDelete, onEdit, onView, selected, 
       return true
     }
 
-    console.log("não")
-
     return false
   }
 

@@ -3,6 +3,7 @@ from fastapi import HTTPException
 from src.repository.videoRepository import VideoRepository
 import datetime
 from src.enum.statusVideoEnum import VideoStatus
+from src.models.videoPageInitialReponse import VideoResponse
 from src.service.bucket import Bucket
 
 class UserVideosService:
@@ -88,3 +89,30 @@ class UserVideosService:
             return {"status":status[0]}
         else:
             raise HTTPException(status_code=404,detail="status do vídeo não foi encontrado")
+        
+    def getVideosInitialPage(self,offset:int) -> VideoResponse:
+        if offset < 0:
+            raise HTTPException(status_code=400,detail="Offset inválido")
+        
+        videosPerPage = 10
+        offset *= videosPerPage
+        try:
+            rows = self.videoRepository.getVideos(offset)
+            if rows is None:
+                return []
+            
+            reponse = [VideoResponse(
+                    videoDate=self.convertDate(str(row[0])),
+                    userName=row[1],
+                    videoTitle=row[2],
+                    thumbnailUrl=row[3],
+                    videoDuration = row[4],
+                ) for row in rows]
+            return reponse
+        
+        except Exception as e:
+            raise HTTPException(status_code=400,detail="Ocorreu um erro ao buscar os vídeos da página inicial")
+        
+    def convertDate(self,date:str) -> str:
+        dateFormated = datetime.datetime.strptime(date, '%Y-%m-%d').strftime('%d/%m/%Y')
+        return dateFormated

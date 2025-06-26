@@ -32,12 +32,12 @@ export async function getQuantityVideos() {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData?.detail || "Erro ao enviar o vídeo"); 
+      throw new Error(errorData?.detail || "Erro ao obter quantidade de vídeos"); 
     }
 
     return response.json();
   } catch (error) {
-    throw new Error(error.message || "Erro ao enviar o vídeo");
+    throw new Error(error.message || "Erro ao obter quantidade de vídeos");
   }
 }
 
@@ -56,12 +56,12 @@ export async function getVideosUser(offset) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData?.detail || "Erro ao enviar o vídeo"); 
+      throw new Error(errorData?.detail || "Erro ao obter detalhes de vídeos do usuário"); 
     }
 
     return response.json();
   } catch (error) {
-    throw new Error(error.message || "Erro ao enviar o vídeo");
+    throw new Error(error.message || "Erro ao obter detalhes de vídeos do usuário");
   }
 }
 
@@ -80,12 +80,30 @@ export async function deleteVideo(videoId) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData?.detail || "Erro ao enviar o vídeo"); 
+      throw new Error(errorData?.detail || "Erro ao deletar vídeo"); 
     }
 
     return response.json();
   } catch (error) {
-    throw new Error(error.message || "Erro ao enviar o vídeo");
+    throw new Error(error.message || "Erro ao deletar vídeo");
+  }
+}
+
+export async function getVideosInitialPage(offset) {
+  console.log("offset ", offset)
+  try {
+    const response = await fetch(`http://localhost:8000/videos/${offset}`, {
+      method: "GET"
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData?.detail || "Erro ao obter vídeos da página inicial"); 
+    }
+
+    return response.json();
+  } catch (error) {
+    throw new Error(error.message || "Erro ao obter vídeos da página inicial");
   }
 }
 
