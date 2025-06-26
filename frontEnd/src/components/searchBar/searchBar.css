@@ -1,9 +1,9 @@
 .buttonSendSearch{
-    color: white;
+    color: #419181;
     background-color: #419181;
 }
 
 .buttonSendSearch:hover{
-    background-color: #419181bb;
+    background-color: #5bb6a4bb;
 }
 
