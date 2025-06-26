@@ -18,10 +18,10 @@ export default function VideoPagination() {
   const [offSet, setOffset] = useState(0)
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
-  const cancelRef = useRef();
   const [videoToDelete, setVideoToDelete] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
 
+  const cancelRef = useRef();
   const navigate = useNavigate();
 
   const fetchQuantityVideos = async () => {
@@ -47,6 +47,7 @@ export default function VideoPagination() {
       setLoading(false);
     }
   };
+
   useEffect(() => {
 
     fetchQuantityVideos();
@@ -123,12 +124,30 @@ export default function VideoPagination() {
     return found
   }
 
+  const isVideoAvailableToView = (videoId) =>{
+    let video = videos.filter(e => e.videoId == videoId)
+    if (video[0].status == 'FAIL' || video[0].status == 'PROCESSING'){
+      return false
+    }
+    return true
+  }
+
+  const isVideoAvailableToEdit = (videoId) =>{
+    let video = videos.filter(e => e.videoId == videoId)
+    if (video[0].status == 'FAIL'){
+      return false
+    }
+    return true
+  }
   const handleView = (id) => {
+    if(!isVideoAvailableToView(id)){
+      return;
+    }
     //TODO redirect user to page video visualization 
   }
 
   const handleEdit = (id) => {
-    if (!id) {
+    if (!id || !isVideoAvailableToEdit(id)) {
       return
     }
     navigate(`/meta-dados?videoId=${id}`);
