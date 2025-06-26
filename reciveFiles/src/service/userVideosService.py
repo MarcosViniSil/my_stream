@@ -100,19 +100,44 @@ class UserVideosService:
             rows = self.videoRepository.getVideos(offset)
             if rows is None:
                 return []
-            
             reponse = [VideoResponse(
                     videoDate=self.convertDate(str(row[0])),
                     userName=row[1],
                     videoTitle=row[2],
                     thumbnailUrl=row[3],
                     videoDuration = row[4],
+                    videoId = self.convertUUID(row[5])
                 ) for row in rows]
             return reponse
         
         except Exception as e:
-            raise HTTPException(status_code=400,detail="Ocorreu um erro ao buscar os vídeos da página inicial")
+            raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao buscar os vídeos da página inicial${e}")
+        
+    def getVideosBasedOnUserQuery(self,param:str) -> VideoResponse:
+            if not param or len(param) == 0 or len(param) > 100:
+                raise HTTPException(status_code=400,detail="parametro inválido")
+
+            try:
+                rows = self.videoRepository.getVideosBasedString(param,)
+                if rows is None:
+                    return []
+                reponse = [VideoResponse(
+                        videoDate=self.convertDate(str(row[0])),
+                        userName=row[1],
+                        videoTitle=row[2],
+                        thumbnailUrl=row[3],
+                        videoDuration = row[4],
+                        videoId = self.convertUUID(row[5])
+                    ) for row in rows]
+                return reponse
+
+            except Exception as e:
+                raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao buscar os vídeos da pesquisa")
         
     def convertDate(self,date:str) -> str:
         dateFormated = datetime.datetime.strptime(date, '%Y-%m-%d').strftime('%d/%m/%Y')
         return dateFormated
+    
+    def convertUUID(self,videoId:str) -> str:
+        print(str(uuid.UUID(bytes=videoId)))
+        return str(uuid.UUID(bytes=videoId))

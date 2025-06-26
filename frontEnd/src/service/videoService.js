@@ -90,7 +90,6 @@ export async function deleteVideo(videoId) {
 }
 
 export async function getVideosInitialPage(offset) {
-  console.log("offset ", offset)
   try {
     const response = await fetch(`http://localhost:8000/videos/${offset}`, {
       method: "GET"
@@ -106,5 +105,25 @@ export async function getVideosInitialPage(offset) {
     throw new Error(error.message || "Erro ao obter vídeos da página inicial");
   }
 }
+
+export async function getVideosUserQuery(query) {
+  try {
+    const response = await fetch(`http://localhost:8000/videos/query/${query}`, {
+      method: "GET"
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData?.detail || "Erro ao obter vídeos da página inicial"); 
+    }
+
+    return response.json();
+  } catch (error) {
+    throw new Error(error.message || "Erro ao obter vídeos da página inicial");
+  }
+}
+
+
+
 
 

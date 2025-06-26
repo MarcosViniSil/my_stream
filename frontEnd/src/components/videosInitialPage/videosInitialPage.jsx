@@ -1,20 +1,28 @@
 import React, { useEffect } from 'react';
 import { getVideosInitialPage } from "../../service/videoService";
+import { useLocation, useNavigate } from "react-router-dom";
 import VideoCard from '../../components/videoCard/videoCard'
 import SearchBar from '../../components/searchBar/SearchBar'
 import './videosInitialPage.css'
 import { useState } from 'react';
+import { Spinner } from '@chakra-ui/react';
 
 export default function VideosInitialPage() {
     const [offSet, setOffSet] = useState(0)
     const [videos, setVideos] = useState([])
     const [isFetching, setIsFetching] = useState(false);
     const [hasMore, setHasMore] = useState(true);
-
+    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
+    
     const handleSearch = (searchTerm) => {
+        if(!searchTerm || searchTerm.length == 0) return 
+        console.log(videos)
         console.log("Termo pesquisado:", searchTerm);
 
-    };
+        navigate(`busca?q=${searchTerm}`);
+        
+    }
 
     useEffect(() => {
         const handleScroll = () => {
@@ -35,7 +43,6 @@ export default function VideosInitialPage() {
         const fetchMoreVideos = async () => {
             try {
                 const moreVideos = await getVideosInitialPage(offSet);
-                console.log(moreVideos)
                 if (moreVideos && moreVideos.length > 0) {
                     setVideos(prev => [...prev, ...moreVideos]);
                     setOffSet(prev => prev + 1);
@@ -59,6 +66,7 @@ export default function VideosInitialPage() {
             try {
                 const videos = await getVideosInitialPage(0);
                 setVideos(videos);
+                setLoading(false)
                 setOffSet(1);
             } catch (err) {
                 console.error("Erro ao buscar vídeos iniciais:", err);
@@ -93,15 +101,30 @@ export default function VideosInitialPage() {
 
     return (
         <>
-            <div className='search'>
-                <SearchBar onSearch={handleSearch} />
-            </div>
-            <div className="video-grid">
-                {videos.map((video, index) => (
-                    <VideoCard key={index} video={video} videoDuration={convertVideoDuration(video.videoDuration)} />
-                ))}
-            </div>
-
+            {loading ? (
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                    <Spinner
+                        thickness="4px"
+                        speed="0.65s"
+                        emptyColor="gray.200"
+                        color="#419181"
+                        size="xl"
+                    />
+                </div>
+            ) : videos.length === 0 ? (
+                <p style={{ color: 'white', textAlign: 'center' }}>Nenhum vídeo disponível.</p>
+            ) : (
+                <div>
+                    <div className='search'>
+                        <SearchBar onSearch={handleSearch} />
+                    </div>
+                    <div className="video-grid">
+                        {videos.map((video, index) => (
+                            <VideoCard key={index} video={video} videoDuration={convertVideoDuration(video.videoDuration)} />
+                        ))}
+                    </div>
+                </div>
+            )}
         </>
 
     )

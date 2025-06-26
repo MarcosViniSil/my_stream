@@ -7,3 +7,4 @@ class VideoResponse(BaseModel):
     videoTitle: str
     thumbnailUrl: str
     videoDuration: int
+    videoId:str

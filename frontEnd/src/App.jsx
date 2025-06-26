@@ -4,10 +4,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import VideoUpload from './pages/upload/videoUpload'
 import MetaDataPage from './pages/metadata/videoMetadata'
 import ReceiveVideo from './components/recieveVideo/ReceiveVideo'
-import VideoPlayer from './components/playVideo/playVideo'
-import MetaData from './components/metaDatasVideo/metaData'
-import Pagination from './components/pagination/pagination'
 import ManagerVideos from '../src/pages/managerVideos/managerVideos'
+import Search from '../src/pages/search/search'
 import Home from '../src/pages/home/home'
 
 import './App.css';
@@ -19,6 +17,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/perfil" element={<ReceiveVideo />} />
+        <Route path="/busca" element={<Search />} />
         <Route path="/historico" element={<ReceiveVideo />} />
         <Route path="/uploads" element={<ManagerVideos />} />
          <Route path="/upload" element={<VideoUpload />} />

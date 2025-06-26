@@ -157,7 +157,7 @@ class VideoRepository:
         self.Db.createConnection()
 
         sql = """
-               SELECT tbv.videoDate,tu.userName,tbv.videoTitle,tbv.thumbnailUrl,tbv.videoDuration FROM tb_video AS tbv 
+               SELECT tbv.videoDate,tu.userName,tbv.videoTitle,tbv.thumbnailUrl,tbv.videoDuration,tbv.videoId FROM tb_video AS tbv 
                INNER JOIN tb_user AS tu ON tu.userId = tbv.idAdmin
                WHERE tbv.isDeleted = FALSE AND tbv.isVideoAvailable = TRUE 
                AND tbv.videoStatus = 'READY' AND tbv.videoTitle <> '' AND tbv.thumbnailUrl <> ''
@@ -179,3 +179,30 @@ class VideoRepository:
         except Exception as e:
             print(e)
             raise ValueError("Erro ao buscar vídeos da página inicial")
+    
+    def getVideosBasedString(self, param:str) -> dict:
+        self.Db.createConnection()
+
+        sql = """
+			   SELECT tbv.videoDate,tu.userName,tbv.videoTitle,tbv.thumbnailUrl,tbv.videoDuration,tbv.videoId FROM tb_video AS tbv 
+               INNER JOIN tb_user AS tu ON tu.userId = tbv.idAdmin
+               WHERE tbv.isDeleted = FALSE AND tbv.isVideoAvailable = TRUE 
+               AND tbv.videoStatus = 'READY' AND tbv.videoTitle <> '' AND tbv.thumbnailUrl <> ''
+               AND tu.userName <> '' AND tbv.videoDuration > 0 AND tbv.videoTitle LIKE %s 
+               ORDER BY tbv.videoDate DESC, tbv.videoId DESC
+
+              """
+        param = (f"%{param}%")
+        try:
+            self.Db.myCursor.execute(sql, (param,))
+            rows = self.Db.myCursor.fetchall()
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+            if len(rows) == 0:
+                return None
+            
+            return rows
+        
+        except Exception as e:
+            print(e)
+            raise ValueError("Erro ao buscar vídeos da pesquisa feita")
