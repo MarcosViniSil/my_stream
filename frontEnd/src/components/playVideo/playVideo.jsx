@@ -183,12 +183,12 @@ function VideoPlayer() {
           </div>
 
         </div>
-                              {showUnmuteButton && (
-              <button id="buttonActivateSound" onClick={unmute}>
-                <FaVolumeXmark />
-                Clique para ativar o som
-              </button>
-            )}
+        {showUnmuteButton && (
+          <button id="buttonActivateSound" onClick={unmute}>
+            <FaVolumeXmark />
+            Clique para ativar o som
+          </button>
+        )}
       </div>
     </div>
   );
