@@ -1,0 +1,31 @@
+import React, { useState } from 'react'
+import WatchVideo from '../../components/watchVideo/watchVideo'
+import MenuResponsive from '../../layout/menuReponsive/MenuReponsive'
+import SearchBar from '../../components/searchBar/SearchBar'
+import { useNavigate } from "react-router-dom";
+import './watch.css'
+
+export default function Watch() {
+    const [isMenuOpen, setIsMenuOpen] = useState(true);
+    
+    const navigate = useNavigate();
+    
+    const handleSearch = (searchTerm) => {
+        if (!searchTerm || searchTerm.length == 0) return
+
+        navigate(`/busca?q=${searchTerm}`);
+
+    }
+    
+    return (
+        <>
+            <MenuResponsive isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />
+            <div className={`wrapWatchVideo ${isMenuOpen ? "menu-open" : ""}`}>
+                <div className='search'>
+                    <SearchBar onSearch={handleSearch} />
+                </div>
+                <WatchVideo />
+            </div>
+        </>
+    )
+}

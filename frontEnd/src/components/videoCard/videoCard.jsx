@@ -6,7 +6,7 @@ export default function VideoCard({video,videoDuration}) {
 
   return (
     <div className="video-card">
-      <a href="#">
+      <a href={`/watch?v=${video.videoId}`}>
         <div className='wrapThumbnailAndDuration'>
           <img
             src={video.thumbnailUrl}

@@ -1,0 +1,227 @@
+.videoContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.wrapVideo {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  aspect-ratio: 16 / 9;
+  background: black;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.videoPlayer {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
+
+.controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  color: white;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+
+.wrapProgress {
+  width: 100%;
+}
+
+.wrapProgress input[type="range"] {
+  width: 100%;
+  appearance: none;
+  height: 4px;
+  background: #777;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.wrapProgress input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  height: 12px;
+  width: 12px;
+  background: #419181;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.wrapControls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 6px;
+}
+
+.wrapControls button {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.timeDisplay {
+  font-size: 14px;
+  white-space: nowrap;
+  width: 80px;
+}
+
+.fullScreen {
+  cursor: pointer;
+}
+
+#progress {
+  width: 100%;
+  height: 4px;
+  appearance: none;
+  background: transparent;
+}
+
+#progress::-webkit-slider-thumb {
+  appearance: none;
+  height: 12px;
+  width: 12px;
+  background: #419181;
+  border-radius: 50%;
+  cursor: pointer;
+  margin-top: -4px;
+}
+
+.wrapTimeVideo {
+  display: flex;
+}
+
+.wrapTimeVideoCurrent {
+  width: 30px;
+}
+
+.wrapTimeVideoTotal {
+  width: 30px;
+}
+
+.separator {
+  margin-left: 7px;
+  margin-right: 7px;
+}
+
+#volume::-webkit-slider-thumb {
+  appearance: none;
+  height: 12px;
+  width: 12px;
+  background: #419181;
+  border-radius: 50%;
+  cursor: pointer;
+  margin-top: 0px;
+}
+
+/* Chrome/Edge */
+#progress::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #419181 var(--progress, 0%), #777 var(--progress, 0%));
+  height: 4px;
+  border-radius: 2px;
+}
+
+/* Firefox */
+#progress::-moz-range-track {
+  background: #777;
+  height: 4px;
+  border-radius: 2px;
+}
+
+#progress::-moz-range-progress {
+  background: #419181;
+  height: 4px;
+  border-radius: 2px;
+}
+
+#volume {
+  appearance: none;
+  height: 4px;
+  width: 100px;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* Chrome / WebKit */
+#volume::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #419181 var(--progress, 0%), #777 var(--progress, 0%));
+  height: 4px;
+  border-radius: 2px;
+}
+
+/* Firefox */
+#volume::-moz-range-track {
+  background: #777;
+  height: 4px;
+  border-radius: 2px;
+}
+
+#volume::-moz-range-progress {
+  background: #419181;
+  height: 4px;
+  border-radius: 2px;
+}
+
+#volume::-webkit-slider-thumb {
+  appearance: none;
+  height: 12px;
+  width: 12px;
+  background: #419181;
+  border-radius: 50%;
+  margin-top: -4px;
+}
+
+#volume::-moz-range-thumb {
+  height: 12px;
+  width: 12px;
+  background: #419181;
+  border-radius: 50%;
+  border: none;
+}
+
+.volumeTimeAndPlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  gap: 25px;
+}
+
+.wrapVolume {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  gap: 5px;
+  width: 120px;
+  height: 20px;
+}
+
+.volumeIcon,
+.fullScreen {
+  font-size: 24px;
+}
+
+.volumeIconMuted {
+  font-size: 20px;
+}
+
+.volumeIconMax {
+  font-size: 28px;
+}
