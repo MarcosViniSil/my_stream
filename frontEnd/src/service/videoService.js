@@ -123,6 +123,23 @@ export async function getVideosUserQuery(query) {
   }
 }
 
+export async function getDatasVideoToStream(videoId) {
+  try {
+    const response = await fetch(`http://localhost:8000/streaming/video/${videoId}`, {
+      method: "GET"
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData?.detail || "Erro ao obter vídeos da página inicial"); 
+    }
+
+    return response.json();
+  } catch (error) {
+    throw new Error(error.message || "Erro ao obter vídeos da página inicial");
+  }
+}
+
 
 
 

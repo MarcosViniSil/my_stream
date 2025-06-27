@@ -4,6 +4,7 @@ import boto3
 from dotenv import load_dotenv
 from botocore.exceptions import ClientError
 from botocore.client import Config
+from urllib.parse import urlparse
 
 load_dotenv()
 
@@ -38,7 +39,28 @@ class Bucket:
             raise ValueError("Pasta não informada")
         client = self.createConnection()
         self.removeFolderFromBucket(client,self.BUCKET_NAME,folderName)
+    
+    def generate_presigned_url(self, full_url, expiration=900):
+        parsed = urlparse(full_url)
+        path = parsed.path.lstrip('/')
+        bucket_name = path.split('/')[0]
+        object_key = '/'.join(path.split('/')[1:])
+        print(object_key)
 
+        client = self.createConnection()
+
+        try:
+            client.head_object(Bucket=bucket_name, Key=object_key)
+        except client.exceptions.NoSuchKey:
+            raise Exception("Objeto não encontrado no bucket")
+
+        url = client.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': bucket_name, 'Key': object_key},
+            ExpiresIn=expiration
+        )
+        return url
+    
     def createConnection(self):
         try:
             client = boto3.client(
@@ -90,3 +112,4 @@ class Bucket:
                 )
         except ClientError as e:
             raise ValueError("Erro ao remover a pasta: " + str(e))
+    

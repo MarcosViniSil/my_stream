@@ -35,3 +35,7 @@ async def get_metadatas_video(offset : int,userVideosService: UserVideosService 
 @routerUserVideos.get("/videos/query/{param}")
 async def get_metadatas_video(param : str,userVideosService: UserVideosService = Depends(getUserVideosRepository)):
     return userVideosService.getVideosBasedOnUserQuery(param)
+
+@routerUserVideos.get("/streaming/video/{videoId}")
+async def get_metadatas_video(videoId : str,userVideosService: UserVideosService = Depends(getUserVideosRepository)):
+    return userVideosService.getDatasVideoStreaming(videoId)

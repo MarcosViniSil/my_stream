@@ -1,5 +1,6 @@
 import uuid
 from fastapi import HTTPException
+from src.models.videoStreaming import VideoStreaming
 from src.repository.videoRepository import VideoRepository
 import datetime
 from src.enum.statusVideoEnum import VideoStatus
@@ -133,7 +134,30 @@ class UserVideosService:
 
             except Exception as e:
                 raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao buscar os vídeos da pesquisa")
+    
+    def getDatasVideoStreaming(self, videoId:str) -> VideoStreaming:
+        if not videoId or len(videoId) == 0:
+            raise HTTPException(status_code=400,detail=f"id inválido para busca")
         
+        try:
+                row = self.videoRepository.getVideoDatasToStreaming(videoId)
+                if row is None:
+                    raise HTTPException(status_code=400,detail=f"O vídeo solicitado não foi encontrado")
+                reponse = VideoStreaming(
+                        videoDate=self.convertDate(str(row[0])),
+                        userName=row[1],
+                        videoTitle=row[2],
+                        videoUrl=row[3],
+                        videoId = self.convertUUID(row[4]),
+                        likes = row[5],
+                        dislikes = row[6]
+                    ) 
+                reponse.videoUrl = self.bucket.generate_presigned_url(reponse.videoUrl)
+                return reponse
+
+        except Exception as e:
+                raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao buscar os vídeos da pesquisa {e}")
+
     def convertDate(self,date:str) -> str:
         dateFormated = datetime.datetime.strptime(date, '%Y-%m-%d').strftime('%d/%m/%Y')
         return dateFormated

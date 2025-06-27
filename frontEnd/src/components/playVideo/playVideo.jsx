@@ -7,11 +7,12 @@ import { IoIosVolumeLow } from "react-icons/io";
 import { IoIosVolumeOff } from "react-icons/io";
 import { IoIosVolumeHigh } from "react-icons/io";
 import { FaVolumeXmark } from "react-icons/fa6";
-
+import { AiFillLike } from "react-icons/ai";
+import { AiFillDislike } from "react-icons/ai";
 
 import "./playVideo.css";
 
-function VideoPlayer() {
+function VideoPlayer({ videoDatas }) {
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -20,18 +21,20 @@ function VideoPlayer() {
   const [duration, setDuration] = useState(0);
   const [showControls, setShowControls] = useState(true);
   const [showUnmuteButton, setShowUnmuteButton] = useState(true);
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
+    console.log(videoDatas)
     const video = videoRef.current;
     if (Hls.isSupported()) {
       const hls = new Hls();
-      hls.loadSource("http://localhost:9000/python-test-bucket/a2ef4a28-7a94-4156-b33c-384dc2cecce6/output.m3u8");
+      hls.loadSource(videoDatas.videoUrl);
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         setIsPlaying(true);
       });
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.src = "http://localhost:9000/python-test-bucket/a2ef4a28-7a94-4156-b33c-384dc2cecce6/output.m3u8";
+      video.src = videoDatas.videoUrl;
       video.addEventListener("loadedmetadata", () => {
         setIsPlaying(true);
       });
@@ -62,12 +65,30 @@ function VideoPlayer() {
   }, []);
 
   useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+
+      if (width <= 700 && isUserOnMobile()) {
+        setIsMobile(true)
+      } else {
+        setIsMobile(false)
+      }
+    };
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  useEffect(() => {
     let timeout;
     const wrapper = videoRef.current.parentElement;
 
     const handleMouseMove = () => {
-      if (!document.fullscreenElement) return;
-
       setShowControls(true);
       clearTimeout(timeout);
       timeout = setTimeout(() => setShowControls(false), 3000);
@@ -146,49 +167,66 @@ function VideoPlayer() {
     setShowUnmuteButton(false);
   };
 
+  const isUserOnMobile = () => {
+    let isMobile = window.navigator.userAgentData.mobile;
+    return isMobile
+  }
+
   return (
-    <div className="videoContainer">
-      <div className="wrapVideo">
-        <video muted autoPlay ref={videoRef} className="videoPlayer" />
-        <div className={`controls ${!showControls && document.fullscreenElement ? 'hideControls' : ''}`}>
+    <div className="wrapAll">
+      <div className="videoContainer">
+        <div className="wrapVideo">
+          <video muted autoPlay ref={videoRef} className="videoPlayer" />
+          <div className={`controls ${!showControls ? 'hideControls' : ''}`}>
 
-          <div className="wrapProgress">
-            <input id="progress" type="range" min="0" max="100" value={progress} onChange={handleProgressChange} style={{
-              '--progress': `${progress}%`
-            }} />
-          </div>
-
-          <div className="wrapControls">
-            <div className="volumeTimeAndPlay">
-
-              <button onClick={togglePlay}> {isPlaying ? <FaPause /> : <FaPlay />} </button>
-
-              <div className="wrapVolume">
-                <label htmlFor="volume"> {volume == 0 ? <p className="volumeIcon"><IoIosVolumeOff /></p> : volume == 1 ? <p className="volumeIcon"> <IoIosVolumeHigh /> </p> : <p className="volumeIconLow"><IoIosVolumeLow /></p>}</label>
-                <input id="volume" type="range" min="0" max="1" step="0.01" value={volume} onChange={handleVolumeChange} style={{
-                  '--progress': `${volume * 100}%`
-                }} />
-              </div>
-
-              <div className="timeDisplay">
-                {<div className="wrapTimeVideo">
-                  <span className="wrapTimeVideoCurrent">{formatTime(currentTime)}</span>
-                  <span className="separator"> / </span>
-                  <span className="wrapTimeVideoTotal">{formatTime(duration)}</span>
-                </div>}
-              </div>
-
+            <div className="wrapProgress">
+              <input id="progress" type="range" min="0" max="100" value={progress} onChange={handleProgressChange} style={{
+                '--progress': `${progress}%`
+              }} />
             </div>
-            <MdFullscreen className="fullScreen" onClick={handleFullscreen} />
-          </div>
 
+            <div className="wrapControls">
+              <div className="volumeTimeAndPlay">
+
+                <button onClick={togglePlay}> {isPlaying ? <FaPause /> : <FaPlay />} </button>
+
+                {!isMobile && (<div className="wrapVolume">
+                  <label htmlFor="volume"> {volume == 0 ? <p className="volumeIcon"><IoIosVolumeOff /></p> : volume == 1 ? <p className="volumeIcon"> <IoIosVolumeHigh /> </p> : <p className="volumeIconLow"><IoIosVolumeLow /></p>}</label>
+                  <input id="volume" type="range" min="0" max="1" step="0.01" value={volume} onChange={handleVolumeChange} style={{
+                    '--progress': `${volume * 100}%`
+                  }} />
+                </div>)}
+
+                <div className="timeDisplay">
+                  {<div className="wrapTimeVideo">
+                    <span className="wrapTimeVideoCurrent">{formatTime(currentTime)}</span>
+                    <span className="separator"> / </span>
+                    <span className="wrapTimeVideoTotal">{formatTime(duration)}</span>
+                  </div>}
+                </div>
+
+              </div>
+              <MdFullscreen className="fullScreen" onClick={handleFullscreen} />
+            </div>
+
+          </div>
+          {showUnmuteButton && (
+            <button id="buttonActivateSound" onClick={unmute}>
+              <FaVolumeXmark />
+              Clique para ativar o som
+            </button>
+          )}
         </div>
-        {showUnmuteButton && (
-          <button id="buttonActivateSound" onClick={unmute}>
-            <FaVolumeXmark />
-            Clique para ativar o som
-          </button>
-        )}
+        <div className="wrapDatasVideo">
+          <div className="wrapAuthorAndTitle">
+            <h3>{videoDatas.videoTitle}</h3>
+            <p>criado por {videoDatas.userName} em {videoDatas.videoDate}</p>
+          </div>
+          <div className="likesAndDislikes">
+            <p className="likes"> <AiFillLike /> <span className="valueLD">{videoDatas.likes}</span>  </p>
+            <p className="dislikes"> <AiFillDislike />  <span className="valueLD">{videoDatas.dislikes}</span> </p>
+          </div>
+        </div>
       </div>
     </div>
   );

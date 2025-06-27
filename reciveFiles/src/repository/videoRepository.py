@@ -37,6 +37,23 @@ class VideoRepository:
             print(e)
             raise ValueError("Erro ao inserir url do vídeo",e)
         
+    def createLikeAndDislikesVideo(self, videoId: str) -> None:
+    
+        videoId = uuid.UUID(videoId).bytes
+
+        self.Db.createConnection()
+
+        sql = """
+                INSERT INTO tb_videoReaction (videoId,videoLikes,videoDislikes) VALUES (%s,0,0);
+        """
+        try:
+            self.Db.myCursor.execute(sql, (videoId, ))
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+        except Exception as e:
+            print(e)
+            raise ValueError("Erro ao criar likes e deslikes iniciais",e)
+        
     def getListVideos(self,idUser:str, offSet: int) -> dict :
         idAdm = uuid.UUID('3f06af63-a93c-11e4-9797-00505690773f').bytes
  
@@ -206,3 +223,31 @@ class VideoRepository:
         except Exception as e:
             print(e)
             raise ValueError("Erro ao buscar vídeos da pesquisa feita")
+        
+    def getVideoDatasToStreaming(self, videoId:str) -> dict:
+        idVideoBytes = uuid.UUID(videoId).bytes
+        self.Db.createConnection()
+
+        sql = """
+               SELECT tbv.videoDate,tu.userName,tbv.videoTitle,tbv.videoUrl ,tbv.videoId,tbvr.videoLikes,tbvr.videoDislikes
+               FROM tb_video AS tbv 
+               INNER JOIN tb_user AS tu ON tu.userId = tbv.idAdmin
+               INNER JOIN tb_videoReaction AS tbvr ON tbvr.videoId = tbv.videoId
+               WHERE tbv.videoId = %s AND tbv.isDeleted = FALSE AND tbv.isVideoAvailable = TRUE 
+               AND tbv.videoStatus = 'READY' AND tbv.videoTitle <> '' AND tbv.thumbnailUrl <> ''
+               AND tu.userName <> '' AND tbv.videoDuration > 0;
+
+              """
+        try:
+            self.Db.myCursor.execute(sql, (idVideoBytes,))
+            row = self.Db.myCursor.fetchone()
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+            if row is None or len(row) == 0:
+                return None
+            
+            return row
+        
+        except Exception as e:
+            print(e)
+            raise ValueError(f"Erro ao buscar dados do vídeo para streaming {e}")

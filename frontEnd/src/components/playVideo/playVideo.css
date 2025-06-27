@@ -1,8 +1,17 @@
+.wrapAll {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
 .videoContainer {
   display: flex;
   justify-content: center;
   align-items: center;
   margin-top: 20px;
+  flex-direction: column;
+  width: 70%;
 }
 
 .wrapVideo {
@@ -218,7 +227,8 @@
   font-size: x-large;
   width: 30px;
 }
-.volumeIconLow{
+
+.volumeIconLow {
   font-size: 30px;
   width: 30px;
 }
@@ -255,7 +265,7 @@
 :fullscreen .controls,
 :-webkit-full-screen .controls {
   padding: 12px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent); 
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
 }
 
 .controls {
@@ -269,8 +279,58 @@
   pointer-events: none;
 }
 
-@media (max-width: 700px) {
-  .wrapVolume{
-    display: none;
+.wrapDatasVideo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: row;
+  color: white;
+  width: 90%;
+  padding: 10px;
+}
+
+.wrapAuthorAndTitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.wrapAuthorAndTitle>h3 {
+  font-size: 2em;
+}
+
+.likesAndDislikes {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  gap: 15px;
+}
+
+.likes,
+.dislikes {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+}
+
+.valueLD {
+  margin-left: 5px;
+}
+
+
+@media (max-width:700px) {
+  .wrapAuthorAndTitle>h3 {
+  font-size: 1.6em;
+}
+  .videoContainer {
+    width: 100%;
+  }
+
+  .wrapDatasVideo {
+    width: 95%;
+    margin: 5px;
   }
 }

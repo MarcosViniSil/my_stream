@@ -36,6 +36,8 @@ class ReciveVideo:
         
         videoId = self.insertVideoDatasDb(hashVideo,videoDurationSeconds)
         
+        self.createReactionVideo(videoId,hashVideo)
+
         if videoId != "":
             try:
                 messageQueue = {"videoId":videoId,"videoUrl":hashVideo}
@@ -111,6 +113,13 @@ class ReciveVideo:
             self.removeRemoteFile(hashVideo.split("/")[-1])
             raise HTTPException(status_code=400, detail="Erro ao salvar url no banco")
     
+    def createReactionVideo(self,videoId:str,hashVideo : str) -> None:
+        try:
+            self.videoRepository.createLikeAndDislikesVideo(videoId)
+        except Exception as e:
+            self.removeRemoteFile(hashVideo.split("/")[-1])
+            raise HTTPException(status_code=400, detail="Erro ao criar likes e deslikes")
+   
     def removeRemoteFile(self,nameFile :str) -> None:
          try:
                 self.bucket.deleteFileOnBucket(nameFile)
