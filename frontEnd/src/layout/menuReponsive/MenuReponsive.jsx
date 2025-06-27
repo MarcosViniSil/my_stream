@@ -7,7 +7,7 @@ import { FaCloudUploadAlt } from "react-icons/fa";
 import { Link, useLocation } from 'react-router-dom';
 import styles from './MenuResponsive.module.css';
 
-function MenuResponsive({ isOpen, setIsOpen }) {
+function MenuResponsive({ isOpen, setIsOpen, defaultOpen = null }) {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const location = useLocation();
 
@@ -19,13 +19,13 @@ function MenuResponsive({ isOpen, setIsOpen }) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  useEffect(() => {
-    if (!isMobile) {
-      setIsOpen(true);
-    } else {
-      setIsOpen(false);
-    }
-  }, [isMobile]);
+useEffect(() => {
+  if (defaultOpen !== null) {
+    setIsOpen(defaultOpen);
+  } else {
+    setIsOpen(!isMobile); 
+  }
+}, [isMobile, defaultOpen]);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);

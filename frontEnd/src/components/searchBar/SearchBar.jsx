@@ -16,7 +16,7 @@ function SearchBar({ onSearch }) {
     if (onSearch) onSearch(searchTerm);
   };
 
-  const stackDirection = useBreakpointValue({ base: "column", md: "row" });
+  const stackDirection = useBreakpointValue({ base: "row", md: "row" });
 
   return (
     <Stack direction={stackDirection} spacing={2} >
@@ -51,7 +51,7 @@ function SearchBar({ onSearch }) {
           boxShadow: "0 0 0 2px #265a4f" 
         }}
       >
-        Pesquisar
+        <SearchIcon/>
       </Button>
     </Stack>
   );

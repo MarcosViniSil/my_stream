@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import './watch.css'
 
 export default function Watch() {
-    const [isMenuOpen, setIsMenuOpen] = useState(true);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     
     const navigate = useNavigate();
     
@@ -19,7 +19,7 @@ export default function Watch() {
     
     return (
         <>
-            <MenuResponsive isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />
+            <MenuResponsive isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} defaultOpen={false} />
             <div className={`wrapWatchVideo ${isMenuOpen ? "menu-open" : ""}`}>
                 <div className='search'>
                     <SearchBar onSearch={handleSearch} />

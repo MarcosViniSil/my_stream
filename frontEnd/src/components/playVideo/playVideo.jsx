@@ -6,6 +6,8 @@ import { MdFullscreen } from "react-icons/md";
 import { IoIosVolumeLow } from "react-icons/io";
 import { IoIosVolumeOff } from "react-icons/io";
 import { IoIosVolumeHigh } from "react-icons/io";
+import { FaVolumeXmark } from "react-icons/fa6";
+
 
 import "./playVideo.css";
 
@@ -17,6 +19,7 @@ function VideoPlayer() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [showControls, setShowControls] = useState(true);
+  const [showUnmuteButton, setShowUnmuteButton] = useState(true);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -25,13 +28,11 @@ function VideoPlayer() {
       hls.loadSource("http://localhost:9000/python-test-bucket/a2ef4a28-7a94-4156-b33c-384dc2cecce6/output.m3u8");
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        video.play();
         setIsPlaying(true);
       });
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = "http://localhost:9000/python-test-bucket/a2ef4a28-7a94-4156-b33c-384dc2cecce6/output.m3u8";
       video.addEventListener("loadedmetadata", () => {
-        video.play();
         setIsPlaying(true);
       });
     }
@@ -59,7 +60,7 @@ function VideoPlayer() {
     };
 
   }, []);
-  
+
   useEffect(() => {
     let timeout;
     const wrapper = videoRef.current.parentElement;
@@ -69,7 +70,7 @@ function VideoPlayer() {
 
       setShowControls(true);
       clearTimeout(timeout);
-      timeout = setTimeout(() => setShowControls(false), 3000); 
+      timeout = setTimeout(() => setShowControls(false), 3000);
     };
 
     wrapper.addEventListener('mousemove', handleMouseMove);
@@ -107,8 +108,7 @@ function VideoPlayer() {
   const togglePlay = () => {
     const video = videoRef.current;
     if (video.paused) {
-      video.play();
-      setIsPlaying(true);
+      video.play().then(() => setIsPlaying(true));
     } else {
       video.pause();
       setIsPlaying(false);
@@ -139,11 +139,18 @@ function VideoPlayer() {
     }
   }
 
+  const unmute = () => {
+    const video = videoRef.current;
+    video.muted = false;
+    video.volume = 0.5;
+    setShowUnmuteButton(false);
+  };
+
   return (
     <div className="videoContainer">
       <div className="wrapVideo">
-        <video ref={videoRef} className="videoPlayer" />
-       <div className={`controls ${!showControls && document.fullscreenElement ? 'hideControls' : ''}`}>
+        <video muted autoPlay ref={videoRef} className="videoPlayer" />
+        <div className={`controls ${!showControls && document.fullscreenElement ? 'hideControls' : ''}`}>
 
           <div className="wrapProgress">
             <input id="progress" type="range" min="0" max="100" value={progress} onChange={handleProgressChange} style={{
@@ -157,7 +164,7 @@ function VideoPlayer() {
               <button onClick={togglePlay}> {isPlaying ? <FaPause /> : <FaPlay />} </button>
 
               <div className="wrapVolume">
-                <label htmlFor="volume"> {volume == 0 ? <p className="volumeIcon"><IoIosVolumeOff  /></p>  : volume == 1 ? <p className="volumeIcon"> <IoIosVolumeHigh/> </p>    : <p className="volumeIconLow"><IoIosVolumeLow  /></p> }</label>
+                <label htmlFor="volume"> {volume == 0 ? <p className="volumeIcon"><IoIosVolumeOff /></p> : volume == 1 ? <p className="volumeIcon"> <IoIosVolumeHigh /> </p> : <p className="volumeIconLow"><IoIosVolumeLow /></p>}</label>
                 <input id="volume" type="range" min="0" max="1" step="0.01" value={volume} onChange={handleVolumeChange} style={{
                   '--progress': `${volume * 100}%`
                 }} />
@@ -172,12 +179,16 @@ function VideoPlayer() {
               </div>
 
             </div>
-
-
             <MdFullscreen className="fullScreen" onClick={handleFullscreen} />
-
           </div>
+
         </div>
+                              {showUnmuteButton && (
+              <button id="buttonActivateSound" onClick={unmute}>
+                <FaVolumeXmark />
+                Clique para ativar o som
+              </button>
+            )}
       </div>
     </div>
   );
