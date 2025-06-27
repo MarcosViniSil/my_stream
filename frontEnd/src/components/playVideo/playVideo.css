@@ -215,13 +215,36 @@
 
 .volumeIcon,
 .fullScreen {
-  font-size: 24px;
+  font-size: x-large;
+  width: 30px;
+}
+.volumeIconLow{
+  font-size: 30px;
+  width: 30px;
 }
 
-.volumeIconMuted {
-  font-size: 20px;
+:fullscreen .wrapVideo,
+:-webkit-full-screen .wrapVideo {
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  border-radius: 0;
+  aspect-ratio: unset;
 }
 
-.volumeIconMax {
-  font-size: 28px;
+:fullscreen .controls,
+:-webkit-full-screen .controls {
+  padding: 12px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent); 
+}
+
+.controls {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  pointer-events: auto;
+}
+
+.hideControls {
+  opacity: 0;
+  pointer-events: none;
 }

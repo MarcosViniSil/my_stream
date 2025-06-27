@@ -3,13 +3,9 @@ import Hls from "hls.js";
 import { FaPlay } from "react-icons/fa";
 import { FaPause } from "react-icons/fa";
 import { MdFullscreen } from "react-icons/md";
-import { IoVolumeMedium } from "react-icons/io5";
-import { FaVolumeXmark } from "react-icons/fa6";//mutado
-import { IoIosVolumeHigh } from "react-icons/io";//maximo
-
-
-
-
+import { IoIosVolumeLow } from "react-icons/io";
+import { IoIosVolumeOff } from "react-icons/io";
+import { IoIosVolumeHigh } from "react-icons/io";
 
 import "./playVideo.css";
 
@@ -20,6 +16,7 @@ function VideoPlayer() {
   const [volume, setVolume] = useState(0.4);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [showControls, setShowControls] = useState(true);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -62,6 +59,27 @@ function VideoPlayer() {
     };
 
   }, []);
+  
+  useEffect(() => {
+    let timeout;
+    const wrapper = videoRef.current.parentElement;
+
+    const handleMouseMove = () => {
+      if (!document.fullscreenElement) return;
+
+      setShowControls(true);
+      clearTimeout(timeout);
+      timeout = setTimeout(() => setShowControls(false), 3000); 
+    };
+
+    wrapper.addEventListener('mousemove', handleMouseMove);
+
+    return () => {
+      wrapper.removeEventListener('mousemove', handleMouseMove);
+      clearTimeout(timeout);
+    };
+  }, []);
+
 
   const formatTime = (duration) => {
     if (isNaN(duration)) return "0:00";
@@ -110,20 +128,12 @@ function VideoPlayer() {
     const newVolume = e.target.value;
     video.volume = newVolume;
     setVolume(newVolume);
-    if(e.target.value == 0){
-      //mutado
-    }else if(e.target.value == 1){
-      //maximo
-    }else{
-      //medio
-    }
   };
 
   const handleFullscreen = () => {
-    const video = videoRef.current;
-
+    const wrapper = videoRef.current.parentElement;
     if (!document.fullscreenElement) {
-      video.requestFullscreen();
+      wrapper.requestFullscreen();
     } else {
       document.exitFullscreen();
     }
@@ -133,7 +143,7 @@ function VideoPlayer() {
     <div className="videoContainer">
       <div className="wrapVideo">
         <video ref={videoRef} className="videoPlayer" />
-        <div className="controls">
+       <div className={`controls ${!showControls && document.fullscreenElement ? 'hideControls' : ''}`}>
 
           <div className="wrapProgress">
             <input id="progress" type="range" min="0" max="100" value={progress} onChange={handleProgressChange} style={{
@@ -143,25 +153,29 @@ function VideoPlayer() {
 
           <div className="wrapControls">
             <div className="volumeTimeAndPlay">
-              
-              <button onClick={togglePlay}> {isPlaying ? <FaPause/> : <FaPlay />} </button>
-              
+
+              <button onClick={togglePlay}> {isPlaying ? <FaPause /> : <FaPlay />} </button>
+
               <div className="wrapVolume">
-                <label htmlFor="volume"> {volume == 0 ? <FaVolumeXmark className="volumeIconMuted"/>:volume == 1 ? <IoIosVolumeHigh className="volumeIconMax"/>:<IoVolumeMedium className="volumeIcon" />}</label>
+                <label htmlFor="volume"> {volume == 0 ? <p className="volumeIcon"><IoIosVolumeOff  /></p>  : volume == 1 ? <p className="volumeIcon"> <IoIosVolumeHigh/> </p>    : <p className="volumeIconLow"><IoIosVolumeLow  /></p> }</label>
                 <input id="volume" type="range" min="0" max="1" step="0.01" value={volume} onChange={handleVolumeChange} style={{
                   '--progress': `${volume * 100}%`
                 }} />
               </div>
 
               <div className="timeDisplay">
-                {<p className="wrapTimeVideo"><p className="wrapTimeVideoCurrent">{formatTime(currentTime)}</p> <p className="separator"> / </p> <p className="wrapTimeVideoTotal">{formatTime(duration)}</p></p>}
+                {<div className="wrapTimeVideo">
+                  <span className="wrapTimeVideoCurrent">{formatTime(currentTime)}</span>
+                  <span className="separator"> / </span>
+                  <span className="wrapTimeVideoTotal">{formatTime(duration)}</span>
+                </div>}
               </div>
 
             </div>
 
 
             <MdFullscreen className="fullScreen" onClick={handleFullscreen} />
-          
+
           </div>
         </div>
       </div>
