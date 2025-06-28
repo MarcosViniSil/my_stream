@@ -140,6 +140,25 @@ export async function getDatasVideoToStream(videoId) {
   }
 }
 
+export async function getHistory(offset) {
+  const TOKEN_USER = "get on local storage"
+  try {
+    const response = await fetch(`http://localhost:8000/videos/history/?token=${TOKEN_USER}&offset=${offset}`, {
+      method: "GET"
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData?.detail || "Erro ao obter vídeos da página inicial"); 
+    }
+
+    return response.json();
+  } catch (error) {
+    throw new Error(error.message || "Erro ao obter vídeos da página inicial");
+  }
+}
+
+
 
 
 

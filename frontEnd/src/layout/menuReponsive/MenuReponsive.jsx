@@ -34,7 +34,7 @@ useEffect(() => {
   const links = [
     { to: "/", label: "Início", icon: <FaHome /> },
     { to: "/perfil", label: "Perfil", icon: <CgProfile /> },
-    { to: "/historico", label: "Histórico", icon: <FaHistory /> },
+    { to: "/history", label: "Histórico", icon: <FaHistory /> },
     { to: "/uploads", label: "Uploads", icon: <FaCloudUploadAlt /> },
   ];
 

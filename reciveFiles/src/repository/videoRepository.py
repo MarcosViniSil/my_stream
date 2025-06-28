@@ -301,7 +301,7 @@ class VideoRepository:
 
         sql = """
                WITH ranked_videos AS (
-			        SELECT tbvh.videoId,tbv.videoTitle,tbv.thumbnailUrl,tbvh.DateVideo,tbvh.lastViewAt,
+			        SELECT tbvh.videoId,tbv.videoTitle,tbv.thumbnailUrl,tbvh.DateVideo,tbvh.lastViewAt,tbv.videoDuration,tbu.userName,
 			        ROW_NUMBER() 
 			        OVER (PARTITION BY DATE(tbvh.DateVideo), tbvh.videoId 
 			        ORDER BY tbvh.DateVideo DESC, tbvh.historyId DESC
@@ -309,18 +309,20 @@ class VideoRepository:
                     FROM tb_videoHistory AS tbvh
                     INNER JOIN tb_video AS tbv 
                     ON tbv.videoId = tbvh.videoId
+                    INNER JOIN tb_user AS tbu
+                    ON tbu.userId = tbvh.userId
                     WHERE 
                     tbv.videoStatus = 'READY' AND 
                     tbv.videoTitle <> '' AND 
                     tbv.thumbnailUrl <> '' AND 
-                    tbv.videoDuration > 0 AND tbvh.userId = %s
+                    tbv.videoDuration > 0 AND tbvh.userId = %s AND tbu.userName <> ''
                 )
                 SELECT 
-                videoId, videoTitle, thumbnailUrl, DateVideo, lastViewAt
+                videoId, videoTitle, thumbnailUrl, DateVideo, lastViewAt,videoDuration,userName
                 FROM ranked_videos
                 WHERE rn = 1 
                 ORDER BY DateVideo DESC, videoId DESC
-                LIMIT 10 OFFSET %s;
+                LIMIT 20 OFFSET %s;
 
               """
         try:

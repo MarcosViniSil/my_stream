@@ -9,6 +9,7 @@ import Search from '../src/pages/search/search'
 import Home from '../src/pages/home/home'
 import Watch from '../src/pages/watch/watch'
 import NotFound from '../src/pages/notFound/notFound'
+import History from '../src/pages/history/history'
 
 import './App.css';
 
@@ -20,7 +21,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/profile" element={<ReceiveVideo />} />
         <Route path="/busca" element={<Search />} />
-        <Route path="/history" element={<ReceiveVideo />} />
+        <Route path="/history" element={<History />} />
         <Route path="/uploads" element={<ManagerVideos />} />
          <Route path="/upload" element={<VideoUpload />} />
         <Route path="*" element={<NotFound />} />

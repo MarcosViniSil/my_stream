@@ -39,7 +39,7 @@ class UserVideosService:
         for row in data:
             videoId,date, title, status = row
             videoIdString = str(uuid.UUID(bytes=videoId))
-            dateFormated = datetime.datetime.strptime(str(date), '%Y-%m-%d').strftime('%d/%m/%Y')
+            dateFormated = datetime.strptime(str(date), '%Y-%m-%d').strftime('%d/%m/%Y')
             result.append({
                 "videoId":videoIdString,
                 "date": str(dateFormated),                
@@ -183,12 +183,11 @@ class UserVideosService:
             raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao inserir vídeo no histórico {e}")
         
     def getHistoryVideosByUserId(self,tokenUser:str,offset:int) -> VideosHistory:
-        print(offset)
         #TODO recover id user based on token
         userId = '3f06af63-a93c-11e4-9797-00505690773f'
         if offset < 0:
             raise HTTPException(status_code=400,detail=f"offset inválido")
-        dataPerPage = 10
+        dataPerPage = 20
         offset *= dataPerPage
         
         try:
@@ -199,13 +198,15 @@ class UserVideosService:
                 reponse = [VideosHistory(
                         videoId=self.convertUUID(row[0]),
                         videoTitle=str(row[1]),
-                        thumnailUrl=str(row[2]),
+                        thumbnailUrl=str(row[2]),
                         dateVideo=self.convertDate(str(row[3])),
                         lastTime = int(row[4]),
+                        videoDuration = int(row[5]),
+                        userName = str(row[6])
                     ) for row in rows]
                 
-                 
-                return self.convertListHistoryVideos(reponse)
+                result = self.convertListHistoryVideos(reponse)
+                return sorted(result, key=lambda x: x['date'], reverse=True)
         
         except Exception as e:
             raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao buscar videos do histórico {e}")
@@ -221,8 +222,8 @@ class UserVideosService:
             
             result = [
                         {
-                            "data": data,
-                            "dataText":self.convertDateToText(data),
+                            "date": data,
+                            "dateText":self.convertDateToText(data),
                             "videos": videos
                         }
             for data, videos in grouped.items()]  
