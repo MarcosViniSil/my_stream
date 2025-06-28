@@ -40,7 +40,7 @@ class Bucket:
         client = self.createConnection()
         self.removeFolderFromBucket(client,self.BUCKET_NAME,folderName)
     
-    def generate_presigned_url(self, full_url, expiration=900):
+    def generatePresignedUrl(self, full_url, expiration=900):
         parsed = urlparse(full_url)
         path = parsed.path.lstrip('/')
         bucket_name = path.split('/')[0]

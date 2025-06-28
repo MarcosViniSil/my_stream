@@ -1,6 +1,5 @@
-from fastapi import APIRouter, File, UploadFile, Depends,Form
+from fastapi import APIRouter, File, UploadFile, Depends,Form,Query
 from src.models.dependencies import getReceiveMetaData, getUserMetadatas, getUserVideosRepository
-
 from src.models.metadataResponse import MetadataResponse
 from uuid import UUID
 from src.service.userVideosService import UserVideosService
@@ -21,21 +20,33 @@ async def get_metadatas_video(videoId : str,userMetadatasService: UserMetaDatasS
     return userMetadatasService.getVideoMetadatas(videoId)
 
 @routerUserVideos.post("/user/videos/quantity")
-async def get_metadatas_video(tokenUser = Form(...),userVideosService: UserVideosService = Depends(getUserVideosRepository)):
+async def get_total_videos_user(tokenUser = Form(...),userVideosService: UserVideosService = Depends(getUserVideosRepository)):
     return userVideosService.getTotalVideosByUser(tokenUser)
 
 @routerUserVideos.get("/user/video/status/{videoId}")
-async def get_metadatas_video(videoId : str,userVideosService: UserVideosService = Depends(getUserVideosRepository)):
+async def get_status_video(videoId : str,userVideosService: UserVideosService = Depends(getUserVideosRepository)):
     return userVideosService.getVideoStatus(videoId)
 
 @routerUserVideos.get("/videos/{offset}")
-async def get_metadatas_video(offset : int,userVideosService: UserVideosService = Depends(getUserVideosRepository)):
+async def get_videos_inital_page(offset : int,userVideosService: UserVideosService = Depends(getUserVideosRepository)):
     return userVideosService.getVideosInitialPage(offset=offset)
 
 @routerUserVideos.get("/videos/query/{param}")
-async def get_metadatas_video(param : str,userVideosService: UserVideosService = Depends(getUserVideosRepository)):
+async def get_videos_by_query(param : str,userVideosService: UserVideosService = Depends(getUserVideosRepository)):
     return userVideosService.getVideosBasedOnUserQuery(param)
 
 @routerUserVideos.get("/streaming/video/{videoId}")
-async def get_metadatas_video(videoId : str,userVideosService: UserVideosService = Depends(getUserVideosRepository)):
+async def get_datas_streaming_video(videoId : str,userVideosService: UserVideosService = Depends(getUserVideosRepository)):
     return userVideosService.getDatasVideoStreaming(videoId)
+
+@routerUserVideos.post("/video/history")
+async def insert_video_on_history(tokenUser = Form(...),videoId = Form(...),userVideosService: UserVideosService = Depends(getUserVideosRepository)):
+    return userVideosService.insertVideoOnHistory(videoId,tokenUser)
+
+@routerUserVideos.get("/videos/history/")
+async def get_history_videos(
+    token: str = Query(...),
+    offset: int = Query(0),
+    userVideosService: UserVideosService = Depends(getUserVideosRepository)
+):
+    return userVideosService.getHistoryVideosByUserId(token, offset)

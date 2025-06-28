@@ -22,7 +22,8 @@ CREATE TABLE tb_videoHistory(
     historyId BINARY(16) PRIMARY KEY,
     userId BINARY(16) NOT NULL,
     videoId BINARY(16) NOT NULL,
-    lastViewAt INT
+    lastViewAt INT,
+    DateVideo DATE
 );
 
 CREATE TABLE tb_video(

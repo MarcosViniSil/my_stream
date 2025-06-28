@@ -12,7 +12,7 @@ import { AiFillDislike } from "react-icons/ai";
 
 import "./playVideo.css";
 
-function VideoPlayer({ videoDatas }) {
+function VideoPlayer({ videoDatas,timeAt }) {
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -24,18 +24,20 @@ function VideoPlayer({ videoDatas }) {
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
-    console.log(videoDatas)
     const video = videoRef.current;
     if (Hls.isSupported()) {
       const hls = new Hls();
       hls.loadSource(videoDatas.videoUrl);
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
+         video.currentTime = timeAt;
         setIsPlaying(true);
+        
       });
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = videoDatas.videoUrl;
       video.addEventListener("loadedmetadata", () => {
+        video.currentTime = timeAt;
         setIsPlaying(true);
       });
     }
@@ -176,7 +178,9 @@ function VideoPlayer({ videoDatas }) {
     <div className="wrapAll">
       <div className="videoContainer">
         <div className="wrapVideo">
-          <video muted autoPlay ref={videoRef} className="videoPlayer" />
+          
+          <video onClick={togglePlay} muted autoPlay ref={videoRef} className="videoPlayer" />
+          
           <div className={`controls ${!showControls ? 'hideControls' : ''}`}>
 
             <div className="wrapProgress">
@@ -191,7 +195,7 @@ function VideoPlayer({ videoDatas }) {
                 <button onClick={togglePlay}> {isPlaying ? <FaPause /> : <FaPlay />} </button>
 
                 {!isMobile && (<div className="wrapVolume">
-                  <label htmlFor="volume"> {volume == 0 ? <p className="volumeIcon"><IoIosVolumeOff /></p> : volume == 1 ? <p className="volumeIcon"> <IoIosVolumeHigh /> </p> : <p className="volumeIconLow"><IoIosVolumeLow /></p>}</label>
+                  <label id="labelVolume" htmlFor="volume"> {volume == 0 ? <p className="volumeIcon"><IoIosVolumeOff /></p> : volume == 1 ? <p className="volumeIcon"> <IoIosVolumeHigh /> </p> : <p className="volumeIconLow"><IoIosVolumeLow /></p>}</label>
                   <input id="volume" type="range" min="0" max="1" step="0.01" value={volume} onChange={handleVolumeChange} style={{
                     '--progress': `${volume * 100}%`
                   }} />

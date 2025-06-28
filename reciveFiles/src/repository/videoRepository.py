@@ -4,7 +4,7 @@ from src.enum.statusVideoEnum import VideoStatus
 from src.db.connectionDb import ConnectionDB
 from uuid import UUID
 import mysql.connector
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class VideoRepository:
     
@@ -251,3 +251,89 @@ class VideoRepository:
         except Exception as e:
             print(e)
             raise ValueError(f"Erro ao buscar dados do vídeo para streaming {e}")
+        
+    def getHistoryIdByVideoAndUserId(self, videoId:str,userId:str) -> str:
+        idVideoBytes = uuid.UUID(videoId).bytes
+        userIDBytes = uuid.UUID(userId).bytes
+        self.Db.createConnection()
+
+        sql = """
+               SELECT historyId FROM tb_videoHistory WHERE userId = %s AND videoId = %s;     
+              """
+        try:
+            self.Db.myCursor.execute(sql, (userIDBytes,idVideoBytes))
+            row = self.Db.myCursor.fetchone()
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+            if row is None or len(row) == 0:
+                return None
+            
+            return row
+        
+        except Exception as e:
+            print(e)
+            raise ValueError(f"Erro ao buscar id do historico de usuário")
+        
+    def createHistoryVideo(self, videoId:str,userId:str) -> None:
+        idVideoBytes = uuid.UUID(videoId).bytes
+        userIdBytes = uuid.UUID(userId).bytes
+        
+        now = datetime.now()
+        dateSQL = now.strftime('%Y-%m-%d')
+        historyId = uuid.uuid4().bytes
+        
+        self.Db.createConnection()
+
+        sql = """
+               INSERT INTO tb_videoHistory (historyId,userId,videoId,lastViewAt,DateVideo) VALUES (%s,%s,%s,%s,%s);    
+              """
+        try:
+            self.Db.myCursor.execute(sql, (historyId,userIdBytes,idVideoBytes,0,dateSQL))
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+        except Exception as e:
+            print(e)
+            raise ValueError(f"Erro ao inserir video no historico {e}")
+    
+    def getHistoryVideosUser(self,idUser:str,offset:int) -> dict:
+        idUserBytes = uuid.UUID(idUser).bytes
+        self.Db.createConnection()
+
+        sql = """
+               WITH ranked_videos AS (
+			        SELECT tbvh.videoId,tbv.videoTitle,tbv.thumbnailUrl,tbvh.DateVideo,tbvh.lastViewAt,
+			        ROW_NUMBER() 
+			        OVER (PARTITION BY DATE(tbvh.DateVideo), tbvh.videoId 
+			        ORDER BY tbvh.DateVideo DESC, tbvh.historyId DESC
+		        ) as rn
+                    FROM tb_videoHistory AS tbvh
+                    INNER JOIN tb_video AS tbv 
+                    ON tbv.videoId = tbvh.videoId
+                    WHERE 
+                    tbv.videoStatus = 'READY' AND 
+                    tbv.videoTitle <> '' AND 
+                    tbv.thumbnailUrl <> '' AND 
+                    tbv.videoDuration > 0 AND tbvh.userId = %s
+                )
+                SELECT 
+                videoId, videoTitle, thumbnailUrl, DateVideo, lastViewAt
+                FROM ranked_videos
+                WHERE rn = 1 
+                ORDER BY DateVideo DESC, videoId DESC
+                LIMIT 10 OFFSET %s;
+
+              """
+        try:
+            self.Db.myCursor.execute(sql, (idUserBytes,offset))
+            row = self.Db.myCursor.fetchall()
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+            
+            if row is None or len(row) == 0:
+                return None
+            
+            return row
+        
+        except Exception as e:
+            print(e)
+            raise ValueError(f"Erro ao buscar historico de vídeos {e}")

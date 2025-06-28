@@ -1,11 +1,23 @@
+from typing import List
 import uuid
 from fastapi import HTTPException
 from src.models.videoStreaming import VideoStreaming
+from src.models.videosHistory import VideosHistory
 from src.repository.videoRepository import VideoRepository
-import datetime
+from datetime import datetime
 from src.enum.statusVideoEnum import VideoStatus
 from src.models.videoPageInitialReponse import VideoResponse
 from src.service.bucket import Bucket
+from collections import defaultdict
+
+MONTHS_PT = {
+    1: "janeiro", 2: "fevereiro", 3: "março", 4: "abril",
+    5: "maio", 6: "junho", 7: "julho", 8: "agosto",
+    9: "setembro", 10: "outubro", 11: "novembro", 12: "dezembro"
+}
+
+DAYS_PT = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"]
+
 
 class UserVideosService:
 
@@ -152,16 +164,100 @@ class UserVideosService:
                         likes = row[5],
                         dislikes = row[6]
                     ) 
-                reponse.videoUrl = self.bucket.generate_presigned_url(reponse.videoUrl)
+                reponse.videoUrl = self.bucket.generatePresignedUrl(reponse.videoUrl)
                 return reponse
 
         except Exception as e:
                 raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao buscar os vídeos da pesquisa {e}")
 
+    def insertVideoOnHistory(self,videoId:str,tokenUser:str) -> dict:
+        #TODO recover id user based on token
+        userId = '3f06af63-a93c-11e4-9797-00505690773f'
+        if not self.isUUidValid(videoId):
+            raise HTTPException(status_code=400,detail=f"id de vídeo inválido")
+        
+        try:
+            self.videoRepository.createHistoryVideo(videoId,userId)
+            return {"message":"sucesso"}
+        except Exception as e:
+            raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao inserir vídeo no histórico {e}")
+        
+    def getHistoryVideosByUserId(self,tokenUser:str,offset:int) -> VideosHistory:
+        print(offset)
+        #TODO recover id user based on token
+        userId = '3f06af63-a93c-11e4-9797-00505690773f'
+        if offset < 0:
+            raise HTTPException(status_code=400,detail=f"offset inválido")
+        dataPerPage = 10
+        offset *= dataPerPage
+        
+        try:
+                rows = self.videoRepository.getHistoryVideosUser(userId,offset)
+                if rows is None:
+                    return []
+                
+                reponse = [VideosHistory(
+                        videoId=self.convertUUID(row[0]),
+                        videoTitle=str(row[1]),
+                        thumnailUrl=str(row[2]),
+                        dateVideo=self.convertDate(str(row[3])),
+                        lastTime = int(row[4]),
+                    ) for row in rows]
+                
+                 
+                return self.convertListHistoryVideos(reponse)
+        
+        except Exception as e:
+            raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao buscar videos do histórico {e}")
+    
+
+    def convertListHistoryVideos(self,reponse:List[VideosHistory]) -> dict:
+        grouped = defaultdict(list)
+        
+        for video in reponse:
+            dateVideo = video.dateVideo
+            del video.dateVideo
+            grouped[dateVideo].append(video.model_dump())  
+            
+            result = [
+                        {
+                            "data": data,
+                            "dataText":self.convertDateToText(data),
+                            "videos": videos
+                        }
+            for data, videos in grouped.items()]  
+
+        return result
+
+    def convertDateToText(self, date: str) -> str:
+        
+        obj = datetime.strptime(date, "%d/%m/%Y")
+        return self.defineMessageHistoryDays(obj)
+
+    def defineMessageHistoryDays(self,date:datetime) -> str:
+        now = datetime.now().date()
+        daysDiference = (now - date.date()).days
+        if daysDiference == 0:
+            return "Hoje"
+        elif daysDiference == 1:
+            return "Ontem"
+        elif daysDiference >= 2 and daysDiference <= 6:
+            return DAYS_PT[date.weekday()]
+        else:
+            monthName = MONTHS_PT[date.month]
+            dayName = DAYS_PT[date.weekday()]
+            return f"{dayName}, {date.day} de {monthName}"
+    
     def convertDate(self,date:str) -> str:
-        dateFormated = datetime.datetime.strptime(date, '%Y-%m-%d').strftime('%d/%m/%Y')
+        dateFormated = datetime.strptime(date, '%Y-%m-%d').strftime('%d/%m/%Y')
         return dateFormated
     
-    def convertUUID(self,videoId:str) -> str:
-        print(str(uuid.UUID(bytes=videoId)))
-        return str(uuid.UUID(bytes=videoId))
+    def convertUUID(self,id:str) -> str:
+        return str(uuid.UUID(bytes=id))
+    
+    def isUUidValid(self, val: str):
+        try:
+            uuid.UUID(val)
+            return True
+        except ValueError:
+            return False

@@ -18,7 +18,8 @@ export default function WatchVideo() {
                 navigate("/");
                 return;
             }
-            const timeStopped =  getTimeSttoped()
+
+            const timeStopped = getTimeSttoped()
             const videoData = await getDatasVideo(videoId)
             if (videoData == null) {
                 return
@@ -26,13 +27,18 @@ export default function WatchVideo() {
 
             if (timeStopped || timeStopped != null && isNaN(timeStopped) && timeStopped > 0) {
                 console.log("complete")
+                setTimeStopped(timeStopped)
                 //make request with time stopped
             } else {
+                setTimeStopped(0)
                 console.log("without time stopped")
                 //make request without time stopped
             }
 
-            setVideo(videoData)
+
+            setVideo(videoData);
+
+            
         }
         fetchData()
     }, []);
@@ -67,7 +73,7 @@ export default function WatchVideo() {
     return (
         <>
             {video &&
-                (<VideoPlayer videoDatas={video} />
+                (<VideoPlayer videoDatas={video} timeAt={timeStopped} />
 
                 )}
         </>
