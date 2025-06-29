@@ -143,7 +143,7 @@ export default function VideoPagination() {
     if(!isVideoAvailableToView(id)){
       return;
     }
-    //TODO redirect user to page video visualization 
+    navigate(`/watch?v=${id}`);
   }
 
   const handleEdit = (id) => {

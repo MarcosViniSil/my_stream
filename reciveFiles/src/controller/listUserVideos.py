@@ -50,3 +50,7 @@ async def get_history_videos(
     userVideosService: UserVideosService = Depends(getUserVideosRepository)
 ):
     return userVideosService.getHistoryVideosByUserId(token, offset)
+
+@routerUserVideos.post("/video/time")
+async def insert_time_watched(tokenUser = Form(...),videoId = Form(...),timeWatched:int = Form(...),userVideosService: UserVideosService = Depends(getUserVideosRepository)):
+    return userVideosService.addTimeWatched(tokenUser=tokenUser,videoId=videoId,timeAtVideo=timeWatched)

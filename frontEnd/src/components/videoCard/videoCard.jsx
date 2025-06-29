@@ -13,10 +13,11 @@ export default function VideoCard({video,videoDuration}) {
             alt={video.videoTitle}
             className="thumbnail"
           />
+          
           <p className='duration'>{videoDuration}</p>
       </div>
 
-      <div className="video-info">
+      <div className="video-info2">
         <h3 className="video-title">{video.videoTitle}</h3>
         <p className="video-meta">
           Criado por <span className="video-user">{video.userName}</span> em <span className="video-date">{video.videoDate}</span>

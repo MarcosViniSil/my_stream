@@ -1,6 +1,7 @@
 from typing import List
 import uuid
 from fastapi import HTTPException
+from src.models.timeWatched import TimeWatched
 from src.models.videoStreaming import VideoStreaming
 from src.models.videosHistory import VideosHistory
 from src.repository.videoRepository import VideoRepository
@@ -173,20 +174,58 @@ class UserVideosService:
     def insertVideoOnHistory(self,videoId:str,tokenUser:str) -> dict:
         #TODO recover id user based on token
         userId = '3f06af63-a93c-11e4-9797-00505690773f'
+        
         if not self.isUUidValid(videoId):
             raise HTTPException(status_code=400,detail=f"id de vídeo inválido")
         
         try:
             self.videoRepository.createHistoryVideo(videoId,userId)
-            return {"message":"sucesso"}
         except Exception as e:
             raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao inserir vídeo no histórico {e}")
         
+        try:
+            self.videoRepository.createTimeWatched(videoId,userId)
+        except Exception as e:
+            raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao inserir valor inicial assistido {e}")
+        
+        return {"message":"sucesso"}
+    
+    def addTimeWatched(self,tokenUser:str,videoId:str,timeAtVideo:int) -> None:
+        print("Valor que será atualizado ",timeAtVideo)
+        #TODO recover id user based on token
+        userId = '3f06af63-a93c-11e4-9797-00505690773f'
+        try:
+            datas = self.videoRepository.getHistoryWatched(userId,videoId)
+            if datas is None:
+                raise HTTPException(status_code=400,detail=f"Não foi possível encontrar dados de tempo assistido")
+            
+            if datas[0] is None:
+                raise HTTPException(status_code=400,detail=f"Não foi possível encontrar dados de tempo assistido")
+            
+            datas = TimeWatched(videoDuration=datas[0])
+
+            if timeAtVideo >= datas.videoDuration:
+                return {"message":"sucesso"} 
+            
+            if timeAtVideo < 0:
+                timeAtVideo = 0
+            elif timeAtVideo > datas.videoDuration:
+                timeAtVideo = datas.videoDuration
+
+            self.videoRepository.insertTimeWatched(userId,videoId,timeAtVideo)
+            return {"message":"sucesso"}
+        
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao inserir tempo assistido {e}")
+            
+    
     def getHistoryVideosByUserId(self,tokenUser:str,offset:int) -> VideosHistory:
         #TODO recover id user based on token
         userId = '3f06af63-a93c-11e4-9797-00505690773f'
-        if offset < 0:
+        if  offset < 0:
             raise HTTPException(status_code=400,detail=f"offset inválido")
+        
         dataPerPage = 20
         offset *= dataPerPage
         

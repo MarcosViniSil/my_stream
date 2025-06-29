@@ -1,7 +1,7 @@
 import React from 'react'
 import './historyVideosCard.css'
 
-export default function HistoryVideosCard({ metaDatas,Duration,timeAt }) {
+export default function HistoryVideosCard({ metaDatas,Duration,timeAt,progress }) {
     return (
         <>
             <div className="videoHistoryCard">
@@ -16,7 +16,7 @@ export default function HistoryVideosCard({ metaDatas,Duration,timeAt }) {
                             <div className={`progress-bar-container ${timeAt === 0 ? 'desactivate' : 'activate'}`}>
                                 <div
                                     className="progress-bar"
-                                    style={{ width: `${timeAt}%` }}
+                                    style={{ width: `${progress}%` }}
                                 ></div>
                             </div>
                             <p className='duration'>{Duration}</p>

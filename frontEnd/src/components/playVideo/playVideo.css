@@ -11,7 +11,9 @@
   align-items: center;
   margin-top: 20px;
   flex-direction: column;
-  width: 70%;
+  width: 100%;
+  max-width: 1000px;
+  padding: 0 10px;
 }
 
 .wrapVideo {
@@ -22,6 +24,7 @@
   background: black;
   border-radius: 12px;
   overflow: hidden;
+  margin: 0 auto;
 }
 
 .videoPlayer {
@@ -331,5 +334,32 @@
   .wrapDatasVideo {
     width: 95%;
     margin: 5px;
+  }
+  .wrapVideo {
+    width: 100%;
+  }
+}
+@media (min-width:260px) and (max-width:360px){
+  #buttonActivateSound{
+        padding: 15px 10px;
+  }
+}
+
+@media (max-width:900px) {
+    .videoContainer {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .wrapVideo {
+    width: 95%;
+  }
+}
+@media (max-width: 480px) {
+  .wrapDatasVideo {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
   }
 }

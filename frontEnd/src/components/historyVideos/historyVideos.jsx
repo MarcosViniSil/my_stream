@@ -30,6 +30,7 @@ export default function HistoryVideos() {
         const fetchMoreHistory = async () => {
             try {
                 const metadatasRe = await getHistory(offSet);
+                console.log(metadatasRe)
                 if (metadatasRe && metadatasRe.length > 0) {
                     setMetaDatas(prev => [...prev, ...metadatasRe]);
                     setOffSet(prev => prev + 1);
@@ -52,6 +53,7 @@ export default function HistoryVideos() {
         const loadInitialDatasHistory = async () => {
             try {
                 const metadatasRe = await getHistory(offSet);
+                console.log(metadatasRe)
                 setMetaDatas(metadatasRe);
                 setLoading(false)
                 setOffSet(1);
@@ -87,6 +89,8 @@ export default function HistoryVideos() {
     }
 
     const formatTimeWatched = (currentTime, totalTime) => {
+        console.log("currentTime ", currentTime)
+        console.log("totalTime ",totalTime)
         if (currentTime >= totalTime) {
             return 100;
         }
@@ -129,7 +133,8 @@ export default function HistoryVideos() {
                                         key={`${metadatas.videoId}-${datas.date}`}
                                         metaDatas={metadatas}
                                         Duration={formatTime(metadatas.videoDuration)}
-                                        timeAt={formatTimeWatched(metadatas.lastTime, metadatas.videoDuration)}
+                                        timeAt={metadatas.lastTime}
+                                        progress={formatTimeWatched(metadatas.lastTime, metadatas.videoDuration)}
                                     />
                                 ))}
                             </div>

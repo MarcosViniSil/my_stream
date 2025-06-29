@@ -22,8 +22,14 @@ CREATE TABLE tb_videoHistory(
     historyId BINARY(16) PRIMARY KEY,
     userId BINARY(16) NOT NULL,
     videoId BINARY(16) NOT NULL,
-    lastViewAt INT,
     DateVideo DATE
+);
+
+CREATE TABLE tb_videoWatchTime (
+    userID BINARY(16) NOT NULL,
+    videoID BINARY(16) NOT NULL,
+    watchedSeconds INT,
+    PRIMARY KEY (UserID, VideoID)
 );
 
 CREATE TABLE tb_video(
@@ -62,6 +68,9 @@ ALTER TABLE tb_userVideoReaction ADD FOREIGN KEY (videoId) REFERENCES tb_video(v
 
 ALTER TABLE tb_videoHistory ADD FOREIGN KEY (videoId) REFERENCES tb_video(videoId);
 ALTER TABLE tb_videoHistory ADD FOREIGN KEY (userId) REFERENCES tb_user(userId);
+
+ALTER TABLE tb_videoWatchTime ADD FOREIGN KEY (videoId) REFERENCES tb_video(videoId);
+ALTER TABLE tb_videoWatchTime ADD FOREIGN KEY (userId) REFERENCES tb_user(userId);
 
 -- UUID_TO_BIN(UUID(), 1) -> INSERT
 

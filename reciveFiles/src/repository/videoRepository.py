@@ -4,6 +4,7 @@ from src.enum.statusVideoEnum import VideoStatus
 from src.db.connectionDb import ConnectionDB
 from uuid import UUID
 import mysql.connector
+from mysql.connector import errorcode
 from datetime import datetime, timedelta
 
 class VideoRepository:
@@ -252,28 +253,53 @@ class VideoRepository:
             print(e)
             raise ValueError(f"Erro ao buscar dados do vídeo para streaming {e}")
         
-    def getHistoryIdByVideoAndUserId(self, videoId:str,userId:str) -> str:
+    
+    def insertTimeWatched(self, userId:str,videoId:str,timeWatched:int) -> None:
         idVideoBytes = uuid.UUID(videoId).bytes
-        userIDBytes = uuid.UUID(userId).bytes
+        userIdBytes = uuid.UUID(userId).bytes
+        
         self.Db.createConnection()
 
         sql = """
-               SELECT historyId FROM tb_videoHistory WHERE userId = %s AND videoId = %s;     
+                UPDATE tb_videoWatchTime SET watchedSeconds = %s WHERE userID = %s AND videoID = %s;     
               """
         try:
-            self.Db.myCursor.execute(sql, (userIDBytes,idVideoBytes))
-            row = self.Db.myCursor.fetchone()
+            self.Db.myCursor.execute(sql, (timeWatched,userIdBytes,idVideoBytes))
             self.Db.myDb.commit()
             self.Db.closeConnection()
+        except Exception as e:
+            print(e)
+            raise ValueError(f"Erro ao adicionar tempo asistido ao vídeo")
+    
+    def getHistoryWatched(self, userId:str,videoId:str)-> dict:
+        idVideoBytes = uuid.UUID(videoId).bytes
+        userIdBytes = uuid.UUID(userId).bytes
+        
+        self.Db.createConnection()
+
+        sql = """
+                SELECT tbv.videoDuration FROM tb_videoWatchTime AS tbvwt
+                INNER JOIN tb_video AS tbv
+                ON tbvwt.videoID = tbv.videoId   
+                WHERE tbvwt.userID = %s AND tbvwt.videoID = %s  
+              """
+        try:
+            self.Db.myCursor.execute(sql, (userIdBytes,idVideoBytes))
+            
+            row = self.Db.myCursor.fetchone()
+            
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+            
             if row is None or len(row) == 0:
                 return None
             
             return row
-        
+            
         except Exception as e:
             print(e)
-            raise ValueError(f"Erro ao buscar id do historico de usuário")
-        
+            raise ValueError(f"Erro ao buscar dados de tempo assistido")
+
     def createHistoryVideo(self, videoId:str,userId:str) -> None:
         idVideoBytes = uuid.UUID(videoId).bytes
         userIdBytes = uuid.UUID(userId).bytes
@@ -285,15 +311,38 @@ class VideoRepository:
         self.Db.createConnection()
 
         sql = """
-               INSERT INTO tb_videoHistory (historyId,userId,videoId,lastViewAt,DateVideo) VALUES (%s,%s,%s,%s,%s);    
+               INSERT INTO tb_videoHistory (historyId,userId,videoId,DateVideo) VALUES (%s,%s,%s,%s);    
               """
         try:
-            self.Db.myCursor.execute(sql, (historyId,userIdBytes,idVideoBytes,0,dateSQL))
+            self.Db.myCursor.execute(sql, (historyId,userIdBytes,idVideoBytes,dateSQL))
             self.Db.myDb.commit()
             self.Db.closeConnection()
         except Exception as e:
             print(e)
             raise ValueError(f"Erro ao inserir video no historico {e}")
+    
+    def createTimeWatched(self, videoId: str, userId: str) -> None:
+        idVideoBytes = uuid.UUID(videoId).bytes
+        userIdBytes = uuid.UUID(userId).bytes
+
+        self.Db.createConnection()
+
+        sql = """
+               INSERT INTO tb_videoWatchTime (userID, videoID, watchedSeconds) 
+               VALUES (%s, %s, %s);
+              """
+        try:
+            self.Db.myCursor.execute(sql, (userIdBytes, idVideoBytes, 0))
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+        except mysql.connector.Error as err:
+            self.Db.closeConnection()
+            if err.errno == errorcode.ER_DUP_ENTRY:
+                print("entrada duplicada")
+                return None
+            else:
+                raise ValueError(f"Erro ao inserir vídeo no histórico: {err}")
+
     
     def getHistoryVideosUser(self,idUser:str,offset:int) -> dict:
         idUserBytes = uuid.UUID(idUser).bytes
@@ -301,7 +350,7 @@ class VideoRepository:
 
         sql = """
                WITH ranked_videos AS (
-			        SELECT tbvh.videoId,tbv.videoTitle,tbv.thumbnailUrl,tbvh.DateVideo,tbvh.lastViewAt,tbv.videoDuration,tbu.userName,
+			        SELECT tbvh.videoId,tbv.videoTitle,tbv.thumbnailUrl,tbvh.DateVideo,tbwt.watchedSeconds,tbv.videoDuration,tbu.userName,
 			        ROW_NUMBER() 
 			        OVER (PARTITION BY DATE(tbvh.DateVideo), tbvh.videoId 
 			        ORDER BY tbvh.DateVideo DESC, tbvh.historyId DESC
@@ -311,6 +360,8 @@ class VideoRepository:
                     ON tbv.videoId = tbvh.videoId
                     INNER JOIN tb_user AS tbu
                     ON tbu.userId = tbvh.userId
+                    INNER JOIN tb_videoWatchTime AS tbwt
+                    ON tbwt.userID = tbvh.userId
                     WHERE 
                     tbv.videoStatus = 'READY' AND 
                     tbv.videoTitle <> '' AND 
@@ -318,7 +369,7 @@ class VideoRepository:
                     tbv.videoDuration > 0 AND tbvh.userId = %s AND tbu.userName <> ''
                 )
                 SELECT 
-                videoId, videoTitle, thumbnailUrl, DateVideo, lastViewAt,videoDuration,userName
+                videoId, videoTitle, thumbnailUrl, DateVideo, watchedSeconds,videoDuration,userName
                 FROM ranked_videos
                 WHERE rn = 1 
                 ORDER BY DateVideo DESC, videoId DESC

@@ -12,7 +12,7 @@ import { AiFillDislike } from "react-icons/ai";
 
 import "./playVideo.css";
 
-function VideoPlayer({ videoDatas,timeAt }) {
+function VideoPlayer({ videoDatas,timeAt,onTimeUpdate  }) {
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -41,7 +41,7 @@ function VideoPlayer({ videoDatas,timeAt }) {
         setIsPlaying(true);
       });
     }
-
+    
     const handleTimeUpdate = () => {
       const progress = (video.currentTime / video.duration) * 100;
       setProgress(progress);
@@ -49,6 +49,7 @@ function VideoPlayer({ videoDatas,timeAt }) {
 
     const updateTime = () => {
       setCurrentTime(video.currentTime);
+      onTimeUpdate(video)
     };
 
     const setMetaData = () => {
@@ -170,7 +171,7 @@ function VideoPlayer({ videoDatas,timeAt }) {
   };
 
   const isUserOnMobile = () => {
-    let isMobile = window.navigator.userAgentData.mobile;
+    let isMobile = /Mobi|Android/i.test(navigator.userAgent);
     return isMobile
   }
 
