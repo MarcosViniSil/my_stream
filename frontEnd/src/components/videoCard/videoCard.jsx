@@ -2,27 +2,33 @@ import React from 'react';
 
 import './videoCard.css'
 
-export default function VideoCard({video,videoDuration}) {
+export default function VideoCard({ video, videoDuration,progress,videoAt }) {
 
   return (
     <div className="video-card">
-      <a href={`/watch?v=${video.videoId}`}>
+      <a href={ videoAt === 0 ? `/watch?v=${video.videoId}` : `/watch?v=${video.videoId}&t=${videoAt}`}>
         <div className='wrapThumbnailAndDuration'>
           <img
             src={video.thumbnailUrl}
             alt={video.videoTitle}
             className="thumbnail"
           />
-          
-          <p className='duration'>{videoDuration}</p>
-      </div>
+          <div className={`progress-bar-container ${videoAt === 0 ? 'desactivate' : 'activate'}`}>
+            <div
+              className="progress-bar"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
 
-      <div className="video-info2">
-        <h3 className="video-title">{video.videoTitle}</h3>
-        <p className="video-meta">
-          Criado por <span className="video-user">{video.userName}</span> em <span className="video-date">{video.videoDate}</span>
-        </p>
-      </div>
+          <p className='duration'>{videoDuration}</p>
+        </div>
+
+        <div className="video-info2">
+          <h3 className="video-title">{video.videoTitle}</h3>
+          <p className="video-meta">
+            Criado por <span className="video-user">{video.userName}</span> em <span className="video-date">{video.videoDate}</span>
+          </p>
+        </div>
       </a>
     </div>
   );

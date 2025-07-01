@@ -97,7 +97,6 @@ const sendTimeWatched = async () => {
     const N = 10;
 
     if (isFinishedRef.current) {
-        console.log("Já terminou, saindo...");
         return;
     }
 
@@ -112,7 +111,6 @@ const sendTimeWatched = async () => {
             }
 
             await addTimeWatched(videoId, Math.floor(dataVideo.currentTime));
-            console.log("Tempo enviado");
 
             if (willFinish) {
                 setIsFinished(true);

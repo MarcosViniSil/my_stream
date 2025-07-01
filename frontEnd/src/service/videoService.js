@@ -90,8 +90,10 @@ export async function deleteVideo(videoId) {
 }
 
 export async function getVideosInitialPage(offset) {
+  const TOKEN_USER = "token"
+  //const TOKEN_USER = "None"
   try {
-    const response = await fetch(`http://localhost:8000/videos/${offset}`, {
+    const response = await fetch(`http://localhost:8000/videos?token=${TOKEN_USER}&offset=${offset}`, {
       method: "GET"
     });
 

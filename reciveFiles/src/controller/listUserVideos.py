@@ -27,9 +27,14 @@ async def get_total_videos_user(tokenUser = Form(...),userVideosService: UserVid
 async def get_status_video(videoId : str,userVideosService: UserVideosService = Depends(getUserVideosRepository)):
     return userVideosService.getVideoStatus(videoId)
 
-@routerUserVideos.get("/videos/{offset}")
-async def get_videos_inital_page(offset : int,userVideosService: UserVideosService = Depends(getUserVideosRepository)):
-    return userVideosService.getVideosInitialPage(offset=offset)
+@routerUserVideos.get("/videos")
+async def get_videos_inital_page(    
+    token: str = Query(...),
+    offset: int = Query(0),
+    userVideosService: UserVideosService = Depends(getUserVideosRepository)
+):
+    userId = None if token == "None" else token
+    return userVideosService.getVideosInitialPage(offset=offset,tokenUser=userId)
 
 @routerUserVideos.get("/videos/query/{param}")
 async def get_videos_by_query(param : str,userVideosService: UserVideosService = Depends(getUserVideosRepository)):

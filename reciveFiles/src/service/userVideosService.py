@@ -104,14 +104,21 @@ class UserVideosService:
         else:
             raise HTTPException(status_code=404,detail="status do vídeo não foi encontrado")
         
-    def getVideosInitialPage(self,offset:int) -> VideoResponse:
+    def getVideosInitialPage(self,offset:int,tokenUser:str) -> VideoResponse:
         if offset < 0:
             raise HTTPException(status_code=400,detail="Offset inválido")
-        
+        userId = ""
+        print(tokenUser)
+        if tokenUser is None:
+            print("is none")
+            userId = None
+        else:
+            userId = '3f06af63-a93c-11e4-9797-00505690773f'
+
         videosPerPage = 10
         offset *= videosPerPage
         try:
-            rows = self.videoRepository.getVideos(offset)
+            rows = self.videoRepository.getVideos(offset,userId)
             if rows is None:
                 return []
             reponse = [VideoResponse(
@@ -120,19 +127,20 @@ class UserVideosService:
                     videoTitle=row[2],
                     thumbnailUrl=row[3],
                     videoDuration = row[4],
-                    videoId = self.convertUUID(row[5])
+                    videoId = self.convertUUID(row[5]),
+                    timeWatched = row[6]
                 ) for row in rows]
             return reponse
         
         except Exception as e:
-            raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao buscar os vídeos da página inicial${e}")
+            raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao buscar os vídeos da página inicial$ {e}")
         
     def getVideosBasedOnUserQuery(self,param:str) -> VideoResponse:
             if not param or len(param) == 0 or len(param) > 100:
                 raise HTTPException(status_code=400,detail="parametro inválido")
 
             try:
-                rows = self.videoRepository.getVideosBasedString(param,)
+                rows = self.videoRepository.getVideosBasedString(param)
                 if rows is None:
                     return []
                 reponse = [VideoResponse(
@@ -141,12 +149,13 @@ class UserVideosService:
                         videoTitle=row[2],
                         thumbnailUrl=row[3],
                         videoDuration = row[4],
-                        videoId = self.convertUUID(row[5])
+                        videoId = self.convertUUID(row[5]),
+                        timeWatched = row[6]
                     ) for row in rows]
                 return reponse
 
             except Exception as e:
-                raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao buscar os vídeos da pesquisa")
+                raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao buscar os vídeos da pesquisa{e}")
     
     def getDatasVideoStreaming(self, videoId:str) -> VideoStreaming:
         if not videoId or len(videoId) == 0:
@@ -245,6 +254,7 @@ class UserVideosService:
                     ) for row in rows]
                 
                 result = self.convertListHistoryVideos(reponse)
+                print(result)
                 return sorted(result, key=lambda x: x['date'], reverse=True)
         
         except Exception as e:

@@ -41,6 +41,7 @@ export default function ListSearch() {
         setLoading(true)
         try {
             let videos = await getVideosUserQuery(term)
+            console.log(videos)
             if (videos && videos.length > 0) {
                 setVideos(videos)
             } else {
@@ -79,6 +80,25 @@ export default function ListSearch() {
         }
 
     }
+            const formatTimeWatched = (currentTime, totalTime) => {
+        console.log("currentTime ", currentTime)
+        console.log("totalTime ",totalTime)
+        if (currentTime >= totalTime) {
+            return 100;
+        }
+
+        const positionBar = Math.floor((currentTime * 100) / totalTime)
+
+        if (positionBar < 0) {
+            return 0;
+        }
+
+        if (positionBar > 100) {
+            return 100;
+        }
+
+        return positionBar
+    }
     return (
         <>
             {loading ? (
@@ -107,7 +127,7 @@ export default function ListSearch() {
                     <div className="video-grid">
 
                         {videos.map((video, index) => (
-                            <VideoCard key={index} video={video} videoDuration={convertVideoDuration(video.videoDuration)} />
+                            <VideoCard key={index} video={video} videoDuration={convertVideoDuration(video.videoDuration)} videoAt={video.timeWatched} progress={formatTimeWatched(video.timeWatched,video.videoDuration)} />
                         ))}
                     </div>
 

@@ -1,3 +1,4 @@
+from typing import Optional
 import uuid
 from uuid import UUID
 from src.enum.statusVideoEnum import VideoStatus
@@ -171,48 +172,61 @@ class VideoRepository:
             print(e)
             raise ValueError("Erro ao buscar status do vídeo solicitado")
         
-    def getVideos(self,offset:int) -> dict:
+    def getVideos(self, offset: int, userId: Optional[str]) -> dict:
+        
+        print("userId", userId)
+    
         self.Db.createConnection()
-
+    
         sql = """
-               SELECT tbv.videoDate,tu.userName,tbv.videoTitle,tbv.thumbnailUrl,tbv.videoDuration,tbv.videoId FROM tb_video AS tbv 
-               INNER JOIN tb_user AS tu ON tu.userId = tbv.idAdmin
-               WHERE tbv.isDeleted = FALSE AND tbv.isVideoAvailable = TRUE 
-               AND tbv.videoStatus = 'READY' AND tbv.videoTitle <> '' AND tbv.thumbnailUrl <> ''
-               AND tu.userName <> '' AND tbv.videoDuration > 0
-               ORDER BY tbv.videoDate DESC, tbv.videoId DESC
-               LIMIT 10 OFFSET %s;
-
-              """
+            SELECT tbv.videoDate, tu.userName, tbv.videoTitle, tbv.thumbnailUrl, tbv.videoDuration, tbv.videoId,
+                   COALESCE(tbwt.watchedSeconds, 0) AS watchedSeconds
+            FROM tb_video AS tbv
+            INNER JOIN tb_user AS tu ON tu.userId = tbv.idAdmin
+            LEFT JOIN tb_videoWatchTime AS tbwt 
+                   ON tbwt.videoID = tbv.videoId AND tbwt.userID = %s
+            WHERE tbv.isDeleted = FALSE AND tbv.isVideoAvailable = TRUE 
+              AND tbv.videoStatus = 'READY' AND tbv.videoTitle <> '' AND tbv.thumbnailUrl <> ''
+              AND tu.userName <> '' AND tbv.videoDuration > 0
+            ORDER BY tbv.videoDate DESC, tbv.videoId DESC
+            LIMIT 10 OFFSET %s;
+        """
+    
         try:
-            self.Db.myCursor.execute(sql, (offset,))
+            idUserBytes = uuid.UUID(userId).bytes if userId else None
+            self.Db.myCursor.execute(sql, (idUserBytes, offset))
             rows = self.Db.myCursor.fetchall()
             self.Db.myDb.commit()
             self.Db.closeConnection()
-            if len(rows) == 0:
+    
+            if not rows:
                 return None
-            
+    
             return rows
-        
+    
         except Exception as e:
             print(e)
             raise ValueError("Erro ao buscar vídeos da página inicial")
+
     
     def getVideosBasedString(self, param:str) -> dict:
+        idVideo = '3f06af63-a93c-11e4-9797-00505690773f'
+        idVideoBytes = uuid.UUID(idVideo).bytes
         self.Db.createConnection()
 
         sql = """
-			   SELECT tbv.videoDate,tu.userName,tbv.videoTitle,tbv.thumbnailUrl,tbv.videoDuration,tbv.videoId FROM tb_video AS tbv 
+               SELECT tbv.videoDate,tu.userName,tbv.videoTitle,tbv.thumbnailUrl,tbv.videoDuration,tbv.videoId,tbwt.watchedSeconds FROM tb_video AS tbv 
                INNER JOIN tb_user AS tu ON tu.userId = tbv.idAdmin
+               LEFT JOIN tb_videoWatchTime AS tbwt ON tbwt.videoID = tbv.videoId
                WHERE tbv.isDeleted = FALSE AND tbv.isVideoAvailable = TRUE 
                AND tbv.videoStatus = 'READY' AND tbv.videoTitle <> '' AND tbv.thumbnailUrl <> ''
-               AND tu.userName <> '' AND tbv.videoDuration > 0 AND tbv.videoTitle LIKE %s 
+               AND tu.userName <> '' AND tbv.videoDuration > 0 AND tbwt.userID = %s AND tbv.videoTitle LIKE %s
                ORDER BY tbv.videoDate DESC, tbv.videoId DESC
 
               """
         param = (f"%{param}%")
         try:
-            self.Db.myCursor.execute(sql, (param,))
+            self.Db.myCursor.execute(sql, (idVideoBytes,param))
             rows = self.Db.myCursor.fetchall()
             self.Db.myDb.commit()
             self.Db.closeConnection()
@@ -361,7 +375,7 @@ class VideoRepository:
                     INNER JOIN tb_user AS tbu
                     ON tbu.userId = tbvh.userId
                     INNER JOIN tb_videoWatchTime AS tbwt
-                    ON tbwt.userID = tbvh.userId
+                    ON tbwt.userID = tbvh.userId AND tbwt.videoID = tbvh.videoId
                     WHERE 
                     tbv.videoStatus = 'READY' AND 
                     tbv.videoTitle <> '' AND 

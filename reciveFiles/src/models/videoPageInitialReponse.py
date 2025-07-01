@@ -8,3 +8,4 @@ class VideoResponse(BaseModel):
     thumbnailUrl: str
     videoDuration: int
     videoId:str
+    timeWatched:int

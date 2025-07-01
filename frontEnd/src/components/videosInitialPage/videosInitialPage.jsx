@@ -64,6 +64,7 @@ export default function VideosInitialPage() {
         const loadInitialVideos = async () => {
             try {
                 const videos = await getVideosInitialPage(0);
+                console.log(videos)
                 setVideos(videos);
                 setLoading(false)
                 setOffSet(1);
@@ -97,6 +98,25 @@ export default function VideosInitialPage() {
         }
 
     }
+        const formatTimeWatched = (currentTime, totalTime) => {
+        console.log("currentTime ", currentTime)
+        console.log("totalTime ",totalTime)
+        if (currentTime >= totalTime) {
+            return 100;
+        }
+
+        const positionBar = Math.floor((currentTime * 100) / totalTime)
+
+        if (positionBar < 0) {
+            return 0;
+        }
+
+        if (positionBar > 100) {
+            return 100;
+        }
+
+        return positionBar
+    }
 
     return (
         <>
@@ -119,7 +139,7 @@ export default function VideosInitialPage() {
                     </div>
                     <div className="video-grid">
                         {videos.map((video, index) => (
-                            <VideoCard key={index} video={video} videoDuration={convertVideoDuration(video.videoDuration)} />
+                            <VideoCard key={index} video={video} videoDuration={convertVideoDuration(video.videoDuration)} videoAt={video.timeWatched} progress={formatTimeWatched(video.timeWatched,video.videoDuration)} />
                         ))}
                     </div>
                 </div>
