@@ -209,24 +209,24 @@ class VideoRepository:
             raise ValueError("Erro ao buscar vídeos da página inicial")
 
     
-    def getVideosBasedString(self, param:str) -> dict:
-        idVideo = '3f06af63-a93c-11e4-9797-00505690773f'
-        idVideoBytes = uuid.UUID(idVideo).bytes
+    def getVideosBasedString(self, param:str,id:str) -> dict:
+        idUserBytes = uuid.UUID(id).bytes
         self.Db.createConnection()
 
         sql = """
-               SELECT tbv.videoDate,tu.userName,tbv.videoTitle,tbv.thumbnailUrl,tbv.videoDuration,tbv.videoId,tbwt.watchedSeconds FROM tb_video AS tbv 
+               SELECT tbv.videoDate,tu.userName,tbv.videoTitle,tbv.thumbnailUrl,tbv.videoDuration,tbv.videoId,
+               COALESCE(tbwt.watchedSeconds, 0) AS watchedSeconds FROM tb_video AS tbv 
                INNER JOIN tb_user AS tu ON tu.userId = tbv.idAdmin
-               LEFT JOIN tb_videoWatchTime AS tbwt ON tbwt.videoID = tbv.videoId
+               LEFT JOIN tb_videoWatchTime AS tbwt ON tbwt.videoID = tbv.videoId AND tbwt.userID = %s
                WHERE tbv.isDeleted = FALSE AND tbv.isVideoAvailable = TRUE 
                AND tbv.videoStatus = 'READY' AND tbv.videoTitle <> '' AND tbv.thumbnailUrl <> ''
-               AND tu.userName <> '' AND tbv.videoDuration > 0 AND tbwt.userID = %s AND tbv.videoTitle LIKE %s
+               AND tu.userName <> '' AND tbv.videoDuration > 0  AND tbv.videoTitle LIKE %s
                ORDER BY tbv.videoDate DESC, tbv.videoId DESC
 
               """
         param = (f"%{param}%")
         try:
-            self.Db.myCursor.execute(sql, (idVideoBytes,param))
+            self.Db.myCursor.execute(sql, (idUserBytes,param))
             rows = self.Db.myCursor.fetchall()
             self.Db.myDb.commit()
             self.Db.closeConnection()

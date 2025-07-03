@@ -36,9 +36,13 @@ async def get_videos_inital_page(
     userId = None if token == "None" else token
     return userVideosService.getVideosInitialPage(offset=offset,tokenUser=userId)
 
-@routerUserVideos.get("/videos/query/{param}")
-async def get_videos_by_query(param : str,userVideosService: UserVideosService = Depends(getUserVideosRepository)):
-    return userVideosService.getVideosBasedOnUserQuery(param)
+@routerUserVideos.get("/videos/query")
+async def get_videos_by_query( 
+    token: str = Query(...),
+    param: str = Query(0),
+    userVideosService: UserVideosService = Depends(getUserVideosRepository)
+    ):
+    return userVideosService.getVideosBasedOnUserQuery(param,token)
 
 @routerUserVideos.get("/streaming/video/{videoId}")
 async def get_datas_streaming_video(videoId : str,userVideosService: UserVideosService = Depends(getUserVideosRepository)):

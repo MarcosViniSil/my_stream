@@ -109,8 +109,9 @@ export async function getVideosInitialPage(offset) {
 }
 
 export async function getVideosUserQuery(query) {
+  const TOKEN = "aa"
   try {
-    const response = await fetch(`http://localhost:8000/videos/query/${query}`, {
+    const response = await fetch(`http://localhost:8000/videos/query/?token=${TOKEN}&param=${query}`, {
       method: "GET"
     });
 

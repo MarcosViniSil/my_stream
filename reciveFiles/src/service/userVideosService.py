@@ -135,12 +135,15 @@ class UserVideosService:
         except Exception as e:
             raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao buscar os vídeos da página inicial$ {e}")
         
-    def getVideosBasedOnUserQuery(self,param:str) -> VideoResponse:
+    def getVideosBasedOnUserQuery(self,param:str,token:str) -> VideoResponse:
+             #TODO get id user by token
             if not param or len(param) == 0 or len(param) > 100:
                 raise HTTPException(status_code=400,detail="parametro inválido")
 
+            userId = '3f06af63-a93c-11e4-9797-00505690773f'
+
             try:
-                rows = self.videoRepository.getVideosBasedString(param)
+                rows = self.videoRepository.getVideosBasedString(param,userId)
                 if rows is None:
                     return []
                 reponse = [VideoResponse(
@@ -255,7 +258,7 @@ class UserVideosService:
                 
                 result = self.convertListHistoryVideos(reponse)
                 print(result)
-                return sorted(result, key=lambda x: x['date'], reverse=True)
+                return sorted(result,key=lambda x: datetime.strptime(x["date"], "%d/%m/%Y"),reverse=True)
         
         except Exception as e:
             raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao buscar videos do histórico {e}")
@@ -270,13 +273,15 @@ class UserVideosService:
             grouped[dateVideo].append(video.model_dump())  
             
             result = [
-                        {
-                            "date": data,
-                            "dateText":self.convertDateToText(data),
-                            "videos": videos
-                        }
-            for data, videos in grouped.items()]  
+                {
+                    "date": data,
+                    "dateText": self.convertDateToText(data),
+                    "videos": videos
+                }
+                for data, videos in grouped.items()
+            ]
 
+        result.sort(key=lambda x: datetime.strptime(x["date"], "%d/%m/%Y"),reverse=True)
         return result
 
     def convertDateToText(self, date: str) -> str:

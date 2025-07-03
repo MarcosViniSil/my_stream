@@ -80,9 +80,7 @@ export default function ListSearch() {
         }
 
     }
-            const formatTimeWatched = (currentTime, totalTime) => {
-        console.log("currentTime ", currentTime)
-        console.log("totalTime ",totalTime)
+        const formatTimeWatched = (currentTime, totalTime) => {
         if (currentTime >= totalTime) {
             return 100;
         }
@@ -99,6 +97,7 @@ export default function ListSearch() {
 
         return positionBar
     }
+    
     return (
         <>
             {loading ? (
