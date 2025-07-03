@@ -206,7 +206,7 @@ function MetaData() {
                     <button className="buttonSendMetaDatas" type="button" onClick={handleUpload}>Enviar metadados <BsSend /></button>
                 </div>
 
-                <p className="detailsImage">*A imagem que aparece é apenas uma pré visualização</p>
+                <p className="detailsImage">*A imagem que aparece é como será visualizada pelos usuários</p>
             </div>
 
         </>

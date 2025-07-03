@@ -23,11 +23,13 @@
     position: relative;
     width: 200px;
     flex-shrink: 0;
+        width: 17rem;
+    height: 10rem;
 }
 
 .thumbnail {
     width: 100%;
-    height: 120px;
+    height: 100%;
     object-fit: cover;
     border-radius: 6px;
 }
@@ -132,12 +134,16 @@
     }
 }
 
-@media (min-width:260px) and (max-width:360px) {
+@media (min-width:260px) and (max-width:500px) {
     .videoCardContent {
         flex-direction: column;
     }
 
     .thumbnailContainer {
         width: 100%;
+    }
+
+    .video-info{
+        background-color: transparent;
     }
 }

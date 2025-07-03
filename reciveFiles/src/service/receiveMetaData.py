@@ -41,7 +41,7 @@ class ReceiveMetadaService:
 
         filePath = self.copyFileLocally(file)
 
-        self.resizeImage(700, 500, filePath)
+        self.resizeImage(700, 393, filePath) 
 
         imageUrlOnBucket = self.saveImageRemote(filePath)
 
@@ -89,20 +89,22 @@ class ReceiveMetadaService:
         else:
             return "Ocorreu um erro"
 
-    def resizeImage(self, target_width: int, target_height: int, imagePath: str) -> None:
+    def resizeImage(self, targetWidth: int, targetHeight: int, imagePath: str) -> None:
         img = Image.open(imagePath)
 
-        original_width, original_height = img.size
+        originalWidth, originalHeight = img.size
+        aspectRatio = targetWidth / targetHeight
 
-        if original_width / original_height > target_width / target_height:
-            new_width = target_width
-            new_height = int(target_width * original_height / original_width)
+        if originalWidth / originalHeight > aspectRatio:
+            newHeight = targetHeight
+            newWidth = int(targetHeight * originalWidth / originalHeight)
         else:
-            new_height = target_height
-            new_width = int(target_height * original_width / original_height)
+            newWidth = targetWidth
+            newHeight = int(targetWidth * originalHeight / originalWidth)
 
-        imgResized = img.resize((new_width, new_height))
-        imgResized.save(imagePath, quality=70)
+        imgResized = img.resize((newWidth, newHeight))
+        imgResized.save(imagePath, quality=80)
+
 
     def isValidUuid(self, val: str):
         try:

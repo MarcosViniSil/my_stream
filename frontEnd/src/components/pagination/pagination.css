@@ -17,13 +17,13 @@
 .page-item a {
   display: inline-block;
   padding: 8px 16px;
-  background-color: #3f3e3e; 
+  background-color: #3f3e3e;
   color: white;
   text-decoration: none;
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s;
-  white-space: nowrap; 
+  white-space: nowrap;
 }
 
 .page-item a:hover {
@@ -31,13 +31,13 @@
 }
 
 .page-item.disabled a {
-  background-color: #444; 
+  background-color: #444;
   cursor: not-allowed;
   opacity: 0.6;
 }
 
 .active a {
-  background-color: #419181; 
+  background-color: #419181;
   color: white;
 }
 
@@ -45,6 +45,8 @@
   color: white;
   text-align: center;
   margin-bottom: 10px;
+  margin-top: 10px;
+  font-size: 1.6em;
 }
 
 @media (max-width: 600px) {
@@ -59,6 +61,8 @@
   }
 
   #titlePagination {
-    font-size: 1rem;
+    font-size: 1.4rem;
+    margin-bottom: 0px;
+    margin-top: 50px;
   }
 }

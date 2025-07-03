@@ -1,16 +1,15 @@
-.video-card {
-  background-color: #1e1e1e;
+.video-card2 {
   color: white;
   border-radius: 8px;
   overflow: hidden;
   width: 100%;
   max-width: 360px;
-  height: 230px;
+  height: 19rem;
   transition: transform 0.2s ease;
   margin: 0 auto;
 }
 
-.video-card:hover {
+.video-card2:hover {
   transform: scale(1.02);
 }
 
@@ -20,10 +19,10 @@
   width: 100%;
 }
 
-.thumbnail {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.thumbnail2 {
+    width: 23rem;
+    height: 12.938rem;
+    object-fit: cover;
 }
 
 .duration {

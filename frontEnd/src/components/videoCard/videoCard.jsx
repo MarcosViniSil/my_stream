@@ -5,13 +5,13 @@ import './videoCard.css'
 export default function VideoCard({ video, videoDuration,progress,videoAt }) {
 
   return (
-    <div className="video-card">
+    <div className="video-card2">
       <a href={ videoAt === 0 ? `/watch?v=${video.videoId}` : `/watch?v=${video.videoId}&t=${videoAt}`}>
         <div className='wrapThumbnailAndDuration'>
           <img
             src={video.thumbnailUrl}
             alt={video.videoTitle}
-            className="thumbnail"
+            className="thumbnail2"
           />
           <div className={`progress-bar-container ${videoAt === 0 ? 'desactivate' : 'activate'}`}>
             <div
