@@ -28,13 +28,14 @@ export default function VideoPagination() {
     setLoading(true);
     try {
       const quantityVideos = await getQuantityVideos();
-
+      console.log(quantityVideos)
       if (!quantityVideos || quantityVideos.videosQuantity === 0) {
         setVideos([]);
         setCurrentItems([]);
         setPageCount(0);
       } else {
         const videosUser = await getVideosUser(offSet);
+        console.log(videosUser)
         setVideos(videosUser);
 
         const endOffset = itemOffset + itemsPerPage;

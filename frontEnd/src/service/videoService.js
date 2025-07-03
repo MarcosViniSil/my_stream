@@ -73,7 +73,7 @@ export async function deleteVideo(videoId) {
   formData.append("videoId", videoId);
 
   try {
-    const response = await fetch("http://localhost:8000/user/video", {
+    const response = await fetch(`http://localhost:8000/user/video?tokenUser=${token}&videoId=${videoId}`, {
       method: "DELETE",
       body: formData,
     });

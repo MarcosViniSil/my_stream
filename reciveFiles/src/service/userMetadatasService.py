@@ -13,7 +13,7 @@ class UserMetaDatasService:
 
     def getVideoMetadatas(self, videoId:str) -> dict:
         try:
-            metadatas = self.metadataRepository.getMetadatasByVideoId(videoId)
+            metadatas = self.metadataRepository.getVideoMetadata(videoId)
             if metadatas is None:
                 return  {
                     "thumbnailUrl": "",

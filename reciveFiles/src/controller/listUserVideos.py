@@ -12,8 +12,12 @@ async def get_user_videos(tokenUser = Form(...),offset: int = Form(...),userVide
     return userVideosService.getVideosList(tokenUser,offset)
 
 @routerUserVideos.delete("/user/video")
-async def delete_video_user(tokenUser = Form(...),videoId = Form(...),userVideosService: UserVideosService = Depends(getUserVideosRepository)):
-    return userVideosService.deleteVideo(videoId,tokenUser)
+async def delete_video_user(
+    tokenUser: str = Query(...), 
+    videoId: str = Query(...), 
+    userVideosService: UserVideosService = Depends(getUserVideosRepository)
+):
+    return userVideosService.deleteVideo(videoId, tokenUser)
 
 @routerUserVideos.get("/user/metadatas/{videoId}")
 async def get_metadatas_video(videoId : str,userMetadatasService: UserMetaDatasService = Depends(getUserMetadatas)):

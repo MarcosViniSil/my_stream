@@ -32,7 +32,7 @@ class UserVideosService:
         
         DATAS_PER_PAGE = 5
         offSet = offSet * DATAS_PER_PAGE
-        datas = self.videoRepository.getListVideos(tokenUser,offSet)
+        datas = self.videoRepository.getVideosByUser(tokenUser,offSet)
         return self.convertDictToArray(datas)
     
     def convertDictToArray(self,data:dict) -> dict:
@@ -48,6 +48,9 @@ class UserVideosService:
                 "status": status
             })
 
+        statusOrder = {'READY': 0, 'PROCESSING': 1, 'FAIL': 2}
+        result.sort(key=lambda x: statusOrder.get(x['status'], 3))
+
         return result
     
     def deleteVideo(self,videoId:str,tokenUser:str) -> None:
@@ -56,7 +59,7 @@ class UserVideosService:
         
         videoDatas = ""
         try:
-            videoDatas = self.videoRepository.getDatasToDeleteVideo(videoId)
+            videoDatas = self.videoRepository.getVideoDetails(videoId)
         except Exception as e:
             raise HTTPException(status_code=400,detail="Ocorreu um erro ao buscar os dados do vídeo para exclusão")
         
@@ -71,7 +74,7 @@ class UserVideosService:
             raise HTTPException(status_code=400,detail="O vídeo solicitado ainda está em processamento, aguarde ser concluído para exclusão")
 
         try:
-            self.videoRepository.changeVideoToDeleted(videoId)
+            self.videoRepository.markVideoAsDeleted(videoId)
         except Exception as e:
              raise HTTPException(status_code=400,detail="Ocorreu um erro ao atualizar a base de dados, tente novamente")
 
@@ -87,7 +90,8 @@ class UserVideosService:
     def getTotalVideosByUser(self,tokenUser:str) -> dict:
         #TODO get id user by token
         try:
-            videosQuantity = self.videoRepository.getNumberOfVideosByUser(tokenUser)
+            videosQuantity = self.videoRepository.getVideoCountByUser(tokenUser)
+            print("videosQuantity ",videosQuantity)
             if videosQuantity:
                 return {"videosQuantity":videosQuantity}
             raise HTTPException(status_code=400,detail="Ocorreu um erro ao verificar a quantidade de vídeos do usuário")
@@ -98,7 +102,7 @@ class UserVideosService:
         if not videoId:
             raise HTTPException(status_code=400,detail="Id do vídeo não foi informado")
         
-        status = self.videoRepository.getVideoStatusById(videoId)
+        status = self.videoRepository.getVideoStatus(videoId)
         if status:
             return {"status":status[0]}
         else:
@@ -118,7 +122,7 @@ class UserVideosService:
         videosPerPage = 10
         offset *= videosPerPage
         try:
-            rows = self.videoRepository.getVideos(offset,userId)
+            rows = self.videoRepository.getVideoFeed(offset,userId)
             if rows is None:
                 return []
             reponse = [VideoResponse(
@@ -143,7 +147,7 @@ class UserVideosService:
             userId = '3f06af63-a93c-11e4-9797-00505690773f'
 
             try:
-                rows = self.videoRepository.getVideosBasedString(param,userId)
+                rows = self.videoRepository.searchVideosByTitle(param,userId)
                 if rows is None:
                     return []
                 reponse = [VideoResponse(
@@ -165,7 +169,7 @@ class UserVideosService:
             raise HTTPException(status_code=400,detail=f"id inválido para busca")
         
         try:
-                row = self.videoRepository.getVideoDatasToStreaming(videoId)
+                row = self.videoRepository.getVideoForStreaming(videoId)
                 if row is None:
                     raise HTTPException(status_code=400,detail=f"O vídeo solicitado não foi encontrado")
                 reponse = VideoStreaming(
@@ -191,12 +195,12 @@ class UserVideosService:
             raise HTTPException(status_code=400,detail=f"id de vídeo inválido")
         
         try:
-            self.videoRepository.createHistoryVideo(videoId,userId)
+            self.videoRepository.addToHistory(videoId,userId)
         except Exception as e:
             raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao inserir vídeo no histórico {e}")
         
         try:
-            self.videoRepository.createTimeWatched(videoId,userId)
+            self.videoRepository.initializeWatchTime(videoId,userId)
         except Exception as e:
             raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao inserir valor inicial assistido {e}")
         
@@ -207,7 +211,7 @@ class UserVideosService:
         #TODO recover id user based on token
         userId = '3f06af63-a93c-11e4-9797-00505690773f'
         try:
-            datas = self.videoRepository.getHistoryWatched(userId,videoId)
+            datas = self.videoRepository.getWatchedSeconds(userId,videoId)
             if datas is None:
                 raise HTTPException(status_code=400,detail=f"Não foi possível encontrar dados de tempo assistido")
             
@@ -224,7 +228,7 @@ class UserVideosService:
             elif timeAtVideo > datas.videoDuration:
                 timeAtVideo = datas.videoDuration
 
-            self.videoRepository.insertTimeWatched(userId,videoId,timeAtVideo)
+            self.videoRepository.updateWatchTime(userId,videoId,timeAtVideo)
             return {"message":"sucesso"}
         
         except Exception as e:
@@ -242,7 +246,7 @@ class UserVideosService:
         offset *= dataPerPage
         
         try:
-                rows = self.videoRepository.getHistoryVideosUser(userId,offset)
+                rows = self.videoRepository.getUserHistory(userId,offset)
                 if rows is None:
                     return []
                 

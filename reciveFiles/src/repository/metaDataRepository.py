@@ -11,7 +11,7 @@ class MetaDataRepository:
     def __init__(self, db: ConnectionDB):
         self.Db = db
 
-    def insertMetaData(self, uuidVideo: str, videoTitle: str, urlThumbnail:str) -> None:
+    def updateVideoMetadata(self, uuidVideo: str, videoTitle: str, urlThumbnail:str) -> None:
         
         #TODO get id admin to make relashionship between metadata and video
 
@@ -37,7 +37,7 @@ class MetaDataRepository:
         except Exception as e:
             raise ValueError("Erro ao inserir metadados no banco de dados ",e)
         
-    def isUUIDExistsOnDataBase(self, uuidVideo: str) -> bool:
+    def doesVideoExist(self, uuidVideo: str) -> bool:
 
         try:
             videoIdBytes = uuid.UUID(uuidVideo).bytes
@@ -69,7 +69,7 @@ class MetaDataRepository:
         except Exception as e:
             raise ValueError("Erro ao verificar UUID",e)
         
-    def getMetadatasByVideoId(self, uuidVideo: str) -> dict:
+    def getVideoMetadata(self, uuidVideo: str) -> dict:
         try:
             videoIdBytes = uuid.UUID(uuidVideo).bytes
             self.Db.createConnection()

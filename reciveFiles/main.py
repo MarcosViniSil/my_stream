@@ -23,6 +23,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+def root():
+    return {"message": "working"}
+
+
 app.include_router(router)
 app.include_router(routerM)
 app.include_router(routerUserVideos)

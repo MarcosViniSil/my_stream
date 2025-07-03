@@ -21,7 +21,7 @@ class ReceiveMetadaService:
     async def processMetaData(self, idVideo: str, videoTitle: str, file: UploadFile,tokenUser:str) -> dict:
         #if video belongs to user -> accept change, if not, return error
         userId = '3f06af63-a93c-11e4-9797-00505690773f'
-        if not self.isValidUuid(idVideo) or not self.isValidUuid(userId):
+        if not self.isIdValid(idVideo) or not self.isIdValid(userId):
             raise HTTPException(status_code=400, detail="uuid inválido")
         
         if not self.metaDataRepository.isVideoBelongsToUser(userId,idVideo):
@@ -33,10 +33,10 @@ class ReceiveMetadaService:
         if not self.isFileSizeAllowed(file.size):
             raise HTTPException(status_code=400,detail="Tamanho de arquivo inválido, no máximo 50 megabytes")
 
-        if videoTitle.replace(" ", "") == "":
-            raise HTTPException(status_code=400, detail="titulo de vídeo vazio")
+        if not self.isTitleAllowed(videoTitle):
+            raise HTTPException(status_code=400, detail="titulo de vídeo inválido")
 
-        if not self.verifyUuidDb(idVideo):
+        if not self.verifyID(idVideo):
             raise HTTPException(status_code=400, detail="uuid não encontrado")
 
         filePath = self.copyFileLocally(file)
@@ -52,11 +52,14 @@ class ReceiveMetadaService:
         return {"message": "Imagem recebida com sucesso", "imageUrl": imageUrlOnBucket}
 
     def copyFileLocally(self, file) -> str:
-        file_path = os.path.join(UPLOAD_DIR, file.filename)
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        try:
+            filePath = os.path.join(UPLOAD_DIR, file.filename)
+            with open(filePath, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
 
-        return file_path
+            return filePath
+        except Exception as e:
+            raise HTTPException(status_code=400, detail="Ocorreu um erro ao baixar a imagem para o servidor")
 
     def saveImageRemote(self, filePath: str) -> str:
         try:
@@ -75,7 +78,7 @@ class ReceiveMetadaService:
 
     def insertMetaDatasDb(self, idVideo: UUID, videoTitle: str, videoUrlOnBucket: str) -> None:
         try:
-            self.metaDataRepository.insertMetaData(idVideo, videoTitle, videoUrlOnBucket)
+            self.metaDataRepository.updateVideoMetadata(idVideo, videoTitle, videoUrlOnBucket)
         except ValueError as e:
             self.deleteFileRemote(videoUrlOnBucket.split("/")[-1])
         except DuplicateColumnException as e:
@@ -90,32 +93,34 @@ class ReceiveMetadaService:
             return "Ocorreu um erro"
 
     def resizeImage(self, targetWidth: int, targetHeight: int, imagePath: str) -> None:
-        img = Image.open(imagePath)
+        try:
+            img = Image.open(imagePath)
 
-        originalWidth, originalHeight = img.size
-        aspectRatio = targetWidth / targetHeight
+            originalWidth, originalHeight = img.size
+            aspectRatio = targetWidth / targetHeight
 
-        if originalWidth / originalHeight > aspectRatio:
-            newHeight = targetHeight
-            newWidth = int(targetHeight * originalWidth / originalHeight)
-        else:
-            newWidth = targetWidth
-            newHeight = int(targetWidth * originalHeight / originalWidth)
+            if originalWidth / originalHeight > aspectRatio:
+                newHeight = targetHeight
+                newWidth = int(targetHeight * originalWidth / originalHeight)
+            else:
+                newWidth = targetWidth
+                newHeight = int(targetWidth * originalHeight / originalWidth)
 
-        imgResized = img.resize((newWidth, newHeight))
-        imgResized.save(imagePath, quality=80)
+            imgResized = img.resize((newWidth, newHeight))
+            imgResized.save(imagePath, quality=80)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Ocorreu um erro ao manipular foto de capa")
 
-
-    def isValidUuid(self, val: str):
+    def isIdValid(self, val: str):
         try:
             uuid.UUID(val)
             return True
         except ValueError:
             return False
 
-    def verifyUuidDb(self,idVideo:str) -> bool:
+    def verifyID(self,idVideo:str) -> bool:
         try:
-            return self.metaDataRepository.isUUIDExistsOnDataBase(idVideo)
+            return self.metaDataRepository.doesVideoExist(idVideo)
         except Exception as e:
             raise HTTPException(status_code=400, detail="Ocorreu um erro ao verificar id do vídeo solicitado")
 
@@ -127,9 +132,19 @@ class ReceiveMetadaService:
             raise HTTPException(status_code=400, detail="Ocorreu um erro ao deletar imagem em nuvem")
 
     def isExtensionValid(self, file: UploadFile) -> bool:
-        contentType = file.headers["content-type"]
-        return (contentType == "image/png" or contentType == "image/svg+xml" or contentType == "image/jpeg")
+        try:
+            contentType = file.headers["content-type"]
+            return (contentType == "image/png" or contentType == "image/svg+xml" or contentType == "image/jpeg")
+        except Exception as e:
+            raise HTTPException(status_code=400, detail="Ocorreu um erro ao verificar extensão da imagem")
 
+    def isTitleAllowed(self, title:str) -> bool:
+        if len(title.replace(" ", "")) == 0:
+            return False
+        if len(title) > 100 :
+            return False
+        return True
+    
     def isFileSizeAllowed(self, fileSize: int) -> bool:
         oneMegaByte = 1048576
         fileSizeInMegaBytes = fileSize / oneMegaByte

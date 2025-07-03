@@ -9,38 +9,54 @@ from mysql.connector import errorcode
 from datetime import datetime, timedelta
 
 class VideoRepository:
-    
+
     def __init__(self, db: ConnectionDB):
         self.Db = db
 
-    def insertDatasVideo(self, url: str,videoDuration:int) -> str:
-       
-        now = datetime.now()
-        formatted_date = now.strftime('%Y-%m-%d')
+    def createVideo(self, url: str, videoDuration: int) -> str:
 
-        idAdm = uuid.UUID('3f06af63-a93c-11e4-9797-00505690773f').bytes
- 
+        now = datetime.now()
+        formattedDate = now.strftime("%Y-%m-%d")
+
+        userId = uuid.UUID("3f06af63-a93c-11e4-9797-00505690773f").bytes
+
         videoId = uuid.uuid4().bytes
+
         self.Db.createConnection()
 
-        #TODO -> change logic to recive id_user from body
+        # TODO -> change logic to receive user id from body
 
         sql = """
                 INSERT INTO tb_video (videoId, videoUrl, videoStatus,videoDuration, isVideoAvailable,videoDate,isDeleted, idAdmin) 
                 VALUES (%s, %s, %s,%s, %s, %s,%s,%s);
         """
         try:
-            self.Db.myCursor.execute(sql, (videoId, url, VideoStatus.PROCESSING.value,videoDuration, False, formatted_date,False, idAdm))
+            self.Db.myCursor.execute(
+                sql,
+                (
+                    videoId,
+                    url,
+                    VideoStatus.PROCESSING.value,
+                    videoDuration,
+                    False,
+                    formattedDate,
+                    False,
+                    userId,
+                ),
+            )
             self.Db.myDb.commit()
             self.Db.closeConnection()
-            uuid_obj = uuid.UUID(bytes=videoId)
-            return str(uuid_obj)
+
+            uuidObj = uuid.UUID(bytes=videoId)
+
+            return str(uuidObj)
+
         except Exception as e:
             print(e)
-            raise ValueError("Erro ao inserir url do vídeo",e)
-        
-    def createLikeAndDislikesVideo(self, videoId: str) -> None:
-    
+            raise ValueError("Erro ao inserir url do vídeo", e)
+
+    def initializeVideoReactions(self, videoId: str) -> None:
+
         videoId = uuid.UUID(videoId).bytes
 
         self.Db.createConnection()
@@ -49,16 +65,17 @@ class VideoRepository:
                 INSERT INTO tb_videoReaction (videoId,videoLikes,videoDislikes) VALUES (%s,0,0);
         """
         try:
-            self.Db.myCursor.execute(sql, (videoId, ))
+            self.Db.myCursor.execute(sql, (videoId,))
             self.Db.myDb.commit()
             self.Db.closeConnection()
+
         except Exception as e:
             print(e)
-            raise ValueError("Erro ao criar likes e deslikes iniciais",e)
-        
-    def getListVideos(self,idUser:str, offSet: int) -> dict :
-        idAdm = uuid.UUID('3f06af63-a93c-11e4-9797-00505690773f').bytes
- 
+            raise ValueError("Erro ao criar likes e deslikes iniciais", e)
+
+    def getVideosByUser(self, userId: str, offSet: int) -> dict:
+        userIdBytes = uuid.UUID("3f06af63-a93c-11e4-9797-00505690773f").bytes
+
         self.Db.createConnection()
 
         sql = """
@@ -67,18 +84,21 @@ class VideoRepository:
                 WHERE tbv.isDeleted = FALSE AND tbv.idAdmin = %s
                 ORDER BY tbv.videoDate DESC
                 LIMIT 5 OFFSET %s;
-        """
+              """
         try:
-            self.Db.myCursor.execute(sql, (idAdm,offSet))
+            self.Db.myCursor.execute(sql, (userIdBytes, offSet))
             myresult = self.Db.myCursor.fetchall()
+
             self.Db.myDb.commit()
             self.Db.closeConnection()
+
             return myresult
+
         except Exception as e:
             print(e)
-            raise ValueError("Erro ao buscar videos na base de dados",e)
-    
-    def getDatasToDeleteVideo(self,videoId:str) -> dict:
+            raise ValueError("Erro ao buscar videos na base de dados", e)
+
+    def getVideoDetails(self, videoId: str) -> dict:
         videoIdBytes = uuid.UUID(videoId).bytes
 
         self.Db.createConnection()
@@ -88,129 +108,141 @@ class VideoRepository:
         """
         try:
             self.Db.myCursor.execute(sql, (videoIdBytes,))
+
             result = self.Db.myCursor.fetchone()
+
             self.Db.myDb.commit()
             self.Db.closeConnection()
-            
+
             if result:
                 data = {
                     "userId": result[0],
                     "videoStatus": result[1],
                     "videoUrl": result[2],
                 }
+
                 return data
             else:
                 return None
+
         except Exception as e:
             print(e)
             raise ValueError("Erro ao verificar dados do vídeo para exclusão")
-    
-    def changeVideoToDeleted(self, idVideo:str) -> None:
-        idVideoBytes = uuid.UUID(idVideo).bytes
+
+    def markVideoAsDeleted(self, videoId: str) -> None:
+        videoIdBytes = uuid.UUID(videoId).bytes
+
         self.Db.createConnection()
 
         sql = """
                 UPDATE tb_video SET isDeleted = TRUE WHERE videoId = %s
         """
         try:
-            self.Db.myCursor.execute(sql, (idVideoBytes,))
+            self.Db.myCursor.execute(sql, (videoIdBytes,))
             self.Db.myDb.commit()
             self.Db.closeConnection()
+
         except Exception as e:
             print(e)
             raise ValueError("Erro ao deletar vídeo, tente novamente")
 
-    def deleteVideoById(self,idVideo:str) -> None :
-        idVideoBytes = uuid.UUID(idVideo).bytes
- 
+    def permanentlyDeleteVideo(self, videoId: str) -> None:
+        videoIdBytes = uuid.UUID(videoId).bytes
+
         self.Db.createConnection()
 
         sql = """
                 DELETE FROM tb_video WHERE videoId = %s;
         """
         try:
-            self.Db.myCursor.execute(sql, (idVideoBytes,))
+            self.Db.myCursor.execute(sql, (videoIdBytes,))
             self.Db.myDb.commit()
             self.Db.closeConnection()
+
         except Exception as e:
             print(e)
             raise ValueError("Erro ao deletar vídeo, tente novamente")
-        
-    def getNumberOfVideosByUser(self,idUser:str) -> int:
-        idAdm = uuid.UUID('3f06af63-a93c-11e4-9797-00505690773f').bytes
- 
+
+    def getVideoCountByUser(self, userId: str) -> int:
+        userIdBytes = uuid.UUID("3f06af63-a93c-11e4-9797-00505690773f").bytes
+
         self.Db.createConnection()
 
         sql = """
                 SELECT COUNT(videoId) AS countVideo FROM tb_video WHERE idAdmin = %s AND isDeleted = FALSE;
-        """
+              """
         try:
-            self.Db.myCursor.execute(sql, (idAdm,))
+            self.Db.myCursor.execute(sql, (userIdBytes,))
             myresult = self.Db.myCursor.fetchone()
+
             self.Db.myDb.commit()
             self.Db.closeConnection()
-            return myresult[0]
+
+            return myresult[0] if myresult[0] is not None else 0
+
         except Exception as e:
             print(e)
-            raise ValueError("Erro ao buscar quantidade de vídeos do usuário",e)
-    
-    def getVideoStatusById(self, videoId:str) -> VideoStatus:
-        idVideoBytes = uuid.UUID(videoId).bytes
- 
+            raise ValueError("Erro ao buscar quantidade de vídeos do usuário", e)
+
+    def getVideoStatus(self, videoId: str) -> VideoStatus:
+        videoIdBytes = uuid.UUID(videoId).bytes
+
         self.Db.createConnection()
 
         sql = """
                 SELECT videoStatus FROM tb_video WHERE videoId = %s;
         """
         try:
-            self.Db.myCursor.execute(sql, (idVideoBytes,))
+            self.Db.myCursor.execute(sql, (videoIdBytes,))
             result = self.Db.myCursor.fetchone()
+
             self.Db.myDb.commit()
             self.Db.closeConnection()
+
             return result
+
         except Exception as e:
             print(e)
             raise ValueError("Erro ao buscar status do vídeo solicitado")
-        
-    def getVideos(self, offset: int, userId: Optional[str]) -> dict:
-        
-        print("userId", userId)
-    
+
+    def getVideoFeed(self, offset: int, userId: Optional[str]) -> dict:
+
         self.Db.createConnection()
-    
+
         sql = """
             SELECT tbv.videoDate, tu.userName, tbv.videoTitle, tbv.thumbnailUrl, tbv.videoDuration, tbv.videoId,
                    COALESCE(tbwt.watchedSeconds, 0) AS watchedSeconds
             FROM tb_video AS tbv
             INNER JOIN tb_user AS tu ON tu.userId = tbv.idAdmin
             LEFT JOIN tb_videoWatchTime AS tbwt 
-                   ON tbwt.videoID = tbv.videoId AND tbwt.userID = %s
+             ON tbwt.videoID = tbv.videoId AND tbwt.userID = %s
             WHERE tbv.isDeleted = FALSE AND tbv.isVideoAvailable = TRUE 
-              AND tbv.videoStatus = 'READY' AND tbv.videoTitle <> '' AND tbv.thumbnailUrl <> ''
-              AND tu.userName <> '' AND tbv.videoDuration > 0
+             AND tbv.videoStatus = 'READY' AND tbv.videoTitle <> '' AND tbv.thumbnailUrl <> ''
+             AND tu.userName <> '' AND tbv.videoDuration > 0
             ORDER BY tbv.videoDate DESC, tbv.videoId DESC
             LIMIT 10 OFFSET %s;
         """
-    
+
         try:
-            idUserBytes = uuid.UUID(userId).bytes if userId else None
-            self.Db.myCursor.execute(sql, (idUserBytes, offset))
+            userIdBytes = uuid.UUID(userId).bytes if userId else None
+            self.Db.myCursor.execute(sql, (userIdBytes, offset))
             rows = self.Db.myCursor.fetchall()
+
             self.Db.myDb.commit()
             self.Db.closeConnection()
-    
+
             if not rows:
                 return None
-    
+
             return rows
-    
+
         except Exception as e:
             print(e)
             raise ValueError("Erro ao buscar vídeos da página inicial")
 
-    
-    def getVideosBasedString(self, param:str,id:str) -> dict:
-        idUserBytes = uuid.UUID(id).bytes
+    def searchVideosByTitle(self, param: str, userId: str) -> dict:
+        userIdBytes = uuid.UUID(userId).bytes
+
         self.Db.createConnection()
 
         sql = """
@@ -224,23 +256,25 @@ class VideoRepository:
                ORDER BY tbv.videoDate DESC, tbv.videoId DESC
 
               """
-        param = (f"%{param}%")
+        param = f"%{param}%"
         try:
-            self.Db.myCursor.execute(sql, (idUserBytes,param))
+            self.Db.myCursor.execute(sql, (userIdBytes, param))
             rows = self.Db.myCursor.fetchall()
+
             self.Db.myDb.commit()
             self.Db.closeConnection()
+
             if len(rows) == 0:
                 return None
-            
+
             return rows
-        
+
         except Exception as e:
             print(e)
             raise ValueError("Erro ao buscar vídeos da pesquisa feita")
-        
-    def getVideoDatasToStreaming(self, videoId:str) -> dict:
-        idVideoBytes = uuid.UUID(videoId).bytes
+
+    def getVideoForStreaming(self, videoId: str) -> dict:
+        videoIdBytes = uuid.UUID(videoId).bytes
         self.Db.createConnection()
 
         sql = """
@@ -254,41 +288,44 @@ class VideoRepository:
 
               """
         try:
-            self.Db.myCursor.execute(sql, (idVideoBytes,))
+            self.Db.myCursor.execute(sql, (videoIdBytes,))
             row = self.Db.myCursor.fetchone()
+
             self.Db.myDb.commit()
             self.Db.closeConnection()
+
             if row is None or len(row) == 0:
                 return None
-            
+
             return row
-        
+
         except Exception as e:
             print(e)
             raise ValueError(f"Erro ao buscar dados do vídeo para streaming {e}")
-        
-    
-    def insertTimeWatched(self, userId:str,videoId:str,timeWatched:int) -> None:
-        idVideoBytes = uuid.UUID(videoId).bytes
+
+    def updateWatchTime(self, userId: str, videoId: str, timeWatched: int) -> None:
+
+        videoIdBytes = uuid.UUID(videoId).bytes
         userIdBytes = uuid.UUID(userId).bytes
-        
+
         self.Db.createConnection()
 
         sql = """
                 UPDATE tb_videoWatchTime SET watchedSeconds = %s WHERE userID = %s AND videoID = %s;     
               """
         try:
-            self.Db.myCursor.execute(sql, (timeWatched,userIdBytes,idVideoBytes))
+            self.Db.myCursor.execute(sql, (timeWatched, userIdBytes, videoIdBytes))
             self.Db.myDb.commit()
             self.Db.closeConnection()
+
         except Exception as e:
             print(e)
             raise ValueError(f"Erro ao adicionar tempo asistido ao vídeo")
-    
-    def getHistoryWatched(self, userId:str,videoId:str)-> dict:
-        idVideoBytes = uuid.UUID(videoId).bytes
+
+    def getWatchedSeconds(self, userId: str, videoId: str) -> dict:
+        videoIdBytes = uuid.UUID(videoId).bytes
         userIdBytes = uuid.UUID(userId).bytes
-        
+
         self.Db.createConnection()
 
         sql = """
@@ -298,45 +335,46 @@ class VideoRepository:
                 WHERE tbvwt.userID = %s AND tbvwt.videoID = %s  
               """
         try:
-            self.Db.myCursor.execute(sql, (userIdBytes,idVideoBytes))
-            
+            self.Db.myCursor.execute(sql, (userIdBytes, videoIdBytes))
+
             row = self.Db.myCursor.fetchone()
-            
+
             self.Db.myDb.commit()
             self.Db.closeConnection()
-            
+
             if row is None or len(row) == 0:
                 return None
-            
+
             return row
-            
+
         except Exception as e:
             print(e)
             raise ValueError(f"Erro ao buscar dados de tempo assistido")
 
-    def createHistoryVideo(self, videoId:str,userId:str) -> None:
-        idVideoBytes = uuid.UUID(videoId).bytes
+    def addToHistory(self, videoId: str, userId: str) -> None:
+        videoIdBytes = uuid.UUID(videoId).bytes
         userIdBytes = uuid.UUID(userId).bytes
-        
+
         now = datetime.now()
-        dateSQL = now.strftime('%Y-%m-%d')
+        SqlDate = now.strftime("%Y-%m-%d")
         historyId = uuid.uuid4().bytes
-        
+
         self.Db.createConnection()
 
         sql = """
                INSERT INTO tb_videoHistory (historyId,userId,videoId,DateVideo) VALUES (%s,%s,%s,%s);    
               """
         try:
-            self.Db.myCursor.execute(sql, (historyId,userIdBytes,idVideoBytes,dateSQL))
+            self.Db.myCursor.execute(sql, (historyId, userIdBytes, videoIdBytes, SqlDate))
             self.Db.myDb.commit()
             self.Db.closeConnection()
+
         except Exception as e:
             print(e)
             raise ValueError(f"Erro ao inserir video no historico {e}")
-    
-    def createTimeWatched(self, videoId: str, userId: str) -> None:
-        idVideoBytes = uuid.UUID(videoId).bytes
+
+    def initializeWatchTime(self, videoId: str, userId: str) -> None:
+        videoIdBytes = uuid.UUID(videoId).bytes
         userIdBytes = uuid.UUID(userId).bytes
 
         self.Db.createConnection()
@@ -346,26 +384,25 @@ class VideoRepository:
                VALUES (%s, %s, %s);
               """
         try:
-            self.Db.myCursor.execute(sql, (userIdBytes, idVideoBytes, 0))
+            self.Db.myCursor.execute(sql, (userIdBytes, videoIdBytes, 0))
             self.Db.myDb.commit()
             self.Db.closeConnection()
+
         except mysql.connector.Error as err:
             self.Db.closeConnection()
             if err.errno == errorcode.ER_DUP_ENTRY:
-                print("entrada duplicada")
                 return None
             else:
                 raise ValueError(f"Erro ao inserir vídeo no histórico: {err}")
 
-    
-    def getHistoryVideosUser(self,idUser:str,offset:int) -> dict:
-        idUserBytes = uuid.UUID(idUser).bytes
+    def getUserHistory(self, userId: str, offset: int) -> dict:
+        userIdBytes = uuid.UUID(userId).bytes
         self.Db.createConnection()
 
         sql = """
                WITH ranked_videos AS (
-			        SELECT tbvh.videoId,tbv.videoTitle,tbv.thumbnailUrl,tbvh.DateVideo,tbwt.watchedSeconds,tbv.videoDuration,tbu.userName,
-			        ROW_NUMBER() 
+			        SELECT tbvh.videoId,tbv.videoTitle,tbv.thumbnailUrl,tbvh.DateVideo,
+                    tbwt.watchedSeconds,tbv.videoDuration,tbu.userName,ROW_NUMBER() 
 			        OVER (PARTITION BY DATE(tbvh.DateVideo), tbvh.videoId 
 			        ORDER BY tbvh.DateVideo DESC, tbvh.historyId DESC
 		        ) as rn
@@ -391,16 +428,17 @@ class VideoRepository:
 
               """
         try:
-            self.Db.myCursor.execute(sql, (idUserBytes,offset))
+            self.Db.myCursor.execute(sql, (userIdBytes, offset))
             row = self.Db.myCursor.fetchall()
+
             self.Db.myDb.commit()
             self.Db.closeConnection()
-            
+
             if row is None or len(row) == 0:
                 return None
-            
+
             return row
-        
+
         except Exception as e:
             print(e)
             raise ValueError(f"Erro ao buscar historico de vídeos {e}")

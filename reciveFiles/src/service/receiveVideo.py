@@ -106,7 +106,7 @@ class ReciveVideo:
         
     def insertVideoDatasDb(self,hashVideo : str,videoDuration:int) -> str:
         try:
-            videoId = self.videoRepository.insertDatasVideo(hashVideo,videoDuration)
+            videoId = self.videoRepository.createVideo(hashVideo,videoDuration)
             return videoId
         except Exception as e:
 
@@ -115,7 +115,7 @@ class ReciveVideo:
     
     def createReactionVideo(self,videoId:str,hashVideo : str) -> None:
         try:
-            self.videoRepository.createLikeAndDislikesVideo(videoId)
+            self.videoRepository.initializeVideoReactions(videoId)
         except Exception as e:
             self.removeRemoteFile(hashVideo.split("/")[-1])
             raise HTTPException(status_code=400, detail="Erro ao criar likes e deslikes")
