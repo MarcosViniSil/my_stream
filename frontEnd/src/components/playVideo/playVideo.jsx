@@ -225,7 +225,7 @@ function VideoPlayer({ videoDatas,timeAt,onTimeUpdate  }) {
         <div className="wrapDatasVideo">
           <div className="wrapAuthorAndTitle">
             <h3>{videoDatas.videoTitle}</h3>
-            <p>criado por {videoDatas.userName} em {videoDatas.videoDate}</p>
+            <p className="authorPlayVideo">criado por {videoDatas.userName} em {videoDatas.videoDate}</p>
           </div>
           <div className="likesAndDislikes">
             <p className="likes"> <AiFillLike /> <span className="valueLD">{videoDatas.likes}</span>  </p>

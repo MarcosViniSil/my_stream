@@ -23,7 +23,7 @@ export default function HistoryVideosCard({ metaDatas,Duration,timeAt,progress }
                         </div>
 
                         <div className="video-info">
-                            <h1 className="video-title">{metaDatas.videoTitle}</h1>
+                            <h1 className="video-title2">{metaDatas.videoTitle}</h1>
                             <p className='author'>{metaDatas.userName}</p>
                         </div>
                     </div>

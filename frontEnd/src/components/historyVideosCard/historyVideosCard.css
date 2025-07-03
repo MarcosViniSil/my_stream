@@ -57,12 +57,13 @@
     overflow: hidden;
     z-index: 1;
 }
+
 .progress-bar-container.activate {
-  background-color: #717171;
+    background-color: #717171;
 }
 
 .progress-bar-container.desactivate {
-  background-color: transparent; 
+    background-color: transparent;
 }
 
 .progress-bar {
@@ -85,16 +86,27 @@
     padding-left: 15px;
 }
 
-.video-title {
+.video-title2 {
     font-size: 1.4em;
     font-weight: bold;
     margin: 0;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
 }
+
 .videoCardContent:hover {
-  transform: scale(1.02);
+    transform: scale(1.02);
 }
-.author{
+
+.author {
     font-size: 1em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
 }
 
 @media (max-width:700px) {
@@ -104,18 +116,28 @@
 
     .video-info {
         width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     .videoCardContent {
         width: 100%;
     }
+    .video-title2 {
+        max-width: 240px;
+    }
+    .author {
+        max-width: 200px;
+    }
 }
 
-@media (min-width:260px) and (max-width:360px){
+@media (min-width:260px) and (max-width:360px) {
     .videoCardContent {
         flex-direction: column;
     }
-    .thumbnailContainer{
+
+    .thumbnailContainer {
         width: 100%;
     }
 }

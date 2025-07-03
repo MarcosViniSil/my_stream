@@ -18,17 +18,20 @@ class ReceiveMetadaService:
         self.bucket = bucket
         self.metaDataRepository = metaDataRepository
 
-    async def processMetaData(self, idVideo: str, videoTitle: str, file: UploadFile) -> dict:
-        #TODO receive user token and validate if user can change the metadatas of video id = idVideo
+    async def processMetaData(self, idVideo: str, videoTitle: str, file: UploadFile,tokenUser:str) -> dict:
+        #if video belongs to user -> accept change, if not, return error
+        userId = '3f06af63-a93c-11e4-9797-00505690773f'
+        if not self.isValidUuid(idVideo) or not self.isValidUuid(userId):
+            raise HTTPException(status_code=400, detail="uuid inválido")
+        
+        if not self.metaDataRepository.isVideoBelongsToUser(userId,idVideo):
+            raise HTTPException(status_code=403,detail="O vídeo solicitado não pertence ao usuário")
         
         if not self.isExtensionValid(file):
-            raise HTTPException(status_code=415,detail="Apenas arquivos .JPEG, .JPG, .PNG ou .svg são permitidos.",)
+            raise HTTPException(status_code=415,detail="Apenas arquivos .JPEG, .JPG, .PNG ou .svg são permitidos.")
 
         if not self.isFileSizeAllowed(file.size):
-            raise HTTPException(status_code=400,detail="Tamanho de arquivo inválido, no máximo 50 megabytes",)
-
-        if not self.isValidUuid(idVideo):
-            raise HTTPException(status_code=400, detail="uuid inválido")
+            raise HTTPException(status_code=400,detail="Tamanho de arquivo inválido, no máximo 50 megabytes")
 
         if videoTitle.replace(" ", "") == "":
             raise HTTPException(status_code=400, detail="titulo de vídeo vazio")

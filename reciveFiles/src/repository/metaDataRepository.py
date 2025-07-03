@@ -52,6 +52,23 @@ class MetaDataRepository:
         except Exception as e:
             raise ValueError("Erro ao verificar UUID",e)
         
+    def isVideoBelongsToUser(self, idUser:str,uuidVideo: str) -> bool:
+        
+        try:
+            idVideoBytes = uuid.UUID(uuidVideo).bytes
+            userIdBytes  = uuid.UUID(idUser).bytes
+            self.Db.createConnection()
+            sql = """
+                SELECT videoId FROM tb_video WHERE idAdmin = %s AND videoId = %s
+              """
+            self.Db.myCursor.execute(sql, (userIdBytes,idVideoBytes))
+            myresult = self.Db.myCursor.fetchall()
+            self.Db.closeConnection()
+            print(myresult)
+            return len(myresult) == 1 and idVideoBytes == myresult[0][0]
+        except Exception as e:
+            raise ValueError("Erro ao verificar UUID",e)
+        
     def getMetadatasByVideoId(self, uuidVideo: str) -> dict:
         try:
             videoIdBytes = uuid.UUID(uuidVideo).bytes
