@@ -18,7 +18,9 @@ class ReciveVideo:
         self.queueService = queueService
 
     async def processReceivedVideo(self,file:UploadFile) -> dict:
-
+        if not file:
+            raise HTTPException(status_code=400, detail="Vídeo não informado")
+        
         if not self.isExtensionValid(file):
             raise HTTPException(status_code=415, detail="Apenas arquivos .mp4 são permitidos.")
         
@@ -27,7 +29,6 @@ class ReciveVideo:
         
         filePath = self.copyFileLocally(file)
 
-    
         hashVideo = self.saveVideoRemote(filePath)
 
         videoDurationSeconds = self.getVideoDuration(file)
@@ -50,16 +51,19 @@ class ReciveVideo:
             raise HTTPException(status_code=400, detail="Erro ao salvar url no banco")
 
     def copyFileLocally(self,file:UploadFile) -> str:
-        file_path = os.path.join(UPLOAD_DIR, file.filename)
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        try:
+            file_path = os.path.join(UPLOAD_DIR, file.filename)
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+
+            if not self.isVideoContainAudio(str(file.filename)):
+                 os.remove(file_path)
+                 raise HTTPException(status_code=400, detail="O vídeo informado não possui áudio")
+
+            return file_path
+        except Exception as e:
+             raise HTTPException(status_code=400, detail="Erro a baixar o vídeo localmente")
         
-        if not self.isVideoContainAudio(str(file.filename)):
-             os.remove(file_path)
-             raise HTTPException(status_code=400, detail="O vídeo informado não possui áudio")
-       
-        return file_path
-    
     def isVideoContainAudio(self,fileName: str) -> bool:
         resultado = subprocess.run(["ffprobe", "-i",f"{UPLOAD_DIR}/{fileName}","-show_streams","-select_streams","a","-loglevel","error"], 
                                    capture_output=True, text=True)
@@ -69,24 +73,28 @@ class ReciveVideo:
             return True
 
     def getVideoDuration(self, file: UploadFile) -> int:
-        result = subprocess.run([
-            "ffprobe", "-v", "error",
-            "-show_entries", "format=duration",
-            "-of", "default=noprint_wrappers=1:nokey=1",
-            f"{UPLOAD_DIR}/{file.filename}"
-        ], capture_output=True, text=True)
+        try:
+            result = subprocess.run([
+                "ffprobe", "-v", "error",
+                "-show_entries", "format=duration",
+                "-of", "default=noprint_wrappers=1:nokey=1",
+                f"{UPLOAD_DIR}/{file.filename}"
+            ], capture_output=True, text=True)
 
-        if result.returncode != 0:
-            raise HTTPException(status_code=400, detail="Não foi possível obter a duração do vídeo")
+            if result.returncode != 0:
+                raise HTTPException(status_code=400, detail="Não foi possível obter a duração do vídeo")
 
-        resultStr = result.stdout.strip()
-        durationInSeconds = int(float(resultStr)) 
+            resultStr = result.stdout.strip()
+            durationInSeconds = int(float(resultStr)) 
+
+            if durationInSeconds < 10:
+                raise HTTPException(status_code=400, detail="O vídeo precisa ter pelo menos 10 segundos")
+
+            return durationInSeconds
         
-        if durationInSeconds < 10:
-            raise HTTPException(status_code=400, detail="O vídeo precisa ter pelo menos 10 segundos")
+        except Exception as e:
+            raise HTTPException(status_code=400, detail="Erro ao obter dados do vídeo")
         
-        return durationInSeconds
-
     def saveVideoRemote(self,file_path: str) -> str:
         try:
             hashVideo = self.bucket.saveFileOnBucket(file_path)
@@ -109,7 +117,6 @@ class ReciveVideo:
             videoId = self.videoRepository.createVideo(hashVideo,videoDuration)
             return videoId
         except Exception as e:
-
             self.removeRemoteFile(hashVideo.split("/")[-1])
             raise HTTPException(status_code=400, detail="Erro ao salvar url no banco")
     
@@ -127,9 +134,12 @@ class ReciveVideo:
                 raise HTTPException(status_code=400, detail="Não foi possivel deletar vídeo em nuvem quando necessário")
 
     def isExtensionValid(self,file : UploadFile) -> bool:
-        contentType = file.headers["content-type"]
-        return contentType == "video/mp4" 
-
+        try:
+            contentType = file.headers["content-type"]
+            return contentType == "video/mp4" 
+        except Exception as e:
+            raise HTTPException(status_code=400, detail="Não foi possivel verificar o formato do vídeo")
+        
     def isFileSizeAllowed(self,fileSize: int) -> bool :
         oneGigaByte = 1073741824
         fileSizeInGigaBytes = fileSize / oneGigaByte

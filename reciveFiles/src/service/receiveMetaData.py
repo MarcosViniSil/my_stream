@@ -21,6 +21,23 @@ class ReceiveMetadaService:
     async def processMetaData(self, idVideo: str, videoTitle: str, file: UploadFile,tokenUser:str) -> dict:
         #if video belongs to user -> accept change, if not, return error
         userId = '3f06af63-a93c-11e4-9797-00505690773f'
+
+        self.isDataValid(idVideo,videoTitle,file,userId)
+        
+        filePath = self.copyFileLocally(file)
+
+        self.resizeImage(700, 393, filePath) 
+
+        imageUrlOnBucket = self.saveImageRemote(filePath)
+
+        self.removeImageLocally(imageUrlOnBucket, filePath)
+
+        self.insertMetaDatasDb(idVideo, videoTitle, imageUrlOnBucket)
+
+        return {"message": "Imagem recebida com sucesso", "imageUrl": imageUrlOnBucket}
+    
+    def isDataValid(self,idVideo: str, videoTitle: str, file: UploadFile,userId:str) :
+        
         if not self.isIdValid(idVideo) or not self.isIdValid(userId):
             raise HTTPException(status_code=400, detail="uuid inválido")
         
@@ -38,19 +55,7 @@ class ReceiveMetadaService:
 
         if not self.verifyID(idVideo):
             raise HTTPException(status_code=400, detail="uuid não encontrado")
-
-        filePath = self.copyFileLocally(file)
-
-        self.resizeImage(700, 393, filePath) 
-
-        imageUrlOnBucket = self.saveImageRemote(filePath)
-
-        self.removeImageLocally(imageUrlOnBucket, filePath)
-
-        self.insertMetaDatasDb(idVideo, videoTitle, imageUrlOnBucket)
-
-        return {"message": "Imagem recebida com sucesso", "imageUrl": imageUrlOnBucket}
-
+        
     def copyFileLocally(self, file) -> str:
         try:
             filePath = os.path.join(UPLOAD_DIR, file.filename)

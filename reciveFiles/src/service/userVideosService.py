@@ -36,24 +36,31 @@ class UserVideosService:
         return self.convertDictToArray(datas)
     
     def convertDictToArray(self,data:dict) -> dict:
-        result = []
-        for row in data:
-            videoId,date, title, status = row
-            videoIdString = str(uuid.UUID(bytes=videoId))
-            dateFormated = datetime.strptime(str(date), '%Y-%m-%d').strftime('%d/%m/%Y')
-            result.append({
-                "videoId":videoIdString,
-                "date": str(dateFormated),                
-                "title": title if title else "",  
-                "status": status
-            })
+        try:
+            result = []
+            for row in data:
+                videoId,date, title, status = row
+                videoIdString = str(uuid.UUID(bytes=videoId))
+                dateFormated = datetime.strptime(str(date), '%Y-%m-%d').strftime('%d/%m/%Y')
+                result.append({
+                    "videoId":videoIdString,
+                    "date": str(dateFormated),                
+                    "title": title if title else "",  
+                    "status": status
+                })
 
-        statusOrder = {'READY': 0, 'PROCESSING': 1, 'FAIL': 2}
-        result.sort(key=lambda x: statusOrder.get(x['status'], 3))
+            statusOrder = {'READY': 0, 'PROCESSING': 1, 'FAIL': 2}
+            result.sort(key=lambda x: statusOrder.get(x['status'], 3))
 
-        return result
-    
+            return result
+        except Exception as e:
+            raise HTTPException(status_code=400,detail="Ocorreu um erro ao obter os vídeos enviados")
+        
     def deleteVideo(self,videoId:str,tokenUser:str) -> None:
+        
+        if not self.isIdValid(videoId):
+            raise HTTPException(status_code=400,detail="id de vídeo inválido")
+        
         #TODO create logic to retrive userId by Token
         userId = '3f06af63-a93c-11e4-9797-00505690773f'
         
@@ -66,11 +73,14 @@ class UserVideosService:
         if videoDatas is None:
             raise HTTPException(status_code=400,detail="Não foi possível buscar os dados do vídeo solicitado para exclusão")
         
+        if not videoDatas["userId"] or not videoDatas["videoStatus"]:
+             raise HTTPException(status_code=400,detail="Não foi possível buscar os dados do vídeo solicitado para exclusão")
+        
         if not self.isVideoBelongsToUser(userId,videoDatas["userId"]):
             raise HTTPException(status_code=403,detail="O vídeo não pertence ao usuário")
 
-        statusVideo = videoDatas["videoStatus"]
-        if statusVideo == VideoStatus.PROCESSING.value:
+        videoStatus = videoDatas["videoStatus"]
+        if videoStatus == VideoStatus.PROCESSING.value:
             raise HTTPException(status_code=400,detail="O vídeo solicitado ainda está em processamento, aguarde ser concluído para exclusão")
 
         try:
@@ -91,16 +101,19 @@ class UserVideosService:
         #TODO get id user by token
         try:
             videosQuantity = self.videoRepository.getVideoCountByUser(tokenUser)
-            print("videosQuantity ",videosQuantity)
             if videosQuantity:
                 return {"videosQuantity":videosQuantity}
             raise HTTPException(status_code=400,detail="Ocorreu um erro ao verificar a quantidade de vídeos do usuário")
+        
         except Exception as e:
             raise HTTPException(status_code=400,detail="Ocorreu um erro ao verificar a quantidade de vídeos do usuário")
 
     def getVideoStatus(self,videoId:str) -> dict:
         if not videoId:
             raise HTTPException(status_code=400,detail="Id do vídeo não foi informado")
+        
+        if not self.isIdValid(videoId):
+            raise HTTPException(status_code=400,detail="id de vídeo inválido")
         
         status = self.videoRepository.getVideoStatus(videoId)
         if status:
@@ -112,15 +125,14 @@ class UserVideosService:
         if offset < 0:
             raise HTTPException(status_code=400,detail="Offset inválido")
         userId = ""
-        print(tokenUser)
         if tokenUser is None:
-            print("is none")
             userId = None
         else:
             userId = '3f06af63-a93c-11e4-9797-00505690773f'
 
         videosPerPage = 10
         offset *= videosPerPage
+        
         try:
             rows = self.videoRepository.getVideoFeed(offset,userId)
             if rows is None:
@@ -141,7 +153,7 @@ class UserVideosService:
         
     def getVideosBasedOnUserQuery(self,param:str,token:str) -> VideoResponse:
              #TODO get id user by token
-            if not param or len(param) == 0 or len(param) > 100:
+            if not param or len(param) == 0 or len(param.replace(" ","")) == 0 or len(param) > 100:
                 raise HTTPException(status_code=400,detail="parametro inválido")
 
             userId = '3f06af63-a93c-11e4-9797-00505690773f'
@@ -168,6 +180,9 @@ class UserVideosService:
         if not videoId or len(videoId) == 0:
             raise HTTPException(status_code=400,detail=f"id inválido para busca")
         
+        if not self.isIdValid(videoId):
+            raise HTTPException(status_code=400,detail="id de vídeo inválido")
+        
         try:
                 row = self.videoRepository.getVideoForStreaming(videoId)
                 if row is None:
@@ -191,7 +206,7 @@ class UserVideosService:
         #TODO recover id user based on token
         userId = '3f06af63-a93c-11e4-9797-00505690773f'
         
-        if not self.isUUidValid(videoId):
+        if not self.isIdValid(videoId):
             raise HTTPException(status_code=400,detail=f"id de vídeo inválido")
         
         try:
@@ -207,7 +222,10 @@ class UserVideosService:
         return {"message":"sucesso"}
     
     def addTimeWatched(self,tokenUser:str,videoId:str,timeAtVideo:int) -> None:
-        print("Valor que será atualizado ",timeAtVideo)
+        
+        if not self.isIdValid(videoId):
+            raise HTTPException(status_code=400,detail="id de vídeo inválido")
+        
         #TODO recover id user based on token
         userId = '3f06af63-a93c-11e4-9797-00505690773f'
         try:
@@ -314,7 +332,7 @@ class UserVideosService:
     def convertUUID(self,id:str) -> str:
         return str(uuid.UUID(bytes=id))
     
-    def isUUidValid(self, val: str):
+    def isIdValid(self, val: str):
         try:
             uuid.UUID(val)
             return True
