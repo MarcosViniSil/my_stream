@@ -5,6 +5,8 @@ import time
 from src.processing.processFile import ProcessFiles
 load_dotenv()
 import os
+import logging
+from datetime import date
 
 class ConsumeQueue:
 
@@ -16,6 +18,7 @@ class ConsumeQueue:
         self.process = process
 
     def createConnection(self) -> BlockingConnection:
+        
         retries = 5
         delay = 3  
         for attempt in range(retries):
@@ -32,14 +35,18 @@ class ConsumeQueue:
     def consumeMessageQueue(self) -> None:
         connection = self.createConnection()
         channel = connection.channel()
-
         try:
             channel.queue_declare(queue="C", durable=True)
-
+            channel.basic_qos(prefetch_count=1)
             def callback(ch, method, properties, body):
-                print(f"Mensagem recebida: {body.decode()}")
-                self.process.getMessageFromQueue(str(body.decode()))
-                ch.basic_ack(delivery_tag=method.delivery_tag)
+                print(f"mensagem recebida: {body.decode()}")
+                try:
+                    self.process.getMessageFromQueue(body.decode())
+                    logging.info(f"Mensagem {body.decode()} processada com sucesso")
+                except Exception as e:
+                    logging.error(f"Ao processar mensagem {body.decode()} o seguinte erro aconteceu: {e}")
+                finally:
+                    ch.basic_ack(delivery_tag=method.delivery_tag)
 
             channel.basic_consume(queue="C", on_message_callback=callback)
 
@@ -47,11 +54,12 @@ class ConsumeQueue:
             channel.start_consuming()
 
         except Exception as e:
-            print(f"Erro ao consumir mensagens: {e}")
+            logging.error(f"Ocorreu um erro ao procesar mensagem da fila, erro que ocorreu: {e}")
 
         finally:
             if connection.is_open:
                 try:
                     connection.close()
                 except Exception as e:
-                    print(f"Erro ao fechar conexão: {e}")
+                    logging.error(f"Ocorreu um erro ao fechar conexão, erro que ocorreu: {e}")
+
