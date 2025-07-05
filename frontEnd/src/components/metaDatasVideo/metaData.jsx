@@ -5,6 +5,17 @@ import { useDropzone } from "react-dropzone";
 import { Toaster, toast } from 'sonner';
 import { BsUpload } from "react-icons/bs";
 import { BsSend } from "react-icons/bs";
+import {
+    Popover,
+    PopoverTrigger,
+    PopoverContent,
+    PopoverArrow,
+    PopoverCloseButton,
+    PopoverHeader,
+    PopoverBody,
+    IconButton,
+} from "@chakra-ui/react";
+import { QuestionIcon } from "@chakra-ui/icons";
 
 import './metaData.css'
 
@@ -190,9 +201,36 @@ function MetaData() {
                                 </div>
                             </button>
                         </div>
+                        {selectedFile != null && (
+                            <Popover>
+                                <PopoverTrigger>
+                                    <IconButton
+                                        icon={<QuestionIcon />}
+                                        aria-label="Ajuda"
+                                        variant="ghost"
+                                        size="md"
+                                        _hover={{ bg: 'none' }}
+                                        color="white"
+                                    />
+                                </PopoverTrigger>
+                                <PopoverContent
+                                    bg="#222"
+                                    color="white"
+                                    borderColor="white"
+                                >
+                                    <PopoverArrow bg="#222" />
+                                    <PopoverCloseButton />
+                                    <PopoverBody>
+                                        A imagem que aparece é uma pré-visualização de como será exibida para
+                                        os usuários
+                                    </PopoverBody>
+                                </PopoverContent>
+                            </Popover>
+                        )}
+
                     </div>
 
-                    <div className="wrapReceiveTitleVideo">
+                    <div className="wrapReceiveTitleVideo2">
                         <div className="wrapTitleReciveTitle">
                             <h3>Adicione um título para o vídeo</h3>
                         </div>
@@ -205,8 +243,7 @@ function MetaData() {
                 <div className="wrapButtonSendMetaDatas">
                     <button className="buttonSendMetaDatas" type="button" onClick={handleUpload}>Enviar metadados <BsSend /></button>
                 </div>
-
-                <p className="detailsImage">*A imagem que aparece é como será visualizada pelos usuários</p>
+                <p className="detailsImage">*Se for possível, uma legenda automática será gerada para o vídeo utilizando inteligência artificial</p>
             </div>
 
         </>

@@ -23,6 +23,7 @@
     width: 23rem;
     height: 12.938rem;
     object-fit: cover;
+    border-radius: 5px;
 }
 
 .duration {
@@ -74,7 +75,7 @@
 
 .duration {
   background-color: rgba(0, 0, 0, 0.5);
-  width: 40px;
+  width: 60px;
   border-radius: 4px;
 }
 

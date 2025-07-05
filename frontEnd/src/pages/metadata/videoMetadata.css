@@ -8,7 +8,7 @@
 .wrapSendMetaDatas {
   margin-top: 40px;
   text-align: center;
-  background-color: #141414;;
+  background-color: #141414;
 }
 
 .wrapSendMetaDatas {
@@ -33,4 +33,26 @@
      font-size: 1.5em;
      margin-bottom: 0px;
 }
+}
+
+@media (max-width: 350px) {
+  .wrapElementsMetaDatas {
+      margin-left: 0;
+      padding: 0 5px;
+  }
+
+  .wrapReceiveThumbnail {
+      width: 100%;
+      max-width: none;
+  }
+
+  .wrapInputTitle,
+  .wrapTitleReceiveThumbnail,
+  .wrapTitleReciveTitle {
+      width: 100%;
+  }
+
+  #inputTitle {
+      width: 100%;
+  }
 }

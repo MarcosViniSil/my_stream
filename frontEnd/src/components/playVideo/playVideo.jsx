@@ -180,8 +180,10 @@ function VideoPlayer({ videoDatas,timeAt,onTimeUpdate  }) {
       <div className="videoContainer">
         <div className="wrapVideo">
           
-          <video onClick={togglePlay} muted autoPlay ref={videoRef} className="videoPlayer" />
-          
+          <video onClick={togglePlay} muted autoPlay ref={videoRef} className="videoPlayer">
+
+          </video>
+
           <div className={`controls ${!showControls ? 'hideControls' : ''}`}>
 
             <div className="wrapProgress">
