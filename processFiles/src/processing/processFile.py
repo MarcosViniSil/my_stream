@@ -6,7 +6,6 @@ from botocore.client import Config
 import subprocess
 import shutil
 import logging
-from datetime import date
 
 from src.email.sendEmail import sendEmail
 from src.exception.videoBucketException import VideoBucketException
@@ -26,15 +25,8 @@ class ProcessFiles:
         self.fileName = None
         self.streamRepository = streamRepository
 
-    def getMessageFromQueue(self, message: str) -> None:
-        self.configureFileLog()
-        message = message.replace("'", '"')
+    def getMessageFromQueue(self, videoId: str,bucketName:str,fileName:str) -> None:
         try:
-            data = json.loads(message)
-            videoId = str(data["videoId"])
-            bucketName = str(data["videoUrl"]).split("/")[-2]
-            fileName = str(data["videoUrl"]).split("/")[-1]
-
             if videoId == None or bucketName == None or fileName == None:
                 raise ValueError("Processamento falhou, tente novamente")
 
@@ -188,20 +180,3 @@ class ProcessFiles:
         except Exception as e:
             raise ValueError("Ocorreu um erro interno ao tentar processar o vídeo, tente novamente")
 
-    def configureFileLog(self):
-        dateActual = date.today()
-        foundFile = False
-
-        for root, _, files in os.walk("./logs"):
-            for file in files:
-                if str(file).endswith(".log"):
-                    if(os.path.splitext(str(file))[0] == dateActual):
-                        foundFile = True
-
-        if not foundFile:
-            logging.basicConfig(
-                level=logging.INFO,
-                format="%(asctime)s - %(levelname)s - %(message)s",
-                filename=f"./logs/{dateActual}.log",
-                filemode="a",
-            )
