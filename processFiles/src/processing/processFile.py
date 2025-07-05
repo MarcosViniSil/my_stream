@@ -44,6 +44,7 @@ class ProcessFiles:
                 logging.error(f"Ocorreu o erro {vb} e ao tentar deletar video de id {videoId} do bucket {bucketName} ocorreu o erro {r}")
         
         except BaseException as r:
+            logging.error(f"Ocorreu o erro {r} ")
             self.handleException(videoId,fileName)
 
     def handleException(self,videoId : str,fileName : str) -> None:
@@ -70,11 +71,16 @@ class ProcessFiles:
     def processFile(self,videoId:str,bucketName:str,fileName:str) -> None:
         pathDownload = self.downloadFileFromBucket(bucketName, fileName)
         
+        self.validateVideo(pathDownload)
+        
         streamFolderName = self.convertVideoToStream(fileName, pathDownload)
         self.sendStreamToBucket(streamFolderName, bucketName, videoId)
         
+        self.validateGeneratedStream(streamFolderName)
+
         pathStreamLocally = f"http://localhost:9000/{bucketName}/{videoId}/output.m3u8"
         self.updateUrlVideoOnDb(pathStreamLocally,videoId)
+        
         #self.sendEmailUser(videoId)
 
     def updateUrlVideoOnDb(self,pathStreamLocally:str,videoId:str) -> None:
@@ -122,6 +128,46 @@ class ProcessFiles:
 
         return nameFolder
 
+    def validateVideo(self,filePath):
+        
+        self.validateVideoDownloaded(filePath=filePath)
+
+        cmd = ["ffmpeg", "-v", "error", "-i", filePath, "-f", "null", "-"]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+
+        if result.returncode != 0:
+            logging.error(f"[VALIDAÇÃO] Arquivo inválido: {result.stderr}")
+            raise Exception(f"Arquivo inválido: {result.stderr}")
+        
+        logging.info(f"[VALIDAÇÃO] Arquivo {filePath} válido.")
+
+    def validateGeneratedStream(self,folderPath):
+        playlist = os.path.join(folderPath, "output.m3u8")
+        
+        if not os.path.exists(playlist):
+            logging.error(f"Playlist .m3u8 não encontrada em {folderPath}")
+            raise Exception(f"Playlist .m3u8 não encontrada em {folderPath}")
+
+        cmd = ["ffmpeg","-v", "error","-i", playlist,"-f", "null","-"]
+
+        result = subprocess.run(cmd, capture_output=True, text=True)
+
+        if result.returncode != 0:
+            logging.error(f"[VALIDAÇÃO STREAMING] Stream inválido. Erros do ffmpeg:\n{result.stderr}")
+            raise Exception(f"Stream inválido. Erros do ffmpeg:\n{result.stderr}")
+        else:
+            logging.info(f"[VALIDAÇÃO STREAMING] Stream em {folderPath} é válido usando ffmpeg.")
+
+    def validateVideoDownloaded(self,filePath):
+        if not os.path.exists(filePath):
+            logging.error(f"[VALIDAÇÃO] Arquivo não encontrado: {filePath}")
+            raise Exception(f"Arquivo não encontrado: {filePath}")
+        if os.path.getsize(filePath) == 0:
+            logging.error(f"[VALIDAÇÃO] Arquivo vazio: {filePath}")
+            raise Exception(f"Arquivo vazio: {filePath}")
+        
+        logging.info(f"[VALIDAÇÃO] Arquivo correto: {filePath}")
+        
     def sendStreamToBucket(self, folder_path: str, bucket_name: str, videoId: str):
         logging.info(f"Iniciando envio de stream de id {videoId} que está na pasta local {folder_path} para o bucket {bucket_name}")
         s3 = self.createConnection()
