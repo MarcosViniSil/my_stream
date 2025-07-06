@@ -70,6 +70,17 @@ function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
 
   }, []);
 
+
+    useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (!video.textTracks || video.textTracks.length === 0) return;
+
+    const track = video.textTracks[0];
+
+    track.mode = isSubtitle ? "showing" : "disabled";
+  }, [isSubtitle]);
+
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
@@ -97,7 +108,7 @@ function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
     const handleMouseMove = () => {
       setShowControls(true);
       clearTimeout(timeout);
-      timeout = setTimeout(() => setShowControls(false), 3000);
+      timeout = setTimeout(() => setShowControls(false), 800);
     };
 
     wrapper.addEventListener('mousemove', handleMouseMove);
@@ -179,20 +190,26 @@ function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
   }
 
   const changeSubtitles = () => {
-    if(videoDatas.videoSubtitles == ""){
+    if (videoDatas.videoSubtitles == "") {
       return
     }
     setIsSubtitle(prev => !prev)
+    const track = videoRef.current.textTracks[0]; 
+    if (isSubtitle && track) {
+      track.mode = "disabled";
+    } else {
+      track.mode = "showing";
+    }
 
   }
 
   return (
     <div className="wrapAll">
       <div className="videoContainer">
-        <div className="wrapVideo">
+        <div className={`wrapVideo ${!showControls ? 'hideCursor' : ''}`}>
 
           <video crossOrigin="anonymous" onClick={togglePlay} muted autoPlay ref={videoRef} className="videoPlayer">
-            {videoDatas.videoSubtitles != "" && isSubtitle && (
+            {videoDatas.videoSubtitles != "" && (
               <track
                 src={videoDatas.videoSubtitles}
                 kind="subtitles"

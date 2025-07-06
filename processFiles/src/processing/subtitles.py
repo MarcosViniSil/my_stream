@@ -68,25 +68,39 @@ class Subtitles:
                 f.write(response.text)
             
             logging.info(f"Legenda gerada com sucesso, caminho do arquvio gerado: {subtitlePath}")
+            
+            self.deleteAudioFileLocally(audioPath)
+            
             return subtitlePath
         except Exception as e:
             logging.error(f"Ocorreu um erro ao converter o áudio em legenda com gemini, erro que ocorreu: {e}")
             return None
-        
+    
+    def deleteAudioFileLocally(self,audioPath:str)-> None:
+        try:
+            logging.info(f"Deletando audio .mp3 que está no caminho: {audioPath}")
+            os.remove(audioPath)
+            logging.info(f"audio .mp3 deletado com sucesso")
+        except Exception as e:
+            logging.error(f"Erro ao deletar legenda localmente, erro: {e}")
+
     def createPrompt(self,messageError:str) -> str:
         prompt = f"""
         
-            Transcreva completamente este áudio para o formato de legenda WEBVTT válido.
+          Transcreva completamente este áudio para o formato de legenda WEBVTT válido, traduzindo todas as falas para português.
 
             Instruções:
-                - Detecte e transcreva todas as falas no áudio em português.
+                - Detecte e transcreva todas as falas no áudio, traduzindo-as para português.
                 - Identifique corretamente os tempos de início e fim de cada trecho falado, no formato: HH:MM:SS.mmm --> HH:MM:SS.mmm.
                 - A legenda deve começar com a linha: WEBVTT.
                 - Entre cada bloco de legenda, deve haver uma linha em branco.
-                - Cada bloco deve conter apenas o timestamp e a transcrição.
+                - Cada bloco deve conter apenas o timestamp e a transcrição (traduzida).
                 - Não inclua cabeçalhos extras, comentários, explicações ou qualquer texto fora do padrão WEBVTT.
                 - Quebre as legendas em trechos curtos de no máximo 2 linhas e não mais que 5 segundos cada.
-
+                - Nos timestamps, os milissegundos devem ser sempre precedidos por um ponto (`.`) e não por dois pontos (`:`), no formato: HH:MM:SS.mmm.
+                    Exemplo válido: 00:01:23.456
+                    Exemplo inválido: 00:01:23:456
+                - Revise todos os timestamps e garanta que todos os milissegundos usem ponto (.) no lugar de dois-pontos (:).
             O conteúdo gerado deve ser apenas o arquivo .vtt completo e válido.
 
             Exemplo mínimo do formato esperado:

@@ -39,8 +39,14 @@ class ProcessFiles:
             
             self.deleteLocalVideoAfterProcessing(fileName)
 
+            self.deleteFileFromBucket(fileName,bucketName)
+
         except VideoBucketException as vb:
             self.handleException(videoId,fileName)
+            try:
+                self.deleteFileFromBucket(fileName,bucketName)
+            except BaseException as r:
+                logging.error(f"Ocorreu o erro {vb} e ao tentar deletar video de id {videoId} do bucket {bucketName} ocorreu o erro {r}")
         
         except BaseException as r:
             logging.error(f"Ocorreu o erro {r} ")
@@ -76,7 +82,8 @@ class ProcessFiles:
         if subtitlesPath is not None:
             pathBucket = self.sendFileToBucket(bucketName,subtitlesPath)
             self.streamRepository.insertSubTitles(videoId,pathBucket)
-
+            self.deleteSubtitleLocally(subtitlesPath)
+        
         streamFolderName = self.convertVideoToStream(fileName, pathDownload)
 
         self.validateGeneratedStream(streamFolderName)
@@ -87,6 +94,14 @@ class ProcessFiles:
         self.updateUrlVideoOnDb(pathStreamLocally,videoId)
         
         #self.sendEmailUser(videoId)
+
+    def deleteSubtitleLocally(self,pathSubtitle:str) -> None:
+        try:
+            logging.info(f"Deletando arquivo de legendas que está na pasta {pathSubtitle}")
+            os.remove(pathSubtitle)
+            logging.info(f"Arquivo de legenda deletado com sucesso")
+        except Exception as e:
+            logging.error(f"Erro ao deletar legenda localmente, erro: {e}")
 
     def updateUrlVideoOnDb(self,pathStreamLocally:str,videoId:str) -> None:
         logging.info(f"atualizando url no banco de dados do video de id {videoId}")
@@ -219,6 +234,13 @@ class ProcessFiles:
 
             logging.error(f"Ocorreu um erro ao baixar arquivo {fileName} vindo do bucket {bucketName}")
             raise ValueError("Ocorreu um erro ao iniciar o processamento do vídeo, tente novamente")
+
+    def deleteFileFromBucket(self, fileName:str, bucketName:str) -> None:
+        try:
+            s3 = self.createConnection()
+            s3.delete_object(Bucket=bucketName, Key=fileName)
+        except BaseException as r:
+            logging.error(f"Ocoreru um erro ao deletar arquivo {fileName} do buket {bucketName} após o processamento")
 
     def createConnection(self):
         try:

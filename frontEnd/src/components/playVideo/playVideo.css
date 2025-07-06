@@ -339,6 +339,9 @@
   cursor: pointer;
 }
 
+.hideCursor {
+  cursor: none;
+}
 @media (max-width:700px) {
   .wrapAuthorAndTitle>h3 {
     font-size: 1.6em;
