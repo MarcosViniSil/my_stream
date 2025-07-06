@@ -127,8 +127,9 @@ export async function getVideosUserQuery(query) {
 }
 
 export async function getDatasVideoToStream(videoId) {
+  const TOKEN = "token"
   try {
-    const response = await fetch(`http://localhost:8000/streaming/video/${videoId}`, {
+    const response = await fetch(`http://localhost:8000/streaming/video?videoId=${videoId}&token=${TOKEN}`, {
       method: "GET"
     });
 
@@ -161,6 +162,51 @@ export async function getHistory(offset) {
   }
 }
 
+export async function addLike(videoId) {
+  const TOKEN = "token"
+  const formData = new FormData();
+  formData.append("tokenUser", TOKEN);
+  formData.append("videoId", videoId);
+
+  try {
+    const response = await fetch("http://localhost:8000/video/like", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData?.detail || "Erro ao realizar o like em um vídeo"); 
+    }
+
+    return response.json();
+  } catch (error) {
+    throw new Error(error.message || "Erro ao enviar o realizar like no vídeo");
+  }
+}
+
+export async function addDisLike(videoId) {
+  const TOKEN = "token"
+  const formData = new FormData();
+  formData.append("tokenUser", TOKEN);
+  formData.append("videoId", videoId);
+
+  try {
+    const response = await fetch("http://localhost:8000/video/dislike", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData?.detail || "Erro ao realizar o dislike em um vídeo"); 
+    }
+
+    return response.json();
+  } catch (error) {
+    throw new Error(error.message || "Erro ao enviar o realizar dislike no vídeo");
+  }
+}
 
 
 

@@ -241,7 +241,9 @@ class VideoRepository:
             raise ValueError("Erro ao buscar vídeos da página inicial")
 
     def searchVideosByTitle(self, param: str, userId: str) -> dict:
-        userIdBytes = uuid.UUID(userId).bytes
+        userIdBytes = None
+        if userId is not None:
+            userIdBytes = uuid.UUID(userId).bytes
 
         self.Db.createConnection()
 
@@ -273,23 +275,27 @@ class VideoRepository:
             print(e)
             raise ValueError("Erro ao buscar vídeos da pesquisa feita")
 
-    def getVideoForStreaming(self, videoId: str) -> dict:
+    def getVideoForStreaming(self, videoId: str,userId:str) -> dict:
         videoIdBytes = uuid.UUID(videoId).bytes
+
+        userIdBytes = uuid.UUID(userId).bytes
+        
         self.Db.createConnection()
 
         sql = """
-               SELECT tbv.videoDate,tu.userName,tbv.videoTitle,tbv.videoUrl ,tbv.videoId,tbvr.videoLikes,tbvr.videoDislikes,
-               tbv.videoSubTitles
-               FROM tb_video AS tbv 
-               INNER JOIN tb_user AS tu ON tu.userId = tbv.idAdmin
-               INNER JOIN tb_videoReaction AS tbvr ON tbvr.videoId = tbv.videoId
-               WHERE tbv.videoId = %s AND tbv.isDeleted = FALSE AND tbv.isVideoAvailable = TRUE 
-               AND tbv.videoStatus = 'READY' AND tbv.videoTitle <> '' AND tbv.thumbnailUrl <> ''
-               AND tu.userName <> '' AND tbv.videoDuration > 0;
+                SELECT tbv.videoDate,tu.userName,tbv.videoTitle,tbv.videoUrl ,tbv.videoId,tbvr.videoLikes,tbvr.videoDislikes,
+                tbv.videoSubTitles,COALESCE(tbuvr.reactionType, 0) AS reaction 
+                FROM tb_video AS tbv 
+                INNER JOIN tb_user AS tu ON tu.userId = tbv.idAdmin
+                INNER JOIN tb_videoReaction AS tbvr ON tbvr.videoId = tbv.videoId
+                LEFT JOIN tb_userVideoReaction AS tbuvr ON tbuvr.videoId = tbv.videoId AND tbuvr.userId = %s
+                WHERE tbv.videoId = %s AND tbv.isDeleted = FALSE AND tbv.isVideoAvailable = TRUE 
+                AND tbv.videoStatus = 'READY' AND tbv.videoTitle <> '' AND tbv.thumbnailUrl <> ''
+                AND tu.userName <> '' AND tbv.videoDuration > 0 ORDER BY tbuvr.createdAt DESC LIMIT 1;
 
               """
         try:
-            self.Db.myCursor.execute(sql, (videoIdBytes,))
+            self.Db.myCursor.execute(sql, (userIdBytes,videoIdBytes))
             row = self.Db.myCursor.fetchone()
 
             self.Db.myDb.commit()
@@ -443,3 +449,212 @@ class VideoRepository:
         except Exception as e:
             print(e)
             raise ValueError(f"Erro ao buscar historico de vídeos {e}")
+    
+    def getVideoReaction(self,videoId:str,userId:str) -> dict:
+        videoIdBytes = uuid.UUID(videoId).bytes
+        userIdBytes = uuid.UUID(userId).bytes
+        
+        self.Db.createConnection()
+
+        sql = """
+                SELECT reactionType FROM tb_userVideoReaction WHERE userId = %s AND videoId = %s ORDER BY createdAt DESC LIMIT 1;
+              """
+        try:
+            self.Db.myCursor.execute(sql, (userIdBytes,videoIdBytes))
+            row = self.Db.myCursor.fetchone()
+        
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+
+            return row
+
+        except Exception as e:
+            print(e)
+            raise ValueError(f"Erro ao obter reação do vídeo{e}")
+    
+    def isVideoExists(self,videoId:str) -> dict:
+        videoIdBytes = uuid.UUID(videoId).bytes
+        
+        self.Db.createConnection()
+
+        sql = """
+                SELECT videoId FROM tb_video WHERE videoId = %s
+              """
+        try:
+            self.Db.myCursor.execute(sql, (videoIdBytes,))
+            row = self.Db.myCursor.fetchone()
+        
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+            if row is None or row[0] is None:
+                return None
+            
+            idVideoStr = uuid.UUID(bytes=row[0])
+            return str(idVideoStr)
+
+        except Exception as e:
+            print(e)
+            raise ValueError(f"Erro ao obter id do vídeo{e}")
+
+    def addLikeAndReaction(self, videoId: str, userId: str, isUserChangingReaction:bool, reactionType: int = 1) -> None:
+        videoIdBytes = uuid.UUID(videoId).bytes
+        userIdBytes = uuid.UUID(userId).bytes
+        userReactionId = uuid.uuid4().bytes
+        
+        createdAt = datetime.now()
+
+        try:
+            self.Db.createConnection()
+            conn = self.Db.myDb
+            cursor = self.Db.myCursor
+            conn.autocommit = False
+
+            LIKE = self.getQueryLike(isUserChangingReaction=isUserChangingReaction)
+            print("query: ",LIKE)
+            cursor.execute(LIKE, (videoIdBytes,))
+
+            REACTION = """
+                INSERT INTO tb_userVideoReaction 
+                    (userVideoReactionId, userId, videoId, createdAt, reactionType) 
+                VALUES (%s, %s, %s, %s, %s)
+            """
+            cursor.execute(REACTION, (userReactionId, userIdBytes, videoIdBytes, createdAt, reactionType))
+
+            conn.commit()
+
+        except Exception as e:
+            conn.rollback()
+            print("aqui: ",e)
+            raise ValueError("Erro ao adicionar like e reação do usuário")
+
+        finally:
+            self.Db.closeConnection()
+
+    def addDislikeAndReaction(self, videoId: str, userId: str, isUserChangingReaction:bool,reactionType: int = -1,) -> None:
+        videoIdBytes = uuid.UUID(videoId).bytes
+        userIdBytes = uuid.UUID(userId).bytes
+        userReactionId = uuid.uuid4().bytes
+        
+        createdAt = datetime.now()
+
+        try:
+            self.Db.createConnection()
+            conn = self.Db.myDb
+            cursor = self.Db.myCursor
+            conn.autocommit = False
+
+            DISLIKE = self.getQueryDisLike(isUserChangingReaction=isUserChangingReaction)
+            cursor.execute(DISLIKE, (videoIdBytes,))
+
+            REACTION = """
+                INSERT INTO tb_userVideoReaction 
+                    (userVideoReactionId, userId, videoId, createdAt, reactionType) 
+                VALUES (%s, %s, %s, %s, %s)
+            """
+            cursor.execute(REACTION, (userReactionId, userIdBytes, videoIdBytes, createdAt, reactionType))
+
+            conn.commit()
+
+        except Exception as e:
+            conn.rollback()
+            print(e)
+            raise ValueError("Erro ao adicionar dislike e reação do usuário")
+
+        finally:
+            self.Db.closeConnection()
+
+    def removeLikeUser(self, videoId: str, userId: str) -> None:
+        videoIdBytes = uuid.UUID(videoId).bytes
+        userIdBytes = uuid.UUID(userId).bytes
+        userReactionId = uuid.uuid4().bytes
+        
+        createdAt = datetime.now()
+
+        try:
+            self.Db.createConnection()
+            conn = self.Db.myDb
+            cursor = self.Db.myCursor
+            conn.autocommit = False
+
+            LIKE = """
+                    UPDATE tb_videoReaction SET videoLikes = videoLikes - 1 WHERE videoID = %s
+            """
+            cursor.execute(LIKE, (videoIdBytes,))
+
+            REACTION = """
+                INSERT INTO tb_userVideoReaction 
+                    (userVideoReactionId, userId, videoId, createdAt, reactionType) 
+                VALUES (%s, %s, %s, %s, 0)
+            """
+            cursor.execute(REACTION, (userReactionId, userIdBytes, videoIdBytes, createdAt))
+
+            conn.commit()
+
+        except Exception as e:
+            conn.rollback()
+            print(e)
+            raise ValueError("Erro ao adicionar dislike e reação do usuário")
+
+        finally:
+            self.Db.closeConnection()
+
+    def removeDislikeUser(self, videoId: str, userId: str) -> None:
+        videoIdBytes = uuid.UUID(videoId).bytes
+        userIdBytes = uuid.UUID(userId).bytes
+        userReactionId = uuid.uuid4().bytes
+        
+        createdAt = datetime.now()
+
+        try:
+            self.Db.createConnection()
+            conn = self.Db.myDb
+            cursor = self.Db.myCursor
+            conn.autocommit = False
+
+            DISLIKE = """
+                    UPDATE tb_videoReaction SET videoDislikes = videoDislikes - 1 WHERE videoID = %s
+            """
+            cursor.execute(DISLIKE, (videoIdBytes,))
+
+            REACTION = """
+                INSERT INTO tb_userVideoReaction 
+                    (userVideoReactionId, userId, videoId, createdAt, reactionType) 
+                VALUES (%s, %s, %s, %s, 0)
+            """
+            cursor.execute(REACTION, (userReactionId, userIdBytes, videoIdBytes, createdAt))
+
+            conn.commit()
+
+        except Exception as e:
+            conn.rollback()
+            print(e)
+            raise ValueError("Erro ao adicionar dislike e reação do usuário")
+
+        finally:
+            self.Db.closeConnection()
+
+    def getQueryLike(self,isUserChangingReaction:bool) -> str:
+        query = ""
+        if isUserChangingReaction:
+            query = """
+                UPDATE tb_videoReaction SET videoLikes = videoLikes + 1, videoDislikes = videoDislikes - 1 WHERE videoID = %s
+            """
+        else:
+            query = """
+                UPDATE tb_videoReaction SET videoLikes = videoLikes + 1 WHERE videoID = %s
+            """
+
+        return query
+
+    def getQueryDisLike(self,isUserChangingReaction:bool) -> str:
+        query = ""
+        if isUserChangingReaction:
+            query = """
+                UPDATE tb_videoReaction SET videoDislikes = videoDislikes + 1, videoLikes = videoLikes - 1 WHERE videoID = %s
+            """
+        else:
+            query = """
+                UPDATE tb_videoReaction SET videoDislikes = videoDislikes + 1 WHERE videoID = %s
+            """
+
+        return query

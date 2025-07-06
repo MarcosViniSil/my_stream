@@ -58,7 +58,7 @@ CREATE TABLE tb_userVideoReaction(
     userVideoReactionId BINARY(16) PRIMARY KEY,
     userId BINARY(16),
     videoId BINARY(16) ,
-    createdAt DATE NOT NULL,
+    createdAt TIMESTAMP NOT NULL,
     reactionType INT NOT NULL
 );
 

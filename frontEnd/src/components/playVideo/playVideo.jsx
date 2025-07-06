@@ -11,6 +11,7 @@ import { AiFillLike } from "react-icons/ai";
 import { AiFillDislike } from "react-icons/ai";
 import { MdSubtitles } from "react-icons/md";
 import { MdSubtitlesOff } from "react-icons/md";
+import { addDisLike, addLike } from '../../service/videoService.js'
 
 import "./playVideo.css";
 
@@ -25,6 +26,10 @@ function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
   const [showUnmuteButton, setShowUnmuteButton] = useState(true);
   const [isMobile, setIsMobile] = useState(false)
   const [isSubtitle, setIsSubtitle] = useState(false)
+  const [like, setLike] = useState(0)
+  const [dislike, setDislike] = useState(0)
+  const [isFetching, setIsFetching] = useState(false)
+  const [reaction, setReaction] = useState(0);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -59,6 +64,10 @@ function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
       setDuration(video.duration);
     }
 
+    setLike(formatReactionNumber(videoDatas.likes))
+    setDislike(formatReactionNumber(videoDatas.dislikes))
+    setReaction(videoDatas.reaction || 0);
+
     video.addEventListener("timeupdate", updateTime);
     video.addEventListener("loadedmetadata", setMetaData);
 
@@ -68,10 +77,12 @@ function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
       video.removeEventListener("timeupdate", handleTimeUpdate);
     };
 
+
+
   }, []);
 
 
-    useEffect(() => {
+  useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
     if (!video.textTracks || video.textTracks.length === 0) return;
@@ -119,6 +130,31 @@ function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
     };
   }, []);
 
+  const formatReactionNumber = (number) => {
+    if (isNaN(number)) {
+      return 0;
+    }
+
+    if (number < 1000) {
+      return number
+    }
+
+    if (number >= 1000 && number <= 999999) {
+      const res = Math.floor(number / 1000)
+      return `${res} mil`
+    }
+
+    if (number >= 1000000 && number <= 999999999) {
+      const res = Math.floor(number / 1000000)
+      return `${res} mi`
+    }
+
+    if (number >= 1000000000 && number <= 99999999999) {
+      const res = Math.floor(number / 1000000000)
+      return `${res} bi`
+    }
+
+  }
 
   const formatTime = (duration) => {
     if (isNaN(duration)) return "0:00";
@@ -194,13 +230,67 @@ function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
       return
     }
     setIsSubtitle(prev => !prev)
-    const track = videoRef.current.textTracks[0]; 
+    const track = videoRef.current.textTracks[0];
     if (isSubtitle && track) {
       track.mode = "disabled";
     } else {
       track.mode = "showing";
     }
 
+  }
+
+  const sendLike = async () => {
+    const videoId = videoDatas.videoId
+    if (!videoId || isFetching) {
+      return
+    }
+    setIsFetching(true)
+    try {
+      await addLike(videoId);
+
+      if (reaction === 1) {
+        setLike(prev => prev - 1);
+        setReaction(0);
+      } else {
+        setLike(prev => prev + 1);
+        if (reaction === -1) {
+          setDislike(prev => prev - 1);
+        }
+        setReaction(1);
+      }
+
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setIsFetching(false);
+    }
+  }
+
+  const sendDisLike = async () => {
+    const videoId = videoDatas.videoId
+    if (!videoId || isFetching) {
+      return
+    }
+    setIsFetching(true);
+    try {
+      await addDisLike(videoDatas.videoId);
+
+      if (reaction === -1) {
+        setDislike(prev => prev - 1);
+        setReaction(0);
+      } else {
+        setDislike(prev => prev + 1);
+        if (reaction === 1) {
+          setLike(prev => prev - 1);
+        }
+        setReaction(-1);
+      }
+
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setIsFetching(false);
+    }
   }
 
   return (
@@ -279,8 +369,8 @@ function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
             <p className="authorPlayVideo">criado por {videoDatas.userName} em {videoDatas.videoDate}</p>
           </div>
           <div className="likesAndDislikes">
-            <p className="likes"> <AiFillLike /> <span className="valueLD">{videoDatas.likes}</span>  </p>
-            <p className="dislikes"> <AiFillDislike />  <span className="valueLD">{videoDatas.dislikes}</span> </p>
+            <button onClick={sendLike} className={`likes ${reaction === 1 ? 'activeLike' : ''}`}> <AiFillLike className="iconLike" /> <span className="valueLD">{formatReactionNumber(like)}</span>  </button>
+            <button onClick={sendDisLike} className={`dislikes ${reaction === -1 ? 'activeDislike' : ''}`}> <AiFillDislike className="iconDisLike" />  <span className="valueLD">{formatReactionNumber(dislike)}</span> </button>
           </div>
         </div>
       </div>

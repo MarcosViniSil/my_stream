@@ -314,6 +314,22 @@
   justify-content: center;
   flex-direction: row;
   gap: 15px;
+  width: 20%;
+}
+.valueLD{
+  max-width: 60px;
+}
+
+.iconLike,.iconDisLike{
+  font-size: x-large;
+}
+
+.likes.activeLike .iconLike {
+  color: #4caf50; 
+}
+
+.dislikes.activeDislike .iconDisLike {
+  color: #f44336;
 }
 
 .likes,

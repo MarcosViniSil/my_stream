@@ -48,9 +48,13 @@ async def get_videos_by_query(
     ):
     return userVideosService.getVideosBasedOnUserQuery(param,token)
 
-@routerUserVideos.get("/streaming/video/{videoId}")
-async def get_datas_streaming_video(videoId : str,userVideosService: UserVideosService = Depends(getUserVideosRepository)):
-    return userVideosService.getDatasVideoStreaming(videoId)
+@routerUserVideos.get("/streaming/video/")
+async def get_datas_streaming_video(
+    videoId : str = Query(...),
+    token: str = Query(...),
+    userVideosService: UserVideosService = Depends(getUserVideosRepository)
+    ):
+    return userVideosService.getDatasVideoStreaming(videoId,token)
 
 @routerUserVideos.post("/video/history")
 async def insert_video_on_history(tokenUser = Form(...),videoId = Form(...),userVideosService: UserVideosService = Depends(getUserVideosRepository)):
@@ -67,3 +71,11 @@ async def get_history_videos(
 @routerUserVideos.post("/video/time")
 async def insert_time_watched(tokenUser = Form(...),videoId = Form(...),timeWatched:int = Form(...),userVideosService: UserVideosService = Depends(getUserVideosRepository)):
     return userVideosService.addTimeWatched(tokenUser=tokenUser,videoId=videoId,timeAtVideo=timeWatched)
+
+@routerUserVideos.post("/video/like")
+async def insert_time_watched(tokenUser = Form(...),videoId = Form(...),userVideosService: UserVideosService = Depends(getUserVideosRepository)):
+    return userVideosService.addLikeToVideo(tokenUser,videoId)
+
+@routerUserVideos.post("/video/dislike")
+async def insert_time_watched(tokenUser = Form(...),videoId = Form(...),userVideosService: UserVideosService = Depends(getUserVideosRepository)):
+    return userVideosService.addDislikeToVideo(tokenUser,videoId)

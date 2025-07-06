@@ -176,7 +176,9 @@ class UserVideosService:
             except Exception as e:
                 raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao buscar os vídeos da pesquisa{e}")
     
-    def getDatasVideoStreaming(self, videoId:str) -> VideoStreaming:
+    def getDatasVideoStreaming(self, videoId:str,tokenUser:str) -> VideoStreaming:
+        # in this case, token can be null, because an user without login can watch a video
+        userId = '3f06af63-a93c-11e4-9797-00505690773f' # just for example
         if not videoId or len(videoId) == 0:
             raise HTTPException(status_code=400,detail=f"id inválido para busca")
         
@@ -184,10 +186,10 @@ class UserVideosService:
             raise HTTPException(status_code=400,detail="id de vídeo inválido")
         
         try:
-                row = self.videoRepository.getVideoForStreaming(videoId)
+                row = self.videoRepository.getVideoForStreaming(videoId,userId)
                 if row is None:
                     raise HTTPException(status_code=400,detail=f"O vídeo solicitado não foi encontrado")
-
+                print(row)
                 reponse = VideoStreaming(
                         videoDate=self.convertDate(str(row[0])),
                         userName=row[1],
@@ -196,7 +198,8 @@ class UserVideosService:
                         videoId = self.convertUUID(row[4]),
                         likes = row[5],
                         dislikes = row[6],
-                        videoSubtitles = row[7] or ""
+                        videoSubtitles = row[7] or "",
+                        reaction = row[8]
                     ) 
                 reponse.videoUrl = self.bucket.generatePresignedUrl(reponse.videoUrl)
                 return reponse
@@ -287,7 +290,94 @@ class UserVideosService:
         except Exception as e:
             raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao buscar videos do histórico {e}")
     
+    def addLikeToVideo(self,tokenUser:str,videoId:str) -> dict:
+        LIKE_VALUE_DB = 1
+        row = None
+        #TODO recover id user based on token
+        userId = '3f06af63-a93c-11e4-9797-00505690773f'
+        if not self.isIdValid(videoId):
+            raise HTTPException(status_code=400,detail=f"id de vídeo inválido")
+        
+        try:
+            videoIdDb = self.videoRepository.isVideoExists(videoId)
+            if videoIdDb is None or videoIdDb != videoId:
+                raise HTTPException(status_code=400,detail=f"id do vídeo inválido")
+        
+        except Exception as e:
+            raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao verificar id do vídeo{e}")
 
+        try:
+            row = self.videoRepository.getVideoReaction(videoId,userId)
+            print(row)
+        except Exception as e:
+            raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao buscar videos já curtidos")
+
+        if row is not None and row[0] == 1:
+            try:
+                self.videoRepository.removeLikeUser(videoId,userId)
+                return {"message":"like removido com sucesso"}
+            except Exception as e:
+                raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao remover like")
+            
+        isUserChangingReaction = None;
+
+        if row is None:
+            isUserChangingReaction = False
+
+        if row is not None and row[0] == -1:
+            isUserChangingReaction = True
+        
+        try:
+            self.videoRepository.addLikeAndReaction(videoId,userId,isUserChangingReaction,LIKE_VALUE_DB)
+        except Exception as e:
+            raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao contabilizar like para o vídeo")
+        
+        return {"message":"like adicionado com sucesso"}
+        
+    def addDislikeToVideo(self,tokenUser:str,videoId:str) -> dict:
+        DISLIKE_VALUE_DB = -1
+        row = None
+        #TODO recover id user based on token
+        userId = '3f06af63-a93c-11e4-9797-00505690773f'
+        
+        if not self.isIdValid(videoId):
+            raise HTTPException(status_code=400,detail=f"id de vídeo inválido")
+        
+        try:
+            videoIdDb = self.videoRepository.isVideoExists(videoId)
+            if videoIdDb is None or videoIdDb != videoId:
+                raise HTTPException(status_code=400,detail=f"id do vídeo inválido")
+        except Exception as e:
+            raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao verificar id do vídeo")
+        
+        try:
+            row = self.videoRepository.getVideoReaction(videoId,userId)
+        except Exception as e:
+            raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao buscar videos já curtidos{e}")
+
+        if row is not None and row[0] == -1:
+            try:
+                self.videoRepository.removeDislikeUser(videoId,userId)
+                return {"message":"dislike removido com sucesso"}
+            except Exception as e:
+                raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao remover dislike")
+        
+        isUserChangingReaction = None;
+
+        if row is None:
+            isUserChangingReaction = False
+
+        if row is not None and row[0] == 1:
+            isUserChangingReaction = True
+
+        try:
+            self.videoRepository.addDislikeAndReaction(videoId,userId,isUserChangingReaction,DISLIKE_VALUE_DB)
+        except Exception as e:
+            raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao contabilizar dislike para o vídeo")
+        
+        return {"message":"dislike adicionado com sucesso"}
+        
+        
     def convertListHistoryVideos(self,reponse:List[VideosHistory]) -> dict:
         grouped = defaultdict(list)
         
