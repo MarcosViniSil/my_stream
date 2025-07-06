@@ -57,37 +57,17 @@ class StreamRepository:
             print(e)
             raise ValueError(f"Erro ao atualizar status para fail do vídeo {videoId} ",e)
         
-    def saveTask(self, videoId:str, bucketName:str, fileName:str) -> str:
-        idVideoBytes = uuid.UUID(videoId).bytes
-        taskId = uuid.uuid4().bytes
-        currentTimesTamp = datetime.now()
+    def insertSubTitles(self, videoId:str, psthSubTitles:str) -> None:
+        videoIdBytes = uuid.UUID(videoId).bytes
+
         self.Db.createConnection()
         
         sql = """
-                INSERT INTO tb_tasks (taskId,videoId, bucketName, fileName, videoStatus,createdAt,updatedAt) VALUES (%s,%s, %s, %s, 'PROCESSING',%s,%s)
+                UPDATE tb_video SET videoSubTitles = %s WHERE videoId = %s
               """
         try:
-            self.Db.myCursor.execute(sql, (taskId,idVideoBytes,bucketName,fileName,currentTimesTamp,currentTimesTamp))
-            self.Db.myDb.commit()
-            self.Db.closeConnection()
-            uuidObj = uuid.UUID(bytes=taskId)
-            return str(uuidObj)
-        except Exception as e:
-            print(e)
-            raise ValueError(f"Erro ao atualizar status para fail do vídeo {videoId} ",e)
-    
-    def changeStatus(self, taskId:str, status:str) -> None:
-        taskIdBytes = uuid.UUID(taskId).bytes
-        currentTimesTamp = datetime.now()
-        self.Db.createConnection()
-        
-        sql = """
-                UPDATE tb_tasks SET videoStatus = %s, updatedAt = %s WHERE taskId = %s
-              """
-        try:
-            self.Db.myCursor.execute(sql, (status,currentTimesTamp,taskIdBytes))
+            self.Db.myCursor.execute(sql, (psthSubTitles,videoIdBytes))
             self.Db.myDb.commit()
             self.Db.closeConnection()
         except Exception as e:
             print(e)
-            raise ValueError(f"Erro ao atualizar status para fail do vídeo {taskIdBytes} ",e)

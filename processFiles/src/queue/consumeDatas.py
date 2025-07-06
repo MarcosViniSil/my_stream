@@ -5,7 +5,6 @@ from pika.exceptions import StreamLostError, ChannelClosedByBroker
 from dotenv import load_dotenv
 import time
 from src.processing.processFile import ProcessFiles
-from src.repository.streamRepository import StreamRepository
 load_dotenv()
 import os
 import logging
@@ -13,13 +12,12 @@ from datetime import date
 
 class ConsumeQueue:
 
-    def __init__(self,process: ProcessFiles,streamRepository:StreamRepository):
+    def __init__(self,process: ProcessFiles):
         self.user       =   os.environ["USER_RABBITMQ"] 
         self.password   =   os.environ["PASSWORD_RABBITMQ"] 
         self.exchange   =   os.environ["EXCHANGE_RABBITMQ"] 
         self.routingKey =   os.environ["ROUTINGKEY_RABBITMQ"]
-        self.process = process
-        self.streamRepository = streamRepository
+        self.process    =   process
 
     def createConnection(self) -> BlockingConnection:
         
@@ -28,7 +26,7 @@ class ConsumeQueue:
         for attempt in range(retries):
             try:
                 credentials = PlainCredentials(self.user, self.password)
-                connection = BlockingConnection(ConnectionParameters(host="localhost", credentials=credentials,heartbeat=3600))
+                connection = BlockingConnection(ConnectionParameters(host="localhost", credentials=credentials,heartbeat=0))
                 return connection
             except Exception as e:
                 print(f"[TENTATIVA {attempt+1}/{retries}] Erro ao conectar ao RabbitMQ: {e}")
@@ -39,7 +37,6 @@ class ConsumeQueue:
     def consumeMessageQueue(self) -> None:
         connection = self.createConnection()
         channel = connection.channel()
-        taskId = ""
         try:
             channel.queue_declare(queue="C", durable=True)
             channel.basic_qos(prefetch_count=1)
@@ -48,28 +45,21 @@ class ConsumeQueue:
                 try:
                     message = body.decode().replace("'", '"')
                     data = json.loads(message)
-                    
                     videoId = str(data["videoId"])
                     bucketName = str(data["videoUrl"]).split("/")[-2]
                     fileName = str(data["videoUrl"]).split("/")[-1]
                     
-                    taskId = self.streamRepository.saveTask(videoId, bucketName, fileName)
-                    
                     self.process.getMessageFromQueue(videoId,bucketName,fileName)
-                    
                     logging.info(f"Mensagem {body.decode()} processada com sucesso")
                 except Exception as e:
                     logging.error(f"Ao processar mensagem {body.decode()} o seguinte erro aconteceu: {e}")
                 finally:
                     try:
                         ch.basic_ack(delivery_tag=method.delivery_tag)
-                        self.streamRepository.changeStatus(taskId,'READY')
                     except (StreamLostError, ChannelClosedByBroker) as e:
                         logging.error(f"Não foi possível enviar ACK porque a conexão já foi perdida: {e}")
-                        self.streamRepository.changeStatus(taskId,'READY')
                     except Exception as e:
                         logging.error(f"Erro inesperado ao enviar ACK: {e}")
-                        self.streamRepository.changeStatus(taskId,'FAIL')
 
             channel.basic_consume(queue="C", on_message_callback=callback)
 

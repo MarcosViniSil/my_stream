@@ -1,5 +1,7 @@
+from datetime import date
 import os
 import json
+import uuid
 from dotenv import load_dotenv
 import boto3
 from botocore.client import Config
@@ -9,6 +11,7 @@ import logging
 
 from src.email.sendEmail import sendEmail
 from src.exception.videoBucketException import VideoBucketException
+from src.processing.subtitles import Subtitles
 from src.repository.streamRepository import StreamRepository
 
 load_dotenv()
@@ -19,13 +22,15 @@ os.makedirs("./logs", exist_ok=True)
 
 class ProcessFiles:
 
-    def __init__(self, streamRepository:StreamRepository):
+    def __init__(self, streamRepository:StreamRepository,subtitles:Subtitles):
         self.videoId = None
         self.bucketName = None
         self.fileName = None
         self.streamRepository = streamRepository
+        self.subtitles = subtitles
 
     def getMessageFromQueue(self, videoId: str,bucketName:str,fileName:str) -> None:
+        self.configureFileLog()
         try:
             if videoId == None or bucketName == None or fileName == None:
                 raise ValueError("Processamento falhou, tente novamente")
@@ -73,11 +78,17 @@ class ProcessFiles:
         
         self.validateVideo(pathDownload)
         
+        subtitlesPath = self.subtitles.createSubTitle(pathDownload)
+        if subtitlesPath is not None:
+            pathBucket = self.sendFileToBucket(bucketName,subtitlesPath)
+            self.streamRepository.insertSubTitles(videoId,pathBucket)
+
         streamFolderName = self.convertVideoToStream(fileName, pathDownload)
-        self.sendStreamToBucket(streamFolderName, bucketName, videoId)
-        
+
         self.validateGeneratedStream(streamFolderName)
 
+        self.sendStreamToBucket(streamFolderName, bucketName, videoId)
+        
         pathStreamLocally = f"http://localhost:9000/{bucketName}/{videoId}/output.m3u8"
         self.updateUrlVideoOnDb(pathStreamLocally,videoId)
         
@@ -142,6 +153,7 @@ class ProcessFiles:
         logging.info(f"[VALIDAÇÃO] Arquivo {filePath} válido.")
 
     def validateGeneratedStream(self,folderPath):
+        print("folderPath ",folderPath)
         playlist = os.path.join(folderPath, "output.m3u8")
         
         if not os.path.exists(playlist):
@@ -167,6 +179,16 @@ class ProcessFiles:
             raise Exception(f"Arquivo vazio: {filePath}")
         
         logging.info(f"[VALIDAÇÃO] Arquivo correto: {filePath}")
+    
+    def sendFileToBucket(self,bucket_name: str, pathFile: str) -> str:
+        source_file = pathFile
+        destination_file = self.generateHashForFileName(pathFile)
+        client = self.createConnection()
+        try:
+            client.upload_file(source_file, bucket_name, destination_file)
+            return f"http://localhost:9000/{bucket_name}/{destination_file}"
+        except Exception as e:
+            logging.error(f"erro ao enviar legendas para o bucket, erro que ocorreu: {e}")
         
     def sendStreamToBucket(self, folder_path: str, bucket_name: str, videoId: str):
         logging.info(f"Iniciando envio de stream de id {videoId} que está na pasta local {folder_path} para o bucket {bucket_name}")
@@ -226,3 +248,25 @@ class ProcessFiles:
         except Exception as e:
             raise ValueError("Ocorreu um erro interno ao tentar processar o vídeo, tente novamente")
 
+    def configureFileLog(self):
+        dateActual = date.today()
+        log_path = f"./logs/{dateActual}.log"
+
+        logger = logging.getLogger()
+        logger.setLevel(logging.INFO)
+
+        if logger.hasHandlers():
+            logger.handlers.clear()
+
+        file_handler = logging.FileHandler(log_path, mode='a')
+        formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+        file_handler.setFormatter(formatter)
+
+        logger.addHandler(file_handler)
+
+        print(f"Log configurado para o arquivo {log_path}")
+    
+    def generateHashForFileName(self, file_path: str) -> str:
+        hashFile = uuid.uuid4()
+        ext = os.path.splitext(file_path)[1]
+        return f"{hashFile}{ext}"

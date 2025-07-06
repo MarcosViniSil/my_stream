@@ -19,6 +19,7 @@
         "./reciveFiles",
         "./reciveFiles",
         "./reciveFiles",
+        "./processFiles",
         "./processFiles"
     ]
 }

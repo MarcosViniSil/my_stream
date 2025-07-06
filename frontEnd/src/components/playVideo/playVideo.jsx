@@ -31,7 +31,7 @@ function VideoPlayer({ videoDatas,timeAt,onTimeUpdate  }) {
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
          video.currentTime = timeAt;
-        setIsPlaying(true);
+         setIsPlaying(true);
         
       });
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
@@ -180,7 +180,14 @@ function VideoPlayer({ videoDatas,timeAt,onTimeUpdate  }) {
       <div className="videoContainer">
         <div className="wrapVideo">
           
-          <video onClick={togglePlay} muted autoPlay ref={videoRef} className="videoPlayer">
+          <video crossorigin="anonymous" onClick={togglePlay} muted autoPlay ref={videoRef} className="videoPlayer">
+          <track
+              src="http://localhost:9000/python-test-bucket/f9995870-5ac5-4be4-a1c2-ca6379b2dcca.vtt"
+              kind="subtitles"
+              srcLang="pt"
+              label="Português"
+              default
+            />
 
           </video>
 

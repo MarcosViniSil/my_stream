@@ -37,6 +37,7 @@ CREATE TABLE tb_video(
     videoTitle VARCHAR(255) UNIQUE ,
     thumbnailUrl VARCHAR(255) UNIQUE,
     videoUrl VARCHAR(255) UNIQUE,
+    videoSubTitles VARCHAR(255) UNIQUE,
     videoStatus VARCHAR(10) NOT NULL CHECK (videoStatus IN ('READY', 'PROCESSING','FAIL')),
     videoDuration INT ,
     lastStreaming DATE,
@@ -61,16 +62,6 @@ CREATE TABLE tb_userVideoReaction(
     reactionType INT NOT NULL
 );
 
-CREATE TABLE tb_tasks (
-    taskId BINARY(16) PRIMARY KEY,
-    videoId BINARY(16),
-    bucketName VARCHAR(255),
-    fileName TEXT,
-    videoStatus VARCHAR(10) DEFAULT 'PROCESSING',
-    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
 ALTER TABLE tb_userCodeVerification ADD FOREIGN KEY (idUser) REFERENCES tb_user(userId);
 ALTER TABLE tb_video ADD FOREIGN KEY (idAdmin) REFERENCES tb_user(userId);
 ALTER TABLE tb_userVideoReaction ADD FOREIGN KEY (userId) REFERENCES tb_user(userId);
@@ -82,7 +73,6 @@ ALTER TABLE tb_videoHistory ADD FOREIGN KEY (userId) REFERENCES tb_user(userId);
 ALTER TABLE tb_videoWatchTime ADD FOREIGN KEY (videoId) REFERENCES tb_video(videoId);
 ALTER TABLE tb_videoWatchTime ADD FOREIGN KEY (userId) REFERENCES tb_user(userId);
 
-ALTER TABLE tb_tasks ADD FOREIGN KEY (videoId) REFERENCES tb_video(videoId);
 
 -- UUID_TO_BIN(UUID(), 1) -> INSERT
 
