@@ -187,6 +187,7 @@ class UserVideosService:
                 row = self.videoRepository.getVideoForStreaming(videoId)
                 if row is None:
                     raise HTTPException(status_code=400,detail=f"O vídeo solicitado não foi encontrado")
+
                 reponse = VideoStreaming(
                         videoDate=self.convertDate(str(row[0])),
                         userName=row[1],
@@ -194,7 +195,8 @@ class UserVideosService:
                         videoUrl=row[3],
                         videoId = self.convertUUID(row[4]),
                         likes = row[5],
-                        dislikes = row[6]
+                        dislikes = row[6],
+                        videoSubtitles = row[7] or ""
                     ) 
                 reponse.videoUrl = self.bucket.generatePresignedUrl(reponse.videoUrl)
                 return reponse

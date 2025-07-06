@@ -58,7 +58,7 @@ class Subtitles:
             response = client.models.generate_content(model="gemini-2.5-flash",contents=[self.createPrompt(messageError),myfile],)
             subscribleId = uuid.uuid4().bytes
             subscribleIdStr = str(uuid.UUID(bytes=subscribleId))
-            if response == messageError:
+            if response.text == messageError:
                 logging.error(f"Não foi possível converter o áudio em legendas, gemini não identificou: {audioPath}")
                 return None
         

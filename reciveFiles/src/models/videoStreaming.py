@@ -9,3 +9,4 @@ class VideoStreaming(BaseModel):
     videoId: str
     likes:int
     dislikes:int
+    videoSubtitles:str

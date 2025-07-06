@@ -39,14 +39,8 @@ class ProcessFiles:
             
             self.deleteLocalVideoAfterProcessing(fileName)
 
-            self.deleteFileFromBucket(fileName,bucketName)
-
         except VideoBucketException as vb:
             self.handleException(videoId,fileName)
-            try:
-                self.deleteFileFromBucket(fileName,bucketName)
-            except BaseException as r:
-                logging.error(f"Ocorreu o erro {vb} e ao tentar deletar video de id {videoId} do bucket {bucketName} ocorreu o erro {r}")
         
         except BaseException as r:
             logging.error(f"Ocorreu o erro {r} ")
@@ -54,7 +48,7 @@ class ProcessFiles:
 
     def handleException(self,videoId : str,fileName : str) -> None:
         try:
-            if videoId != None:
+            if videoId is not None:
                 userEmail = self.streamRepository.getOwnerEmail(videoId)
                 self.streamRepository.updateStatusVideoToFail(videoId);
                 #sendEmail(videoId,"Falhou ❌",str(r.args[0]),userEmail)
@@ -225,13 +219,6 @@ class ProcessFiles:
 
             logging.error(f"Ocorreu um erro ao baixar arquivo {fileName} vindo do bucket {bucketName}")
             raise ValueError("Ocorreu um erro ao iniciar o processamento do vídeo, tente novamente")
-
-    def deleteFileFromBucket(self, fileName:str, bucketName:str) -> None:
-        try:
-            s3 = self.createConnection()
-            s3.delete_object(Bucket=bucketName, Key=fileName)
-        except BaseException as r:
-            logging.error(f"Ocoreru um erro ao deletar arquivo {fileName} do buket {bucketName} após o processamento")
 
     def createConnection(self):
         try:

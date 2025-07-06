@@ -9,10 +9,12 @@ import { IoIosVolumeHigh } from "react-icons/io";
 import { FaVolumeXmark } from "react-icons/fa6";
 import { AiFillLike } from "react-icons/ai";
 import { AiFillDislike } from "react-icons/ai";
+import { MdSubtitles } from "react-icons/md";
+import { MdSubtitlesOff } from "react-icons/md";
 
 import "./playVideo.css";
 
-function VideoPlayer({ videoDatas,timeAt,onTimeUpdate  }) {
+function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -22,6 +24,7 @@ function VideoPlayer({ videoDatas,timeAt,onTimeUpdate  }) {
   const [showControls, setShowControls] = useState(true);
   const [showUnmuteButton, setShowUnmuteButton] = useState(true);
   const [isMobile, setIsMobile] = useState(false)
+  const [isSubtitle, setIsSubtitle] = useState(false)
 
   useEffect(() => {
     const video = videoRef.current;
@@ -30,9 +33,9 @@ function VideoPlayer({ videoDatas,timeAt,onTimeUpdate  }) {
       hls.loadSource(videoDatas.videoUrl);
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-         video.currentTime = timeAt;
-         setIsPlaying(true);
-        
+        video.currentTime = timeAt;
+        setIsPlaying(true);
+
       });
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = videoDatas.videoUrl;
@@ -41,7 +44,7 @@ function VideoPlayer({ videoDatas,timeAt,onTimeUpdate  }) {
         setIsPlaying(true);
       });
     }
-    
+
     const handleTimeUpdate = () => {
       const progress = (video.currentTime / video.duration) * 100;
       setProgress(progress);
@@ -175,19 +178,30 @@ function VideoPlayer({ videoDatas,timeAt,onTimeUpdate  }) {
     return isMobile
   }
 
+  const changeSubtitles = () => {
+    if(videoDatas.videoSubtitles == ""){
+      return
+    }
+    setIsSubtitle(prev => !prev)
+
+  }
+
   return (
     <div className="wrapAll">
       <div className="videoContainer">
         <div className="wrapVideo">
-          
-          <video crossorigin="anonymous" onClick={togglePlay} muted autoPlay ref={videoRef} className="videoPlayer">
-          <track
-              src="http://localhost:9000/python-test-bucket/f9995870-5ac5-4be4-a1c2-ca6379b2dcca.vtt"
-              kind="subtitles"
-              srcLang="pt"
-              label="Português"
-              default
-            />
+
+          <video crossOrigin="anonymous" onClick={togglePlay} muted autoPlay ref={videoRef} className="videoPlayer">
+            {videoDatas.videoSubtitles != "" && isSubtitle && (
+              <track
+                src={videoDatas.videoSubtitles}
+                kind="subtitles"
+                srcLang="pt"
+                label="Português"
+                default
+              />
+            )}
+
 
           </video>
 
@@ -220,7 +234,18 @@ function VideoPlayer({ videoDatas,timeAt,onTimeUpdate  }) {
                 </div>
 
               </div>
-              <MdFullscreen className="fullScreen" onClick={handleFullscreen} />
+              <div className="containerSubtitlesAndFullScreen">
+                <div onClick={changeSubtitles}>
+                  {isSubtitle ? (
+                    <MdSubtitles className="subTitles" />
+                  ) : (
+                    <MdSubtitlesOff className="subTitles" />
+                  )}
+                </div>
+
+                <MdFullscreen className="fullScreen" onClick={handleFullscreen} />
+              </div>
+
             </div>
 
           </div>

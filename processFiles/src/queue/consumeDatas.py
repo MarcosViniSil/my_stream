@@ -49,18 +49,14 @@ class ConsumeQueue:
                     bucketName = str(data["videoUrl"]).split("/")[-2]
                     fileName = str(data["videoUrl"]).split("/")[-1]
                     
+                    ch.basic_ack(delivery_tag=method.delivery_tag)
+                    
                     self.process.getMessageFromQueue(videoId,bucketName,fileName)
+                    
                     logging.info(f"Mensagem {body.decode()} processada com sucesso")
                 except Exception as e:
                     logging.error(f"Ao processar mensagem {body.decode()} o seguinte erro aconteceu: {e}")
-                finally:
-                    try:
-                        ch.basic_ack(delivery_tag=method.delivery_tag)
-                    except (StreamLostError, ChannelClosedByBroker) as e:
-                        logging.error(f"Não foi possível enviar ACK porque a conexão já foi perdida: {e}")
-                    except Exception as e:
-                        logging.error(f"Erro inesperado ao enviar ACK: {e}")
-
+     
             channel.basic_consume(queue="C", on_message_callback=callback)
 
             print("Aguardando mensagens... Pressione CTRL+C para sair.")

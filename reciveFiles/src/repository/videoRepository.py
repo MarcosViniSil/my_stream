@@ -278,7 +278,8 @@ class VideoRepository:
         self.Db.createConnection()
 
         sql = """
-               SELECT tbv.videoDate,tu.userName,tbv.videoTitle,tbv.videoUrl ,tbv.videoId,tbvr.videoLikes,tbvr.videoDislikes
+               SELECT tbv.videoDate,tu.userName,tbv.videoTitle,tbv.videoUrl ,tbv.videoId,tbvr.videoLikes,tbvr.videoDislikes,
+               tbv.videoSubTitles
                FROM tb_video AS tbv 
                INNER JOIN tb_user AS tu ON tu.userId = tbv.idAdmin
                INNER JOIN tb_videoReaction AS tbvr ON tbvr.videoId = tbv.videoId

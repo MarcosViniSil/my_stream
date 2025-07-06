@@ -328,6 +328,17 @@
   margin-left: 5px;
 }
 
+.containerSubtitlesAndFullScreen{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+}
+.subTitles{
+  font-size: x-large;
+  cursor: pointer;
+}
+
 @media (max-width:700px) {
   .wrapAuthorAndTitle>h3 {
     font-size: 1.6em;
