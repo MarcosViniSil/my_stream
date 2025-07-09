@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends,Response
 from src.models.dependencies import getUserService
 from src.models.user import User,Userlogin
 from src.service.userService import UserService
@@ -14,9 +14,18 @@ async def createUser(
 
 
 @userRouter.post("/sign/in")
-async def createUser(
+async def loginUser(
     user: Userlogin,
+    response: Response,
     userService: UserService = Depends(getUserService)
 ):
-    return userService.logInUser(user)
+    token = userService.logInUser(user)
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        secure=True,
+        samesite="Strict"
+    )
+    return {"message": "logado"}
 

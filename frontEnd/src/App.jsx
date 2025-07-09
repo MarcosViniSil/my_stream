@@ -10,6 +10,8 @@ import Home from '../src/pages/home/home'
 import Watch from '../src/pages/watch/watch'
 import NotFound from '../src/pages/notFound/notFound'
 import History from '../src/pages/history/history'
+import Register from './pages/register/register'
+import LoginPage from './pages/login/login'
 
 import './App.css';
 
@@ -18,15 +20,18 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/register" element={ <Register/> }/> 
+        <Route path="/login" element={ <LoginPage/> }/> 
         <Route path="/" element={<Home />} />
         <Route path="/profile" element={<ReceiveVideo />} />
         <Route path="/busca" element={<Search />} />
         <Route path="/history" element={<History />} />
         <Route path="/uploads" element={<ManagerVideos />} />
-         <Route path="/upload" element={<VideoUpload />} />
+        <Route path="/upload" element={<VideoUpload />} />
         <Route path="*" element={<NotFound />} />
         <Route path="/meta-dados" element={ <MetaDataPage/> }/> 
         <Route path="/watch" element={ <Watch/> }/> 
+        
       </Routes>
     </BrowserRouter>
   );
