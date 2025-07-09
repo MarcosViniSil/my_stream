@@ -8,8 +8,10 @@ def createJwtToken(email:str) -> str:
     if email is None:
         raise ValueError("Email não informado, portanto não é possível gerar token")
     
-    SECRET_KEY = os.environ["KEY_JWT"] 
-    if SECRET_KEY is None:
+    SECRET_KEY = None
+    try:
+        SECRET_KEY = os.environ["KEY_JWT"] 
+    except Exception as e:
         raise ValueError("Não foi possível capturar chave para gerar o token")
     
     payload = createPayLoad(email)
@@ -25,10 +27,12 @@ def validateJwtToken(token: str) -> dict:
     if token is None:
         raise ValueError("Token não foi informado")
     
-    SECRET_KEY = os.environ["KEY_JWT"] 
-    if SECRET_KEY is None:
+    SECRET_KEY = None
+    try:
+        SECRET_KEY = os.environ["KEY_JWT"] 
+    except Exception as e:
         raise ValueError("Não foi possível capturar chave para gerar o token")
-    
+
     algorithm = 'HS256'
     try:
         response = jwt.decode(token, SECRET_KEY, algorithms=[algorithm])

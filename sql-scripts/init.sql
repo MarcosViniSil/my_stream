@@ -4,8 +4,8 @@ CREATE TABLE tb_user(
     userId BINARY(16) PRIMARY KEY,
     userName VARCHAR(255) NOT NULL,
     userRole VARCHAR(7) NOT NULL CHECK (userRole IN ('USER', 'ADMIN')),
-    userEmail VARCHAR(255) NOT NULL,
-    userPassword VARCHAR(255) NOT NULL
+    userEmail VARCHAR(255) NOT NULL UNIQUE,
+    userPassword TEXT NOT NULL
 );
 
 CREATE TABLE tb_userCodeVerification(
