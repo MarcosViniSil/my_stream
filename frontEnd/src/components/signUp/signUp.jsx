@@ -117,7 +117,7 @@ export default function RegisterComponent() {
             
             setIsFetching(false)
 
-            //navigate("/login")
+            navigate("/login")
 
         } catch (err) {
             sendError(err.message)

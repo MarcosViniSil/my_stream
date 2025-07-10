@@ -41,6 +41,7 @@ export async function loginUser(user) {
             headers: {
                 "Content-Type": "application/json"
             },
+            credentials: "include",
             body: JSON.stringify(userBody),
         });
 

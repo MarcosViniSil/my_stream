@@ -12,8 +12,6 @@ class MetaDataRepository:
         self.Db = db
 
     def updateVideoMetadata(self, uuidVideo: str, videoTitle: str, urlThumbnail:str) -> None:
-        
-        #TODO get id admin to make relashionship between metadata and video
 
         try:
             videoIdBytes = uuid.UUID(uuidVideo).bytes
@@ -52,16 +50,16 @@ class MetaDataRepository:
         except Exception as e:
             raise ValueError("Erro ao verificar UUID",e)
         
-    def isVideoBelongsToUser(self, idUser:str,uuidVideo: str) -> bool:
+    def isVideoBelongsToUser(self, userId:bytes,uuidVideo: str) -> bool:
+        print("userId ",str(uuid.UUID(bytes=userId)))
         
         try:
             idVideoBytes = uuid.UUID(uuidVideo).bytes
-            userIdBytes  = uuid.UUID(idUser).bytes
             self.Db.createConnection()
             sql = """
                 SELECT videoId FROM tb_video WHERE idAdmin = %s AND videoId = %s
               """
-            self.Db.myCursor.execute(sql, (userIdBytes,idVideoBytes))
+            self.Db.myCursor.execute(sql, (userId,idVideoBytes))
             myresult = self.Db.myCursor.fetchall()
             self.Db.closeConnection()
             print(myresult)

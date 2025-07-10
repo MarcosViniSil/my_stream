@@ -5,6 +5,7 @@ export async function uploadVideo(file) {
   try {
     const response = await fetch("http://localhost:8000/upload/video", {
       method: "POST",
+      credentials: "include",
       body: formData,
     });
 
@@ -20,14 +21,10 @@ export async function uploadVideo(file) {
 }
 
 export async function getQuantityVideos() {
-  const formData = new FormData();
-  const token = "";
-  formData.append("tokenUser", token);
-
   try {
     const response = await fetch("http://localhost:8000/user/videos/quantity", {
       method: "POST",
-      body: formData,
+      credentials: "include",
     });
 
     if (!response.ok) {
@@ -43,14 +40,13 @@ export async function getQuantityVideos() {
 
 export async function getVideosUser(offset) {
   const formData = new FormData();
-  
-  const token = "";
-  formData.append("tokenUser", token);
+
   formData.append("offset", offset);
 
   try {
     const response = await fetch("http://localhost:8000/user/videos", {
       method: "POST",
+      credentials: "include",
       body: formData,
     });
 
@@ -67,14 +63,13 @@ export async function getVideosUser(offset) {
 
 export async function deleteVideo(videoId) {
   const formData = new FormData();
-  
-  const token = "";
-  formData.append("tokenUser", token);
+
   formData.append("videoId", videoId);
 
   try {
-    const response = await fetch(`http://localhost:8000/user/video?tokenUser=${token}&videoId=${videoId}`, {
+    const response = await fetch(`http://localhost:8000/user/video?videoId=${videoId}`, {
       method: "DELETE",
+      credentials: "include",
       body: formData,
     });
 
@@ -90,11 +85,11 @@ export async function deleteVideo(videoId) {
 }
 
 export async function getVideosInitialPage(offset) {
-  const TOKEN_USER = "token"
-  //const TOKEN_USER = "None"
+
   try {
-    const response = await fetch(`http://localhost:8000/videos?token=${TOKEN_USER}&offset=${offset}`, {
-      method: "GET"
+    const response = await fetch(`http://localhost:8000/videos?offset=${offset}`, {
+      method: "GET",
+      credentials: "include",
     });
 
     if (!response.ok) {
@@ -109,10 +104,10 @@ export async function getVideosInitialPage(offset) {
 }
 
 export async function getVideosUserQuery(query) {
-  const TOKEN = "aa"
   try {
-    const response = await fetch(`http://localhost:8000/videos/query/?token=${TOKEN}&param=${query}`, {
-      method: "GET"
+    const response = await fetch(`http://localhost:8000/videos/query/?param=${query}`, {
+      method: "GET",
+      credentials: "include",
     });
 
     if (!response.ok) {
@@ -127,10 +122,10 @@ export async function getVideosUserQuery(query) {
 }
 
 export async function getDatasVideoToStream(videoId) {
-  const TOKEN = "token"
   try {
-    const response = await fetch(`http://localhost:8000/streaming/video?videoId=${videoId}&token=${TOKEN}`, {
-      method: "GET"
+    const response = await fetch(`http://localhost:8000/streaming/video?videoId=${videoId}`, {
+      method: "GET",
+      credentials: "include",
     });
 
     if (!response.ok) {
@@ -145,10 +140,10 @@ export async function getDatasVideoToStream(videoId) {
 }
 
 export async function getHistory(offset) {
-  const TOKEN_USER = "get on local storage"
   try {
-    const response = await fetch(`http://localhost:8000/videos/history/?token=${TOKEN_USER}&offset=${offset}`, {
-      method: "GET"
+    const response = await fetch(`http://localhost:8000/videos/history/?offset=${offset}`, {
+      method: "GET",
+      credentials: "include",
     });
 
     if (!response.ok) {
@@ -163,14 +158,13 @@ export async function getHistory(offset) {
 }
 
 export async function addLike(videoId) {
-  const TOKEN = "token"
   const formData = new FormData();
-  formData.append("tokenUser", TOKEN);
   formData.append("videoId", videoId);
 
   try {
     const response = await fetch("http://localhost:8000/video/like", {
       method: "POST",
+      credentials: "include",
       body: formData,
     });
 
@@ -186,14 +180,13 @@ export async function addLike(videoId) {
 }
 
 export async function addDisLike(videoId) {
-  const TOKEN = "token"
   const formData = new FormData();
-  formData.append("tokenUser", TOKEN);
   formData.append("videoId", videoId);
 
   try {
     const response = await fetch("http://localhost:8000/video/dislike", {
       method: "POST",
+      credentials: "include",
       body: formData,
     });
 

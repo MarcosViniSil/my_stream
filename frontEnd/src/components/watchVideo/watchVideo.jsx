@@ -21,7 +21,7 @@ export default function WatchVideo() {
         const fetchData = async () => {
             const videoId = getVideoId()
             if (!videoId?.trim()) {
-                navigate("/");
+                //navigate("/");
                 return;
             }
 
@@ -29,7 +29,7 @@ export default function WatchVideo() {
             const timeStopped = getTimeSttoped()
             const videoData = await getDatasVideo(videoId)
             if (videoData == null) {
-                navigate("/");
+                //navigate("/");
                 return
             }
 
@@ -67,7 +67,7 @@ export default function WatchVideo() {
 
     const getDatasVideo = async (videoId) => {
         if (!videoId || videoId == null || videoId == undefined || videoId.length == 0) {
-            navigate("/");
+            //navigate("/");
         }
 
         try {
@@ -106,7 +106,7 @@ const sendTimeWatched = async () => {
         try {
             const videoId = getVideoId();
             if (!videoId?.trim()) {
-                navigate("/");
+                //navigate("/");
                 return;
             }
 
@@ -132,7 +132,7 @@ const sendTimeWatched = async () => {
 
     const saveVideoOnHistory = async (videoId) => {
         if (!videoId || videoId == null || videoId == undefined || videoId.length == 0) {
-            navigate("/");
+            //navigate("/");
         }
 
         try {

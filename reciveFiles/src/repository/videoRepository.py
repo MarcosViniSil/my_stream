@@ -13,18 +13,14 @@ class VideoRepository:
     def __init__(self, db: ConnectionDB):
         self.Db = db
 
-    def createVideo(self, url: str, videoDuration: int) -> str:
+    def createVideo(self, url: str, videoDuration: int,userId:bytes) -> str:
 
         now = datetime.now()
         formattedDate = now.strftime("%Y-%m-%d")
 
-        userId = uuid.UUID("3f06af63-a93c-11e4-9797-00505690773f").bytes
-
         videoId = uuid.uuid4().bytes
 
         self.Db.createConnection()
-
-        # TODO -> change logic to receive user id from body
 
         sql = """
                 INSERT INTO tb_video (videoId, videoUrl, videoStatus,videoDuration, isVideoAvailable,videoDate,isDeleted, idAdmin) 
@@ -73,9 +69,8 @@ class VideoRepository:
             print(e)
             raise ValueError("Erro ao criar likes e deslikes iniciais", e)
 
-    def getVideosByUser(self, userId: str, offSet: int) -> dict:
-        userIdBytes = uuid.UUID("3f06af63-a93c-11e4-9797-00505690773f").bytes
-
+    def getVideosByUser(self, userId: bytes, offSet: int) -> dict:
+    
         self.Db.createConnection()
 
         sql = """
@@ -86,7 +81,7 @@ class VideoRepository:
                 LIMIT 5 OFFSET %s;
               """
         try:
-            self.Db.myCursor.execute(sql, (userIdBytes, offSet))
+            self.Db.myCursor.execute(sql, (userId, offSet))
             myresult = self.Db.myCursor.fetchall()
 
             self.Db.myDb.commit()
@@ -163,8 +158,7 @@ class VideoRepository:
             print(e)
             raise ValueError("Erro ao deletar vídeo, tente novamente")
 
-    def getVideoCountByUser(self, userId: str) -> int:
-        userIdBytes = uuid.UUID("3f06af63-a93c-11e4-9797-00505690773f").bytes
+    def getVideoCountByUser(self, userId: bytes) -> int:
 
         self.Db.createConnection()
 
@@ -172,7 +166,7 @@ class VideoRepository:
                 SELECT COUNT(videoId) AS countVideo FROM tb_video WHERE idAdmin = %s AND isDeleted = FALSE;
               """
         try:
-            self.Db.myCursor.execute(sql, (userIdBytes,))
+            self.Db.myCursor.execute(sql, (userId,))
             myresult = self.Db.myCursor.fetchone()
 
             self.Db.myDb.commit()
@@ -224,7 +218,7 @@ class VideoRepository:
         """
 
         try:
-            userIdBytes = uuid.UUID(userId).bytes if userId else None
+            userIdBytes = userId if userId else None
             self.Db.myCursor.execute(sql, (userIdBytes, offset))
             rows = self.Db.myCursor.fetchall()
 
@@ -241,10 +235,6 @@ class VideoRepository:
             raise ValueError("Erro ao buscar vídeos da página inicial")
 
     def searchVideosByTitle(self, param: str, userId: str) -> dict:
-        userIdBytes = None
-        if userId is not None:
-            userIdBytes = uuid.UUID(userId).bytes
-
         self.Db.createConnection()
 
         sql = """
@@ -260,7 +250,7 @@ class VideoRepository:
               """
         param = f"%{param}%"
         try:
-            self.Db.myCursor.execute(sql, (userIdBytes, param))
+            self.Db.myCursor.execute(sql, (userId, param))
             rows = self.Db.myCursor.fetchall()
 
             self.Db.myDb.commit()
@@ -275,11 +265,9 @@ class VideoRepository:
             print(e)
             raise ValueError("Erro ao buscar vídeos da pesquisa feita")
 
-    def getVideoForStreaming(self, videoId: str,userId:str) -> dict:
+    def getVideoForStreaming(self, videoId: str,userId:bytes) -> dict:
         videoIdBytes = uuid.UUID(videoId).bytes
 
-        userIdBytes = uuid.UUID(userId).bytes
-        
         self.Db.createConnection()
 
         sql = """
@@ -295,7 +283,7 @@ class VideoRepository:
 
               """
         try:
-            self.Db.myCursor.execute(sql, (userIdBytes,videoIdBytes))
+            self.Db.myCursor.execute(sql, (userId,videoIdBytes))
             row = self.Db.myCursor.fetchone()
 
             self.Db.myDb.commit()
@@ -310,10 +298,9 @@ class VideoRepository:
             print(e)
             raise ValueError(f"Erro ao buscar dados do vídeo para streaming {e}")
 
-    def updateWatchTime(self, userId: str, videoId: str, timeWatched: int) -> None:
+    def updateWatchTime(self, userId: bytes, videoId: str, timeWatched: int) -> None:
 
         videoIdBytes = uuid.UUID(videoId).bytes
-        userIdBytes = uuid.UUID(userId).bytes
 
         self.Db.createConnection()
 
@@ -321,7 +308,7 @@ class VideoRepository:
                 UPDATE tb_videoWatchTime SET watchedSeconds = %s WHERE userID = %s AND videoID = %s;     
               """
         try:
-            self.Db.myCursor.execute(sql, (timeWatched, userIdBytes, videoIdBytes))
+            self.Db.myCursor.execute(sql, (timeWatched, userId, videoIdBytes))
             self.Db.myDb.commit()
             self.Db.closeConnection()
 
@@ -329,9 +316,8 @@ class VideoRepository:
             print(e)
             raise ValueError(f"Erro ao adicionar tempo asistido ao vídeo")
 
-    def getWatchedSeconds(self, userId: str, videoId: str) -> dict:
+    def getWatchedSeconds(self, userId: bytes, videoId: str) -> dict:
         videoIdBytes = uuid.UUID(videoId).bytes
-        userIdBytes = uuid.UUID(userId).bytes
 
         self.Db.createConnection()
 
@@ -342,7 +328,7 @@ class VideoRepository:
                 WHERE tbvwt.userID = %s AND tbvwt.videoID = %s  
               """
         try:
-            self.Db.myCursor.execute(sql, (userIdBytes, videoIdBytes))
+            self.Db.myCursor.execute(sql, (userId, videoIdBytes))
 
             row = self.Db.myCursor.fetchone()
 
@@ -358,9 +344,8 @@ class VideoRepository:
             print(e)
             raise ValueError(f"Erro ao buscar dados de tempo assistido")
 
-    def addToHistory(self, videoId: str, userId: str) -> None:
+    def addToHistory(self, videoId: str, userId: bytes) -> None:
         videoIdBytes = uuid.UUID(videoId).bytes
-        userIdBytes = uuid.UUID(userId).bytes
 
         now = datetime.now()
         SqlDate = now.strftime("%Y-%m-%d")
@@ -372,7 +357,7 @@ class VideoRepository:
                INSERT INTO tb_videoHistory (historyId,userId,videoId,DateVideo) VALUES (%s,%s,%s,%s);    
               """
         try:
-            self.Db.myCursor.execute(sql, (historyId, userIdBytes, videoIdBytes, SqlDate))
+            self.Db.myCursor.execute(sql, (historyId, userId, videoIdBytes, SqlDate))
             self.Db.myDb.commit()
             self.Db.closeConnection()
 
@@ -380,9 +365,8 @@ class VideoRepository:
             print(e)
             raise ValueError(f"Erro ao inserir video no historico {e}")
 
-    def initializeWatchTime(self, videoId: str, userId: str) -> None:
+    def initializeWatchTime(self, videoId: str, userId: bytes) -> None:
         videoIdBytes = uuid.UUID(videoId).bytes
-        userIdBytes = uuid.UUID(userId).bytes
 
         self.Db.createConnection()
 
@@ -391,7 +375,7 @@ class VideoRepository:
                VALUES (%s, %s, %s);
               """
         try:
-            self.Db.myCursor.execute(sql, (userIdBytes, videoIdBytes, 0))
+            self.Db.myCursor.execute(sql, (userId, videoIdBytes, 0))
             self.Db.myDb.commit()
             self.Db.closeConnection()
 
@@ -402,8 +386,7 @@ class VideoRepository:
             else:
                 raise ValueError(f"Erro ao inserir vídeo no histórico: {err}")
 
-    def getUserHistory(self, userId: str, offset: int) -> dict:
-        userIdBytes = uuid.UUID(userId).bytes
+    def getUserHistory(self, userId: str, offset: bytes) -> dict:
         self.Db.createConnection()
 
         sql = """
@@ -435,7 +418,7 @@ class VideoRepository:
 
               """
         try:
-            self.Db.myCursor.execute(sql, (userIdBytes, offset))
+            self.Db.myCursor.execute(sql, (userId, offset))
             row = self.Db.myCursor.fetchall()
 
             self.Db.myDb.commit()
@@ -450,17 +433,16 @@ class VideoRepository:
             print(e)
             raise ValueError(f"Erro ao buscar historico de vídeos {e}")
     
-    def getVideoReaction(self,videoId:str,userId:str) -> dict:
+    def getVideoReaction(self,videoId:str,userId:bytes) -> dict:
         videoIdBytes = uuid.UUID(videoId).bytes
-        userIdBytes = uuid.UUID(userId).bytes
-        
+
         self.Db.createConnection()
 
         sql = """
                 SELECT reactionType FROM tb_userVideoReaction WHERE userId = %s AND videoId = %s ORDER BY createdAt DESC LIMIT 1;
               """
         try:
-            self.Db.myCursor.execute(sql, (userIdBytes,videoIdBytes))
+            self.Db.myCursor.execute(sql, (userId,videoIdBytes))
             row = self.Db.myCursor.fetchone()
         
             self.Db.myDb.commit()
@@ -496,9 +478,8 @@ class VideoRepository:
             print(e)
             raise ValueError(f"Erro ao obter id do vídeo{e}")
 
-    def addLikeAndReaction(self, videoId: str, userId: str, isUserChangingReaction:bool, reactionType: int = 1) -> None:
+    def addLikeAndReaction(self, videoId: str, userId: bytes, isUserChangingReaction:bool, reactionType: int = 1) -> None:
         videoIdBytes = uuid.UUID(videoId).bytes
-        userIdBytes = uuid.UUID(userId).bytes
         userReactionId = uuid.uuid4().bytes
         
         createdAt = datetime.now()
@@ -518,7 +499,7 @@ class VideoRepository:
                     (userVideoReactionId, userId, videoId, createdAt, reactionType) 
                 VALUES (%s, %s, %s, %s, %s)
             """
-            cursor.execute(REACTION, (userReactionId, userIdBytes, videoIdBytes, createdAt, reactionType))
+            cursor.execute(REACTION, (userReactionId, userId, videoIdBytes, createdAt, reactionType))
 
             conn.commit()
 
@@ -530,9 +511,8 @@ class VideoRepository:
         finally:
             self.Db.closeConnection()
 
-    def addDislikeAndReaction(self, videoId: str, userId: str, isUserChangingReaction:bool,reactionType: int = -1,) -> None:
+    def addDislikeAndReaction(self, videoId: str, userId: bytes, isUserChangingReaction:bool,reactionType: int = -1,) -> None:
         videoIdBytes = uuid.UUID(videoId).bytes
-        userIdBytes = uuid.UUID(userId).bytes
         userReactionId = uuid.uuid4().bytes
         
         createdAt = datetime.now()
@@ -551,7 +531,7 @@ class VideoRepository:
                     (userVideoReactionId, userId, videoId, createdAt, reactionType) 
                 VALUES (%s, %s, %s, %s, %s)
             """
-            cursor.execute(REACTION, (userReactionId, userIdBytes, videoIdBytes, createdAt, reactionType))
+            cursor.execute(REACTION, (userReactionId, userId, videoIdBytes, createdAt, reactionType))
 
             conn.commit()
 
@@ -563,9 +543,8 @@ class VideoRepository:
         finally:
             self.Db.closeConnection()
 
-    def removeLikeUser(self, videoId: str, userId: str) -> None:
+    def removeLikeUser(self, videoId: str, userId: bytes) -> None:
         videoIdBytes = uuid.UUID(videoId).bytes
-        userIdBytes = uuid.UUID(userId).bytes
         userReactionId = uuid.uuid4().bytes
         
         createdAt = datetime.now()
@@ -586,7 +565,7 @@ class VideoRepository:
                     (userVideoReactionId, userId, videoId, createdAt, reactionType) 
                 VALUES (%s, %s, %s, %s, 0)
             """
-            cursor.execute(REACTION, (userReactionId, userIdBytes, videoIdBytes, createdAt))
+            cursor.execute(REACTION, (userReactionId, userId, videoIdBytes, createdAt))
 
             conn.commit()
 
@@ -598,9 +577,8 @@ class VideoRepository:
         finally:
             self.Db.closeConnection()
 
-    def removeDislikeUser(self, videoId: str, userId: str) -> None:
+    def removeDislikeUser(self, videoId: str, userId: bytes) -> None:
         videoIdBytes = uuid.UUID(videoId).bytes
-        userIdBytes = uuid.UUID(userId).bytes
         userReactionId = uuid.uuid4().bytes
         
         createdAt = datetime.now()
@@ -621,7 +599,7 @@ class VideoRepository:
                     (userVideoReactionId, userId, videoId, createdAt, reactionType) 
                 VALUES (%s, %s, %s, %s, 0)
             """
-            cursor.execute(REACTION, (userReactionId, userIdBytes, videoIdBytes, createdAt))
+            cursor.execute(REACTION, (userReactionId, userId, videoIdBytes, createdAt))
 
             conn.commit()
 

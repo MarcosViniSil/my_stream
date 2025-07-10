@@ -10,6 +10,9 @@ from src.enum.statusVideoEnum import VideoStatus
 from src.models.videoPageInitialReponse import VideoResponse
 from src.service.bucket import Bucket
 from collections import defaultdict
+import ast
+
+from src.service.userService import UserService
 
 MONTHS_PT = {
     1: "janeiro", 2: "fevereiro", 3: "março", 4: "abril",
@@ -22,17 +25,20 @@ DAYS_PT = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sex
 
 class UserVideosService:
 
-    def __init__(self,videoRepository:VideoRepository,bucket: Bucket):
+    def __init__(self,videoRepository:VideoRepository,bucket: Bucket,userService:UserService):
         self.videoRepository = videoRepository
         self.bucket = bucket
+        self.userService = userService
 
     def getVideosList(self,tokenUser:str, offSet: int) -> dict:
+        userId = self.getUserId(tokenUser)
+        
         if offSet < 0:
             raise HTTPException(status_code=403,detail="Offset deve ser maior que 0")
         
         DATAS_PER_PAGE = 5
         offSet = offSet * DATAS_PER_PAGE
-        datas = self.videoRepository.getVideosByUser(tokenUser,offSet)
+        datas = self.videoRepository.getVideosByUser(userId,offSet)
         return self.convertDictToArray(datas)
     
     def convertDictToArray(self,data:dict) -> dict:
@@ -61,8 +67,7 @@ class UserVideosService:
         if not self.isIdValid(videoId):
             raise HTTPException(status_code=400,detail="id de vídeo inválido")
         
-        #TODO create logic to retrive userId by Token
-        userId = '3f06af63-a93c-11e4-9797-00505690773f'
+        userId = self.getUserId(tokenUser)
         
         videoDatas = ""
         try:
@@ -90,19 +95,20 @@ class UserVideosService:
 
         return {"message": "Vídeo deletado com sucesso"}
 
-    def isVideoBelongsToUser(self,userIdRequest:str,userIdDB:str) -> bool:
-        userIdBytes = uuid.UUID(userIdRequest).bytes
-        if userIdBytes != userIdDB:
+    def isVideoBelongsToUser(self,userIdRequest:bytes,userIdDB:str) -> bool:
+        if userIdRequest != userIdDB:
             return False
 
         return True
 
     def getTotalVideosByUser(self,tokenUser:str) -> dict:
-        #TODO get id user by token
+        userId = self.getUserId(tokenUser)
+        
         try:
-            videosQuantity = self.videoRepository.getVideoCountByUser(tokenUser)
+            videosQuantity = self.videoRepository.getVideoCountByUser(userId)
             if videosQuantity is not None:
                 return {"videosQuantity":videosQuantity}
+            
             raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao verificar a quantidade de vídeos do usuário")
         
         except Exception as e:
@@ -122,13 +128,14 @@ class UserVideosService:
             raise HTTPException(status_code=404,detail="status do vídeo não foi encontrado")
         
     def getVideosInitialPage(self,offset:int,tokenUser:str) -> VideoResponse:
+        userId = None
+        try:
+            userId = self.userService.getUserId(tokenUser)
+        except Exception as e:
+            userId = None
+        
         if offset < 0:
             raise HTTPException(status_code=400,detail="Offset inválido")
-        userId = ""
-        if tokenUser is None:
-            userId = None
-        else:
-            userId = '3f06af63-a93c-11e4-9797-00505690773f'
 
         videosPerPage = 10
         offset *= videosPerPage
@@ -152,11 +159,15 @@ class UserVideosService:
             raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao buscar os vídeos da página inicial$ {e}")
         
     def getVideosBasedOnUserQuery(self,param:str,token:str) -> VideoResponse:
-             #TODO get id user by token
+            
             if not param or len(param) == 0 or len(param.replace(" ","")) == 0 or len(param) > 100:
                 raise HTTPException(status_code=400,detail="parametro inválido")
 
-            userId = '3f06af63-a93c-11e4-9797-00505690773f'
+            userId = None
+            try:
+                userId = self.userService.getUserId(token)
+            except Exception as e:
+                userId = None
 
             try:
                 rows = self.videoRepository.searchVideosByTitle(param,userId)
@@ -177,13 +188,17 @@ class UserVideosService:
                 raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao buscar os vídeos da pesquisa{e}")
     
     def getDatasVideoStreaming(self, videoId:str,tokenUser:str) -> VideoStreaming:
-        # in this case, token can be null, because an user without login can watch a video
-        userId = '3f06af63-a93c-11e4-9797-00505690773f' # just for example
         if not videoId or len(videoId) == 0:
             raise HTTPException(status_code=400,detail=f"id inválido para busca")
         
         if not self.isIdValid(videoId):
             raise HTTPException(status_code=400,detail="id de vídeo inválido")
+        
+        userId = None
+        try:
+            userId = self.userService.getUserId(tokenUser)
+        except Exception as e:
+            userId = None
         
         try:
                 row = self.videoRepository.getVideoForStreaming(videoId,userId)
@@ -207,12 +222,11 @@ class UserVideosService:
         except Exception as e:
                 raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao buscar os vídeos da pesquisa {e}")
 
-    def insertVideoOnHistory(self,videoId:str,tokenUser:str) -> dict:
-        #TODO recover id user based on token
-        userId = '3f06af63-a93c-11e4-9797-00505690773f'
-        
+    def insertVideoOnHistory(self,videoId:str,tokenUser:str) -> dict:        
         if not self.isIdValid(videoId):
             raise HTTPException(status_code=400,detail=f"id de vídeo inválido")
+        
+        userId = self.getUserId(tokenUser)
         
         try:
             self.videoRepository.addToHistory(videoId,userId)
@@ -231,8 +245,8 @@ class UserVideosService:
         if not self.isIdValid(videoId):
             raise HTTPException(status_code=400,detail="id de vídeo inválido")
         
-        #TODO recover id user based on token
-        userId = '3f06af63-a93c-11e4-9797-00505690773f'
+        userId = self.getUserId(tokenUser)
+        
         try:
             datas = self.videoRepository.getWatchedSeconds(userId,videoId)
             if datas is None:
@@ -260,11 +274,11 @@ class UserVideosService:
             
     
     def getHistoryVideosByUserId(self,tokenUser:str,offset:int) -> VideosHistory:
-        #TODO recover id user based on token
-        userId = '3f06af63-a93c-11e4-9797-00505690773f'
         if  offset < 0:
             raise HTTPException(status_code=400,detail=f"offset inválido")
         
+        userId = self.getUserId(tokenUser)
+
         dataPerPage = 20
         offset *= dataPerPage
         
@@ -293,11 +307,12 @@ class UserVideosService:
     def addLikeToVideo(self,tokenUser:str,videoId:str) -> dict:
         LIKE_VALUE_DB = 1
         row = None
-        #TODO recover id user based on token
-        userId = '3f06af63-a93c-11e4-9797-00505690773f'
+
         if not self.isIdValid(videoId):
             raise HTTPException(status_code=400,detail=f"id de vídeo inválido")
         
+        userId = self.getUserId(tokenUser)
+
         try:
             videoIdDb = self.videoRepository.isVideoExists(videoId)
             if videoIdDb is None or videoIdDb != videoId:
@@ -337,8 +352,8 @@ class UserVideosService:
     def addDislikeToVideo(self,tokenUser:str,videoId:str) -> dict:
         DISLIKE_VALUE_DB = -1
         row = None
-        #TODO recover id user based on token
-        userId = '3f06af63-a93c-11e4-9797-00505690773f'
+        
+        userId = self.getUserId(tokenUser)
         
         if not self.isIdValid(videoId):
             raise HTTPException(status_code=400,detail=f"id de vídeo inválido")
@@ -430,3 +445,12 @@ class UserVideosService:
             return True
         except ValueError:
             return False
+        
+    def getUserId(self,token:str) -> bytes:
+        userId = None
+        try:
+            userId = self.userService.getUserId(token)
+        except Exception as e:
+            raise HTTPException(status_code=400,detail=str(e))
+        
+        return userId

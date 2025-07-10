@@ -1,4 +1,4 @@
-from fastapi import APIRouter, File, UploadFile, Depends,Form
+from fastapi import APIRouter, File, UploadFile, Depends,Form,Cookie
 from src.models.dependencies import getReceiveMetaData
 
 from src.models.metadataResponse import MetadataResponse
@@ -12,8 +12,8 @@ async def upload_metadata(
     id = Form(...),
     videoTitle: str = Form(...),
     thumbnailImage: UploadFile = File(...),
-    token: str = Form(...),
+    access_token: str = Cookie(...),
     reciveMetadata: ReceiveMetadaService = Depends(getReceiveMetaData)
     
 ):
-    return await reciveMetadata.processMetaData(id,videoTitle,thumbnailImage,token)
+    return await reciveMetadata.processMetaData(id,videoTitle,thumbnailImage,access_token)

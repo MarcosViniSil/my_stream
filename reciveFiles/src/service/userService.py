@@ -1,3 +1,4 @@
+import ast
 from src.models.user import User,Userlogin
 from src.repository.userRepository import UserRepository
 from fastapi import HTTPException
@@ -72,16 +73,21 @@ class UserService:
         self.validatePassword(user.password)
 
     def getUserId(self,token:str) -> bytes:
+        try:
+            token = ast.literal_eval(token)['token']
+        except Exception as e:
+            raise HTTPException(status_code=400,detail="Ocorreu um erro ao obter token")
         datas = None
         
         try:
             datas = validateJwtToken(token)
         except Exception as e:
                 raise ValueError("token inválido")
-        
-        if datas is None or datas.email is None:
+        print("tipo:" ,type(datas))
+
+        if datas is None or datas["userEmail"] is None:
             raise ValueError("erro ao validar token")
-        userEmail = datas.email
+        userEmail = datas["userEmail"]
         
         try:
             row = self.userRepository.getUserId(userEmail)

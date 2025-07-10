@@ -8,20 +8,25 @@ from uuid import UUID
 import uuid
 from PIL import Image
 
+from src.service.userService import UserService
+
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 class ReceiveMetadaService:
 
-    def __init__(self, bucket: Bucket, metaDataRepository: MetaDataRepository):
+    def __init__(self, bucket: Bucket, metaDataRepository: MetaDataRepository,userService:UserService):
         self.bucket = bucket
         self.metaDataRepository = metaDataRepository
+        self.userService = userService
 
     async def processMetaData(self, idVideo: str, videoTitle: str, file: UploadFile,tokenUser:str) -> dict:
-        #if video belongs to user -> accept change, if not, return error
-        userId = '3f06af63-a93c-11e4-9797-00505690773f'
-
+        
+        userId = self.getUserId(tokenUser)
+        
+        self.isVideoBelongsToUser(userId,idVideo)
+        
         self.isDataValid(idVideo,videoTitle,file,userId)
         
         filePath = self.copyFileLocally(file)
@@ -36,9 +41,22 @@ class ReceiveMetadaService:
 
         return {"message": "Imagem recebida com sucesso", "imageUrl": imageUrlOnBucket}
     
+    def isVideoBelongsToUser(self,userId:bytes,videoId:str) -> None:
+        if not self.metaDataRepository.isVideoBelongsToUser(userId,videoId):
+            raise HTTPException(status_code=403, detail="O vídeo não pertence ao usuário que solicitou a alteração dos metadados")
+
+    def getUserId(self,token:str) -> bytes:
+        userId = None
+        try:
+            userId = self.userService.getUserId(token)
+        except Exception as e:
+            raise HTTPException(status_code=400,detail=str(e))
+        
+        return userId
+
     def isDataValid(self,idVideo: str, videoTitle: str, file: UploadFile,userId:str) :
         
-        if not self.isIdValid(idVideo) or not self.isIdValid(userId):
+        if not self.isIdValid(idVideo):
             raise HTTPException(status_code=400, detail="uuid inválido")
         
         if not self.metaDataRepository.isVideoBelongsToUser(userId,idVideo):

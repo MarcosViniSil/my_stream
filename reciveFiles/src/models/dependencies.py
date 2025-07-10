@@ -15,15 +15,17 @@ video_repository = VideoRepository(db)
 
 bucket = Bucket()
 queueService = QueueService()
-
-userVideosRepository = UserVideosService(video_repository,bucket)
-metadataRepository = MetaDataRepository(db)
 userRepository = UserRepository(db)
 
-userMetadatas = UserMetaDatasService(metadataRepository)
-recive_video = ReciveVideo(bucket, video_repository,queueService)
-receiveMetadata = ReceiveMetadaService(bucket,metadataRepository)
 userService = UserService(userRepository)
+
+userVideosService = UserVideosService(video_repository,bucket,userService)
+metadataRepository = MetaDataRepository(db)
+
+userMetadatas = UserMetaDatasService(metadataRepository)
+recive_video = ReciveVideo(bucket, video_repository,queueService,userService)
+receiveMetadata = ReceiveMetadaService(bucket,metadataRepository,userService)
+
 
 def getReciveVideo():
     return recive_video
@@ -32,7 +34,7 @@ def getReceiveMetaData():
     return receiveMetadata
 
 def getUserVideosRepository():
-    return userVideosRepository
+    return userVideosService
 
 def getUserMetadatas():
     return userMetadatas

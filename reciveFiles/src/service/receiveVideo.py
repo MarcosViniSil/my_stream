@@ -7,17 +7,20 @@ import subprocess
 import os
 import shutil
 
+from src.service.userService import UserService
+
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 class ReciveVideo:
 
-    def __init__(self,bucket: Bucket, videoRepository:VideoRepository,queueService:QueueService):
+    def __init__(self,bucket: Bucket, videoRepository:VideoRepository,queueService:QueueService,userService:UserService):
         self.bucket = bucket
         self.videoRepository = videoRepository
         self.queueService = queueService
+        self.userService = userService
 
-    async def processReceivedVideo(self,file:UploadFile) -> dict:
+    async def processReceivedVideo(self,file:UploadFile,token:str) -> dict:
         if not file:
             raise HTTPException(status_code=400, detail="Vídeo não informado")
         
@@ -35,7 +38,7 @@ class ReciveVideo:
 
         self.removeLocalVideo(hashVideo,filePath)
         
-        videoId = self.insertVideoDatasDb(hashVideo,videoDurationSeconds)
+        videoId = self.insertVideoDatasDb(hashVideo,videoDurationSeconds,token)
         
         self.createReactionVideo(videoId,hashVideo)
 
@@ -112,13 +115,29 @@ class ReciveVideo:
             self.removeRemoteFile(hashVideoBucket.split("/")[-1])
             raise HTTPException(status_code=400, detail="Erro ao deletar video localmente")
         
-    def insertVideoDatasDb(self,hashVideo : str,videoDuration:int) -> str:
+    def insertVideoDatasDb(self,hashVideo : str,videoDuration:int,token:str) -> str:
+        userId = None
         try:
-            videoId = self.videoRepository.createVideo(hashVideo,videoDuration)
+            userId = self.getUserId(token)
+        except Exception as e:
+            self.removeRemoteFile(hashVideo.split("/")[-1])
+            raise HTTPException(status_code=400, detail=f"Erro ao salvar url no banco, ocorreu um erro ao autenticar{e}")
+        
+        try:
+            videoId = self.videoRepository.createVideo(hashVideo,videoDuration,userId)
             return videoId
         except Exception as e:
             self.removeRemoteFile(hashVideo.split("/")[-1])
             raise HTTPException(status_code=400, detail="Erro ao salvar url no banco")
+    
+    def getUserId(self,token:str) -> bytes:
+        userId = None
+        try:
+            userId = self.userService.getUserId(token)
+        except Exception as e:
+            raise HTTPException(status_code=400,detail=str(e))
+        
+        return userId
     
     def createReactionVideo(self,videoId:str,hashVideo : str) -> None:
         try:

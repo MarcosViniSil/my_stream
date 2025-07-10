@@ -12,6 +12,7 @@ import {
 import { Toaster, toast } from 'sonner';
 import { loginUser } from '../../service/userService.js'
 import { useNavigate } from "react-router-dom";
+import './login.css'
 
 export default function Login() {
     const navigate = useNavigate();
@@ -102,8 +103,6 @@ export default function Login() {
             
             setIsFetching(false)
 
-            //navigate("/login")
-
         } catch (err) {
             sendError(err.message)
             setIsFetching(false)
@@ -158,7 +157,7 @@ export default function Login() {
                                 rounded="full"
                             />
                         </FormControl>
-
+                        <a className='forgetPassword' href="#">Esqueci minha senha</a>
                         <Button
                             bg="#346E62"
                             _hover={{ bg: "#419181" }}

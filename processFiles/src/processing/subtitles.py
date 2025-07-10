@@ -96,7 +96,6 @@ class Subtitles:
                 - Entre cada bloco de legenda, deve haver uma linha em branco.
                 - Cada bloco deve conter apenas o timestamp e a transcrição (traduzida).
                 - Não inclua cabeçalhos extras, comentários, explicações ou qualquer texto fora do padrão WEBVTT.
-                - Quebre as legendas em trechos curtos de no máximo 2 linhas e não mais que 5 segundos cada.
                 - Nos timestamps, os milissegundos devem ser sempre precedidos por um ponto (`.`) e não por dois pontos (`:`), no formato: HH:MM:SS.mmm.
                     Exemplo válido: 00:01:23.456
                     Exemplo inválido: 00:01:23:456

@@ -1,14 +1,12 @@
 export async function UploadMetaDatas(id,title,photo) {
   const formData = new FormData();
-  const TOKEN = "aa"
   formData.append("id", id);
   formData.append("videoTitle", title);
   formData.append("thumbnailImage", photo);
-  formData.append("token", TOKEN);
-
   try {
     const response = await fetch("http://localhost:8000/upload/metadata", {
       method: "POST",
+      credentials: "include",
       body: formData,
     });
 

@@ -27,5 +27,5 @@ async def loginUser(
         secure=True,
         samesite="Strict"
     )
-    return {"message": "logado"}
+    return {"message": token}
 

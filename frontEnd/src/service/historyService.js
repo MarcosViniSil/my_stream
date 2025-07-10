@@ -1,14 +1,13 @@
 export async function insertVideoOnHistory(videoId) {
   
   const formData = new FormData();
-  const TOKEN_USER = "token"
 
-  formData.append("tokenUser", TOKEN_USER);
   formData.append("videoId", videoId);
 
   try {
     const response = await fetch("http://localhost:8000/video/history", {
       method: "POST",
+      credentials: "include",
       body: formData,
     });
 
@@ -29,15 +28,14 @@ export async function addTimeWatched(videoId,timeAt) {
   console.log(timeAt)
   timeAt = parseInt(timeAt, 10);
   const formData = new FormData();
-  const TOKEN_USER = "token"
 
-  formData.append("tokenUser", TOKEN_USER);
   formData.append("videoId", videoId);
   formData.append("timeWatched", timeAt);
 
   try {
     const response = await fetch("http://localhost:8000/video/time", {
       method: "POST",
+      credentials: "include",
       body: formData,
     });
 
