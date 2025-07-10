@@ -74,3 +74,32 @@ export async function getUserDatasAPI() {
         throw new Error(error.message || "Erro ao criar usuário");
     }
 }
+
+export async function updateUserDatas(user) {
+
+    let userBody = {
+        "userName": user.userName,
+        "userEmail": user.userEmail
+    }
+
+
+    try {
+        const response = await fetch("http://localhost:8000/user/datas", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: "include",
+            body: JSON.stringify(userBody),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData?.detail || "Erro ao criar usuário");
+        }
+
+        return response.json();
+    } catch (error) {
+        throw new Error(error.message || "Erro ao criar usuário");
+    }
+}

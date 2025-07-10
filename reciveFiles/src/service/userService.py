@@ -73,8 +73,24 @@ class UserService:
 
         self.validatePassword(user.password)
     
+    def updateUserDatas(self,user:UserDatas,token:str) -> None:
 
-
+        self.validateEmail(user.userEmail)
+        self.validateName(user.userName)
+        
+        userId = None
+        try:
+            userId = self.getUserId(token)
+        except Exception as e:
+            raise HTTPException(status_code=400,detail="Ocorreu um erro ao obter id do usuário")
+        
+        try:
+            self.userRepository.updateUserDatas(userId,user.userName,user.userEmail)
+        except Exception as e:
+            raise HTTPException(status_code=400,detail="Não foi possível atualizar os dados do usuário")
+        
+        return {"message":"dados atualizados com sucesso"}
+        
     def getUserId(self,token:str) -> bytes:
         try:
             token = ast.literal_eval(token)['token']
@@ -86,8 +102,7 @@ class UserService:
             datas = validateJwtToken(token)
         except Exception as e:
                 raise ValueError("token inválido")
-        print("tipo:" ,type(datas))
-
+   
         if datas is None or datas["userEmail"] is None:
             raise ValueError("erro ao validar token")
         userEmail = datas["userEmail"]
@@ -113,11 +128,10 @@ class UserService:
         except Exception as e:
             raise HTTPException(status_code=400,detail="Ocorreu um erro ao obter dados do usuário")
         
-        if row is None or row[0] is None or row[1] is None or row[2] is None:
+        if row is None or row[0] is None or row[1] is None:
             raise HTTPException(status_code=400,detail="Não foi possível obter todos os dados do usuário")
         
-        uuidObj = uuid.UUID(bytes=row[0])
-        return UserDatas(userId=str(uuidObj),userName=row[1],userEmail=row[2])
+        return UserDatas(userName=row[0],userEmail=row[1])
     
     def validateName(self,name:str) -> None:
         if not name.strip():

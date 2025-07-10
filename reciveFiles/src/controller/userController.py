@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends,Response,Cookie
 from src.models.dependencies import getUserService
-from src.models.user import User,Userlogin
+from src.models.user import User, UserDatas,Userlogin
 from src.service.userService import UserService
 
 userRouter = APIRouter()
@@ -36,4 +36,13 @@ async def loginUser(
 ):
     
     return userService.getUserDatas(access_token)
+
+@userRouter.put("/user/datas")
+async def updateUserDatas(
+    user: UserDatas,
+    access_token: str = Cookie(...),
+    userService: UserService = Depends(getUserService)
+):
+    
+    return userService.updateUserDatas(user,access_token)
 

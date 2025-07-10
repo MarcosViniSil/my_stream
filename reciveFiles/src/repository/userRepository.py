@@ -78,7 +78,7 @@ class UserRepository:
         self.Db.createConnection()
 
         sql = """
-                SELECT userId,userName,userEmail FROM tb_user WHERE userId = %s; 
+                SELECT userName,userEmail FROM tb_user WHERE userId = %s; 
         """
         try:
             self.Db.myCursor.execute(sql, (userId,))
@@ -91,3 +91,20 @@ class UserRepository:
         except Exception as e:
             print(e)
             raise ValueError("Erro ao verificar dados para login", e)
+
+
+    def updateUserDatas(self,userId:bytes,userName:str,userEmail:str) -> None:
+
+        self.Db.createConnection()
+
+        sql = """
+                UPDATE tb_user SET userName = %s, userEmail = %s WHERE userId = %s; 
+        """
+        try:
+            self.Db.myCursor.execute(sql, (userName,userEmail,userId))
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+
+        except Exception as e:
+            print(e)
+            raise ValueError("Erro ao atualizar dados do usuário", e)
