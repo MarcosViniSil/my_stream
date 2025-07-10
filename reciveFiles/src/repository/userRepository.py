@@ -72,3 +72,22 @@ class UserRepository:
         except Exception as e:
             print(e)
             raise ValueError("Erro ao verificar dados para login", e)
+        
+    def getUserData(self,userId:bytes) -> dict:
+
+        self.Db.createConnection()
+
+        sql = """
+                SELECT userId,userName,userEmail FROM tb_user WHERE userId = %s; 
+        """
+        try:
+            self.Db.myCursor.execute(sql, (userId,))
+            row = self.Db.myCursor.fetchone()
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+
+            return row
+
+        except Exception as e:
+            print(e)
+            raise ValueError("Erro ao verificar dados para login", e)

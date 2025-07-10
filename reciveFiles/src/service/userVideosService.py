@@ -222,7 +222,10 @@ class UserVideosService:
         except Exception as e:
                 raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao buscar os vídeos da pesquisa {e}")
 
-    def insertVideoOnHistory(self,videoId:str,tokenUser:str) -> dict:        
+    def insertVideoOnHistory(self,videoId:str,tokenUser:str) -> dict:    
+        if tokenUser is None:
+            return  {"message":"usuário não está logado, sem registros necessários"}
+        
         if not self.isIdValid(videoId):
             raise HTTPException(status_code=400,detail=f"id de vídeo inválido")
         
@@ -241,6 +244,8 @@ class UserVideosService:
         return {"message":"sucesso"}
     
     def addTimeWatched(self,tokenUser:str,videoId:str,timeAtVideo:int) -> None:
+        if tokenUser is None:
+            return {"message":"usuário não está logado"}
         
         if not self.isIdValid(videoId):
             raise HTTPException(status_code=400,detail="id de vídeo inválido")

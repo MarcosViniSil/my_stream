@@ -9,3 +9,8 @@ class User(BaseModel):
 class Userlogin(BaseModel):
     email:str
     password:str
+
+class UserDatas(BaseModel):
+    userId:str
+    userName:str
+    userEmail:str

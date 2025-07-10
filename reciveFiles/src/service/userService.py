@@ -1,5 +1,6 @@
 import ast
-from src.models.user import User,Userlogin
+import uuid
+from src.models.user import User, UserDatas,Userlogin
 from src.repository.userRepository import UserRepository
 from fastapi import HTTPException
 from src.security.hash.hashService import createHashForPassword,isPasswordEqualDB
@@ -71,12 +72,14 @@ class UserService:
         self.validateEmail(user.email)
 
         self.validatePassword(user.password)
+    
+
 
     def getUserId(self,token:str) -> bytes:
         try:
             token = ast.literal_eval(token)['token']
         except Exception as e:
-            raise HTTPException(status_code=400,detail="Ocorreu um erro ao obter token")
+            raise ValueError("Ocorreu um erro ao obter token")
         datas = None
         
         try:
@@ -97,6 +100,25 @@ class UserService:
         except Exception as e:
             raise ValueError("Ocoreru um erro ao acessar banco de dados para obter token do usuário")
 
+    def getUserDatas(self,token:str) -> UserDatas:
+        userId = None
+        try:
+            userId = self.getUserId(token)
+        except Exception as e:
+            raise HTTPException(status_code=400,detail="Ocorreu um erro ao obter id do usuário")
+        
+        row = None
+        try:
+            row = self.userRepository.getUserData(userId)
+        except Exception as e:
+            raise HTTPException(status_code=400,detail="Ocorreu um erro ao obter dados do usuário")
+        
+        if row is None or row[0] is None or row[1] is None or row[2] is None:
+            raise HTTPException(status_code=400,detail="Não foi possível obter todos os dados do usuário")
+        
+        uuidObj = uuid.UUID(bytes=row[0])
+        return UserDatas(userId=str(uuidObj),userName=row[1],userEmail=row[2])
+    
     def validateName(self,name:str) -> None:
         if not name.strip():
             raise HTTPException(status_code=400,detail="Nome não pode conter apenas espaços")
@@ -104,6 +126,7 @@ class UserService:
         if len(name) < 3 or len(name) > 40:
             raise HTTPException(status_code=400,detail="Nome deve conter no mínimo 3 e no máximo 40 caracteres")
     
+
     def validateEmail(self,email:str) -> None:
         regexEmail = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$' # regex to validate email, source: https://www.geeksforgeeks.org/python/input-validation-in-python-string/
 

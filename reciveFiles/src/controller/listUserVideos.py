@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, File, UploadFile, Depends,Form,Query,Cookie
 from src.models.dependencies import getReceiveMetaData, getUserMetadatas, getUserVideosRepository
 from src.models.metadataResponse import MetadataResponse
@@ -33,7 +34,7 @@ async def get_status_video(videoId : str,userVideosService: UserVideosService = 
 
 @routerUserVideos.get("/videos") 
 async def get_videos_inital_page(    
-    access_token: str = Cookie(...),
+    access_token: Optional[str] = Cookie(None),
     offset: int = Query(0),
     userVideosService: UserVideosService = Depends(getUserVideosRepository)
 ):
@@ -42,7 +43,7 @@ async def get_videos_inital_page(
 
 @routerUserVideos.get("/videos/query") 
 async def get_videos_by_query( 
-    access_token: str = Cookie(...),
+    access_token: Optional[str] = Cookie(None),
     param: str = Query(0),
     userVideosService: UserVideosService = Depends(getUserVideosRepository)
     ):
@@ -51,13 +52,13 @@ async def get_videos_by_query(
 @routerUserVideos.get("/streaming/video/") 
 async def get_datas_streaming_video(
     videoId : str = Query(...),
-    access_token: str = Cookie(...),
+    access_token: Optional[str] = Cookie(None),
     userVideosService: UserVideosService = Depends(getUserVideosRepository)
     ):
     return userVideosService.getDatasVideoStreaming(videoId,access_token)
 
 @routerUserVideos.post("/video/history") 
-async def insert_video_on_history(access_token: str = Cookie(...),videoId = Form(...),userVideosService: UserVideosService = Depends(getUserVideosRepository)):
+async def insert_video_on_history(access_token: Optional[str] = Cookie(None),videoId = Form(...),userVideosService: UserVideosService = Depends(getUserVideosRepository)):
     return userVideosService.insertVideoOnHistory(videoId,access_token)
 
 @routerUserVideos.get("/videos/history/") 
@@ -69,7 +70,7 @@ async def get_history_videos(
     return userVideosService.getHistoryVideosByUserId(access_token, offset)
 
 @routerUserVideos.post("/video/time") 
-async def insert_time_watched(access_token: str = Cookie(...),videoId = Form(...),timeWatched:int = Form(...),userVideosService: UserVideosService = Depends(getUserVideosRepository)):
+async def insert_time_watched(access_token: Optional[str] = Cookie(None),videoId = Form(...),timeWatched:int = Form(...),userVideosService: UserVideosService = Depends(getUserVideosRepository)):
     return userVideosService.addTimeWatched(tokenUser=access_token,videoId=videoId,timeAtVideo=timeWatched)
 
 @routerUserVideos.post("/video/like")

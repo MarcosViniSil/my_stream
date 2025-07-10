@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import VideoUpload from './pages/upload/videoUpload'
 import MetaDataPage from './pages/metadata/videoMetadata'
-import ReceiveVideo from './components/recieveVideo/ReceiveVideo'
+
 import ManagerVideos from '../src/pages/managerVideos/managerVideos'
 import Search from '../src/pages/search/search'
 import Home from '../src/pages/home/home'
@@ -12,7 +12,7 @@ import NotFound from '../src/pages/notFound/notFound'
 import History from '../src/pages/history/history'
 import Register from './pages/register/register'
 import LoginPage from './pages/login/login'
-
+import Profile from './pages/profile/profile'
 import './App.css';
 
 function App() {
@@ -23,7 +23,7 @@ function App() {
         <Route path="/register" element={ <Register/> }/> 
         <Route path="/login" element={ <LoginPage/> }/> 
         <Route path="/" element={<Home />} />
-        <Route path="/profile" element={<ReceiveVideo />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/busca" element={<Search />} />
         <Route path="/history" element={<History />} />
         <Route path="/uploads" element={<ManagerVideos />} />

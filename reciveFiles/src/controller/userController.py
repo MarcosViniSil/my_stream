@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends,Response
+from fastapi import APIRouter, Depends,Response,Cookie
 from src.models.dependencies import getUserService
 from src.models.user import User,Userlogin
 from src.service.userService import UserService
@@ -28,4 +28,12 @@ async def loginUser(
         samesite="Strict"
     )
     return {"message": token}
+
+@userRouter.get("/user/datas")
+async def loginUser(
+    access_token: str = Cookie(...),
+    userService: UserService = Depends(getUserService)
+):
+    
+    return userService.getUserDatas(access_token)
 
