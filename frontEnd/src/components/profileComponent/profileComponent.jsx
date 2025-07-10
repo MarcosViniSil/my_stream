@@ -137,7 +137,7 @@ export default function ProfileComponent() {
             <FormControl>
               <FormLabel>Nome</FormLabel>
               <Input
-                placeholder="Nome"
+                placeholder={formData ? "Nome" : "Carregando..."}
                 name="userName"
                 borderColor="whiteAlpha.500"
                 _placeholder={{ color: "gray.400" }}
@@ -146,13 +146,14 @@ export default function ProfileComponent() {
                 _hover={{ borderColor: "white" }}
                 _focus={{ borderColor: "white" }}
                 rounded="full"
+                isDisabled={!formData}
               />
             </FormControl>
 
             <FormControl>
               <FormLabel>Email</FormLabel>
               <Input
-                placeholder="Email"
+                placeholder={formData ? "Email" : "Carregando..."}
                 name="userEmail"
                 type="email"
                 borderColor="whiteAlpha.500"
@@ -162,6 +163,7 @@ export default function ProfileComponent() {
                 _hover={{ borderColor: "white" }}
                 _focus={{ borderColor: "white" }}
                 rounded="full"
+                isDisabled={!formData}
               />
             </FormControl>
 

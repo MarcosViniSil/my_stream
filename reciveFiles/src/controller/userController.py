@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends,Response,Cookie
 from src.models.dependencies import getUserService
-from src.models.user import User, UserDatas,Userlogin
+from src.models.user import UpdatePassword, User, UserDatas,Userlogin
 from src.service.userService import UserService
 
 userRouter = APIRouter()
@@ -46,3 +46,28 @@ async def updateUserDatas(
     
     return userService.updateUserDatas(user,access_token)
 
+@userRouter.get("/user/code")
+async def sendCodeToUser(
+    email: str,
+    userService: UserService = Depends(getUserService)
+):
+    
+    return userService.sendCodeToUser(email)
+
+
+@userRouter.get("/user/verify/code")
+async def verifyToken(
+    email: str,
+    code:int,
+    userService: UserService = Depends(getUserService)
+):
+    
+    return userService.validateCode(email,code)
+
+@userRouter.put("/user/password")
+async def updatePassword(
+    userPassword : UpdatePassword,
+    userService: UserService = Depends(getUserService)
+):
+    
+    return userService.updatePassword(userPassword)

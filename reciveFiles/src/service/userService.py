@@ -1,11 +1,14 @@
 import ast
 import uuid
-from src.models.user import User, UserDatas,Userlogin
+from src.service.emailService import sendEmail
+from src.models.user import UpdatePassword, User, UserDatas,Userlogin
 from src.repository.userRepository import UserRepository
 from fastapi import HTTPException
 from src.security.hash.hashService import createHashForPassword,isPasswordEqualDB
 from src.security.jwt.jwtService import createJwtToken,validateJwtToken
+from datetime import datetime
 import re
+import random
 
 class UserService:
 
@@ -115,6 +118,79 @@ class UserService:
         except Exception as e:
             raise ValueError("Ocoreru um erro ao acessar banco de dados para obter token do usuário")
 
+    def sendCodeToUser(self,email:str) -> None:
+        self.validateEmail(email)
+
+        userId = None
+
+        try:
+            userId = self.userRepository.getUserId(email=email)
+        except Exception as e:
+            raise HTTPException(status_code=400,detail="Ocorreu um erro ao obter id do usuário")
+        
+        if userId is None or userId[0] is None:
+            raise HTTPException(status_code=400,detail="Email não encontrado")
+        
+        code = self.generateCode()
+        
+        try:
+            self.userRepository.createCodeUser(userId[0],code)
+        except Exception as e:
+            raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao registrar o código {e}")
+        
+        try:
+            sendEmail(code,email)
+        except Exception as e:
+            raise HTTPException(status_code=400,detail="Ocorreu um erro ao enviar codigo para o email")
+        
+        return {"message":"código enviado com sucesso"}
+    
+    def validateCode(self,email:str,code:int) -> None:
+        userId = None
+        try:
+            userId = self.userRepository.getUserId(email=email)
+        except Exception as e:
+            raise HTTPException(status_code=400,detail="Ocorreu um erro ao obter id do usuário")
+        
+        if userId is None or userId[0] is None:
+            raise HTTPException(status_code=400,detail="Email não encontrado")
+
+        try:
+            row = self.userRepository.getCodeById(userId[0],code)
+        except Exception as e:
+            raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao obter o código {e}")
+        
+
+        if row is None or row[0] is None or row[1] is None:
+            raise HTTPException(status_code=400,detail="O código informado está incorreto")
+        
+        if int(row[0]) != code:
+            raise HTTPException(status_code=400,detail="O código informado está incorreto")
+        
+        expiresAt = row[1]
+        if datetime.now() > expiresAt:
+            raise HTTPException(status_code=400,detail="Código expirou")
+        
+        return {"message":"código correto"}
+
+
+    def updatePassword(self, datasPassword:UpdatePassword) -> None:
+
+        self.validateEmail(datasPassword.email)
+
+        try:
+            self.validateCode(datasPassword.email,datasPassword.code)
+        except Exception as e:
+            raise HTTPException(status_code=400,detail="O código informado não é valido, solicite outro para alterar a senha")
+
+        try:
+            passwordHash = createHashForPassword(datasPassword.password)
+            self.userRepository.updateUserPassword(datasPassword.email,passwordHash)
+        except Exception as e:
+            raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao atualizar senha, tente novamente {e}")
+
+        return {"message":"senha atualizada com sucesso"}
+    
     def getUserDatas(self,token:str) -> UserDatas:
         userId = None
         try:
@@ -152,4 +228,7 @@ class UserService:
             raise HTTPException(status_code=400,detail="Senha não pode conter apenas espaços")
         
         if len(password) < 8 or len(password) > 30:
-            raise HTTPException(status_code=400,detail="Senha deve conter no mínimo 8 e no máximo 30 caracteres")
+            raise HTTPException(status_code=400,detail="Senha deve conter no mínimo 8 e no máximo 30 caracteres")   
+    
+    def generateCode(self) -> int:
+        return (random.randint(10000, 90000) + random.randint(11, 9999))

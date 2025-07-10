@@ -23,6 +23,7 @@
         "./processFiles",
         "./reciveFiles",
         "./reciveFiles",
+        "./reciveFiles",
         "./reciveFiles"
     ]
 }

@@ -11,9 +11,9 @@ CREATE TABLE tb_user(
 CREATE TABLE tb_userCodeVerification(
     userCodeId BINARY(16) PRIMARY KEY ,
     code VARCHAR(255) NOT NULL,
-    codeType VARCHAR(255) NOT NULL,
-    createdAt DATE NOT NULL,
-    expiresAt DATE NOT NULL,
+    codeType INT NOT NULL,
+    createdAt TIMESTAMP NOT NULL,
+    expiresAt TIMESTAMP NOT NULL,
     isCodeUsed BOOLEAN NOT NULL,
     idUser BINARY(16) NOT NULL
 );

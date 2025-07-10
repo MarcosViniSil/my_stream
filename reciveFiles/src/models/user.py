@@ -13,3 +13,8 @@ class Userlogin(BaseModel):
 class UserDatas(BaseModel):
     userName:str
     userEmail:str
+
+class UpdatePassword(BaseModel):
+    email:str
+    code:int
+    password:str

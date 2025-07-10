@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import uuid
 from uuid import UUID
 import mysql.connector
@@ -102,6 +103,65 @@ class UserRepository:
         """
         try:
             self.Db.myCursor.execute(sql, (userName,userEmail,userId))
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+
+        except Exception as e:
+            print(e)
+            raise ValueError("Erro ao atualizar dados do usuário", e)
+        
+    
+    def createCodeUser(self,userId:bytes,code:int) -> None:
+        codeId = uuid.uuid4().bytes
+
+        self.Db.createConnection()
+        codeType = 0
+        createdAt = datetime.now()
+        expiresAt = createdAt + timedelta(minutes=5)
+        isCodeUsed = False
+
+        sql = """
+                INSERT INTO tb_userCodeVerification (userCodeId,code,codeType,createdAt,expiresAt,isCodeUsed,idUser) VALUES (%s,%s,%s,%s,%s,%s,%s);
+        """
+        try:
+            self.Db.myCursor.execute(sql, (codeId,code,codeType,createdAt,expiresAt,isCodeUsed,userId))
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+
+        except Exception as e:
+            self.Db.closeConnection()
+            raise ValueError(f"Ocorreu um erro ao registrar código {e}")
+    
+    def getCodeById(self,userId:bytes,code:int) -> dict:
+
+        self.Db.createConnection()
+
+        sql = """
+                SELECT code,expiresAt FROM tb_userCodeVerification WHERE idUser = %s AND code = %s; 
+        """
+        try:
+            self.Db.myCursor.execute(sql, (userId,code))
+            row = self.Db.myCursor.fetchone()
+            self.Db.myDb.commit()
+
+            return row
+
+        except Exception as e:
+            print(e)
+            raise ValueError("Erro ao obter código", e)
+        finally:
+            self.Db.closeConnection()
+
+        
+    def updateUserPassword(self,email:str,newPassword:str) -> None:
+
+        self.Db.createConnection()
+
+        sql = """
+                UPDATE tb_user SET userPassword = %s WHERE userEmail = %s; 
+        """
+        try:
+            self.Db.myCursor.execute(sql, (newPassword,email))
             self.Db.myDb.commit()
             self.Db.closeConnection()
 
