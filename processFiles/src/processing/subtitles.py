@@ -1,5 +1,6 @@
 
 import os
+import re
 import subprocess
 import uuid
 from dotenv import load_dotenv
@@ -63,9 +64,11 @@ class Subtitles:
                 return None
         
             subtitlePath = f"{LOCAL_PATH}/{subscribleIdStr}.vtt"
-        
+            correction = self.correctTimesTamp(response.text)
+
             with open(subtitlePath, "w", encoding="utf-8") as f:
-                f.write(response.text)
+                f.write(correction)
+  
             
             logging.info(f"Legenda gerada com sucesso, caminho do arquvio gerado: {subtitlePath}")
             
@@ -117,3 +120,6 @@ class Subtitles:
         """
          
         return prompt
+    
+    def correctTimesTamp(self, vtt_text: str) -> str:
+        return re.sub(r':(\d{3})', r'.\1', vtt_text)

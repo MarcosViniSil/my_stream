@@ -21,7 +21,7 @@ export default function WatchVideo() {
         const fetchData = async () => {
             const videoId = getVideoId()
             if (!videoId?.trim()) {
-                //navigate("/");
+                navigate("/");
                 return;
             }
 
@@ -29,18 +29,19 @@ export default function WatchVideo() {
             const timeStopped = getTimeSttoped()
             const videoData = await getDatasVideo(videoId)
             if (videoData == null) {
-                //navigate("/");
+                navigate("/");
                 return
             }
 
             if (timeStopped || timeStopped != null && isNaN(timeStopped) && timeStopped > 0) {
-                console.log("complete")
-                setTimeStopped(timeStopped)
-                //make request with time stopped
+                if(timeStopped == videoData.videoDuration){
+                    setTimeStopped(0)
+                }else{
+                    setTimeStopped(timeStopped)
+                }
             } else {
                 setTimeStopped(0)
                 console.log("without time stopped")
-                //make request without time stopped
             }
 
 
@@ -67,7 +68,7 @@ export default function WatchVideo() {
 
     const getDatasVideo = async (videoId) => {
         if (!videoId || videoId == null || videoId == undefined || videoId.length == 0) {
-            //navigate("/");
+            navigate("/");
         }
 
         try {
@@ -94,28 +95,26 @@ export default function WatchVideo() {
 const sendTimeWatched = async () => {
     if (!dataVideo) return;
 
-    const N = 10;
-
     if (isFinishedRef.current) {
         return;
     }
+    console.log("dataVideo.currentTime ",dataVideo.currentTime)
+    let willFinish = false;
 
-    const willFinish = dataVideo.currentTime + N >= dataVideo.duration;
-
-    if (willFinish || (!dataVideo.paused && Math.floor(dataVideo.currentTime) > 0 && dataVideo.currentTime <= dataVideo.duration)) {
+    if (!willFinish || (!dataVideo.paused && Math.floor(dataVideo.currentTime) > 0 && dataVideo.currentTime <= dataVideo.duration)) {
+        console.log("entrou")
         try {
             const videoId = getVideoId();
             if (!videoId?.trim()) {
-                //navigate("/");
+                navigate("/");
                 return;
             }
 
             await addTimeWatched(videoId, Math.floor(dataVideo.currentTime));
-
-            if (willFinish) {
-                setIsFinished(true);
-                isFinishedRef.current = true; 
+            if(dataVideo.currentTime >= dataVideo.duration){
+                willFinish=true
             }
+
         } catch (error) {
             console.error(error);
         }
@@ -132,7 +131,7 @@ const sendTimeWatched = async () => {
 
     const saveVideoOnHistory = async (videoId) => {
         if (!videoId || videoId == null || videoId == undefined || videoId.length == 0) {
-            //navigate("/");
+            navigate("/");
         }
 
         try {

@@ -11,3 +11,4 @@ class VideoStreaming(BaseModel):
     dislikes:int
     videoSubtitles:str
     reaction:int
+    videoDuration:int

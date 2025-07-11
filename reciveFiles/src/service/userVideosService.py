@@ -214,7 +214,8 @@ class UserVideosService:
                         likes = row[5],
                         dislikes = row[6],
                         videoSubtitles = row[7] or "",
-                        reaction = row[8]
+                        reaction = row[8],
+                        videoDuration = row[9]
                     ) 
                 reponse.videoUrl = self.bucket.generatePresignedUrl(reponse.videoUrl)
                 return reponse
@@ -262,12 +263,9 @@ class UserVideosService:
             
             datas = TimeWatched(videoDuration=datas[0])
 
-            if timeAtVideo >= datas.videoDuration:
-                return {"message":"sucesso"} 
-            
             if timeAtVideo < 0:
                 timeAtVideo = 0
-            elif timeAtVideo > datas.videoDuration:
+            elif timeAtVideo >= datas.videoDuration:
                 timeAtVideo = datas.videoDuration
 
             self.videoRepository.updateWatchTime(userId,videoId,timeAtVideo)

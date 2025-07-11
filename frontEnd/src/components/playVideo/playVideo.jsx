@@ -63,7 +63,7 @@ function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
     const setMetaData = () => {
       setDuration(video.duration);
     }
-
+    console.log(videoDatas.videoSubtitles)
     setLike(formatReactionNumber(videoDatas.likes))
     setDislike(formatReactionNumber(videoDatas.dislikes))
     setReaction(videoDatas.reaction || 0);

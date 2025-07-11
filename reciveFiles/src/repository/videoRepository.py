@@ -272,7 +272,7 @@ class VideoRepository:
 
         sql = """
                 SELECT tbv.videoDate,tu.userName,tbv.videoTitle,tbv.videoUrl ,tbv.videoId,tbvr.videoLikes,tbvr.videoDislikes,
-                tbv.videoSubTitles,COALESCE(tbuvr.reactionType, 0) AS reaction 
+                tbv.videoSubTitles,COALESCE(tbuvr.reactionType, 0) AS reaction, tbv.videoDuration
                 FROM tb_video AS tbv 
                 INNER JOIN tb_user AS tu ON tu.userId = tbv.idAdmin
                 INNER JOIN tb_videoReaction AS tbvr ON tbvr.videoId = tbv.videoId
