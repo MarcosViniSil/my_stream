@@ -167,7 +167,7 @@ export default function ProfileComponent() {
               />
             </FormControl>
 
-            <a className='changePassword' href="#">Atualizar senha</a>
+            <a className='changePassword' href="/password">Atualizar senha</a>
             <Button
               bg="#346E62"
               _hover={{ bg: "#419181" }}

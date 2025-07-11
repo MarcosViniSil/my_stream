@@ -132,15 +132,17 @@ class UserRepository:
             self.Db.closeConnection()
             raise ValueError(f"Ocorreu um erro ao registrar código {e}")
     
-    def getCodeById(self,userId:bytes,code:int) -> dict:
+    def getCodeById(self,userEmail:bytes,code:int) -> dict:
 
         self.Db.createConnection()
 
         sql = """
-                SELECT code,expiresAt FROM tb_userCodeVerification WHERE idUser = %s AND code = %s; 
+                SELECT code,expiresAt FROM tb_userCodeVerification AS tu 
+                INNER JOIN tb_user AS tbu ON tu.idUser = tbu.userId
+                WHERE tu.code = %s AND tbu.userEmail = %s;
         """
         try:
-            self.Db.myCursor.execute(sql, (userId,code))
+            self.Db.myCursor.execute(sql, (code,userEmail))
             row = self.Db.myCursor.fetchone()
             self.Db.myDb.commit()
 

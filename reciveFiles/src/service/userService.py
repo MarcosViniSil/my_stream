@@ -146,24 +146,20 @@ class UserService:
         return {"message":"código enviado com sucesso"}
     
     def validateCode(self,email:str,code:int) -> None:
-        userId = None
-        try:
-            userId = self.userRepository.getUserId(email=email)
-        except Exception as e:
-            raise HTTPException(status_code=400,detail="Ocorreu um erro ao obter id do usuário")
-        
-        if userId is None or userId[0] is None:
-            raise HTTPException(status_code=400,detail="Email não encontrado")
+        print("email : ",email)
+        print("code ",code)
 
         try:
-            row = self.userRepository.getCodeById(userId[0],code)
+            row = self.userRepository.getCodeById(email,code)
         except Exception as e:
             raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao obter o código {e}")
         
-
+        print(row)
         if row is None or row[0] is None or row[1] is None:
             raise HTTPException(status_code=400,detail="O código informado está incorreto")
         
+        print("int(row[0]) ",int(row[0]))
+        print("code ",code)
         if int(row[0]) != code:
             raise HTTPException(status_code=400,detail="O código informado está incorreto")
         

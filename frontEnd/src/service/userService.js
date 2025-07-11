@@ -103,3 +103,63 @@ export async function updateUserDatas(user) {
         throw new Error(error.message || "Erro ao criar usuário");
     }
 }
+
+export async function sendCodeService(email) {
+    try {
+        const response = await fetch(`http://localhost:8000/user/code?email=${email}`, {
+            method: "GET",
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData?.detail || "Erro ao criar usuário");
+        }
+
+        return response.json();
+    } catch (error) {
+        throw new Error(error.message || "Erro ao criar usuário");
+    }
+}
+
+export async function verifyCodeService(email, code) {
+    try {
+        const response = await fetch(`http://localhost:8000/user/verify/code?email=${email}&code=${code}`, {
+            method: "GET",
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData?.detail || "Erro ao criar usuário");
+        }
+
+        return response.json();
+    } catch (error) {
+        throw new Error(error.message || "Erro ao criar usuário");
+    }
+}
+
+export async function updatePassword(email, code, password) {
+    const body = {
+        "email": email,
+        "code": code,
+        "password": password
+    }
+    try {
+        const response = await fetch(`http://localhost:8000/user/password`, {
+            method: "PUT",
+             headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData?.detail || "Erro ao atualziar senha");
+        }
+
+        return response.json();
+    } catch (error) {
+        throw new Error(error.message || "Erro ao atualziar senha");
+    }
+}

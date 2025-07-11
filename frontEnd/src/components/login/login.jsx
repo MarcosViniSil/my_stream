@@ -11,11 +11,10 @@ import {
 } from "@chakra-ui/react";
 import { Toaster, toast } from 'sonner';
 import { loginUser } from '../../service/userService.js'
-import { useNavigate } from "react-router-dom";
+
 import './login.css'
 
 export default function Login() {
-    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         email: "",
         password: "",
@@ -157,7 +156,7 @@ export default function Login() {
                                 rounded="full"
                             />
                         </FormControl>
-                        <a className='forgetPassword' href="#">Esqueci minha senha</a>
+                        <a className='forgetPassword' href="/password">Esqueci minha senha</a>
                         <Button
                             bg="#346E62"
                             _hover={{ bg: "#419181" }}

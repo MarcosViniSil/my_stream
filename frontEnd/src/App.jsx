@@ -13,6 +13,7 @@ import History from '../src/pages/history/history'
 import Register from './pages/register/register'
 import LoginPage from './pages/login/login'
 import Profile from './pages/profile/profile'
+import RecoverPassword from './pages/recoverPassword/recoverPassword'
 import './App.css';
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
         <Route path="*" element={<NotFound />} />
         <Route path="/meta-dados" element={ <MetaDataPage/> }/> 
         <Route path="/watch" element={ <Watch/> }/> 
+        <Route path="/password" element={ <RecoverPassword/> }/> 
         
       </Routes>
     </BrowserRouter>
