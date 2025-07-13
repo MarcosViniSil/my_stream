@@ -279,7 +279,7 @@ class VideoRepository:
                 LEFT JOIN tb_userVideoReaction AS tbuvr ON tbuvr.videoId = tbv.videoId AND tbuvr.userId = %s
                 WHERE tbv.videoId = %s AND tbv.isDeleted = FALSE AND tbv.isVideoAvailable = TRUE 
                 AND tbv.videoStatus = 'READY' AND tbv.videoTitle <> '' AND tbv.thumbnailUrl <> ''
-                AND tu.userName <> '' AND tbv.videoDuration > 0 ORDER BY tbuvr.createdAt DESC LIMIT 1;
+                AND tu.userName <> '' AND tbv.isDeleted = FALSE AND tbv.videoDuration > 0 ORDER BY tbuvr.createdAt DESC LIMIT 1;
 
               """
         try:
@@ -407,6 +407,7 @@ class VideoRepository:
                     tbv.videoStatus = 'READY' AND 
                     tbv.videoTitle <> '' AND 
                     tbv.thumbnailUrl <> '' AND 
+                    tbv.isDeleted = FALSE AND
                     tbv.videoDuration > 0 AND tbvh.userId = %s AND tbu.userName <> ''
                 )
                 SELECT 

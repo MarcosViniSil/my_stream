@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState,useEffect } from 'react'
 import HistoryVideos from '../../components/historyVideos/historyVideos'
 import MenuResponsive from '../../layout/menuReponsive/MenuReponsive'
 import SearchBar from '../../components/searchBar/SearchBar'
@@ -7,7 +7,17 @@ import './history.css'
 
 export default function History() {
     const [isMenuOpen, setIsMenuOpen] = useState(true);
-    
+      useEffect(() => {
+        const handleResize = () => {
+            if(window.innerWidth <= 960){
+                setIsMenuOpen(false)
+            }else{
+                setIsMenuOpen(true)
+            }
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+      }, []);
     const navigate = useNavigate();
     
     const handleSearch = (searchTerm) => {
@@ -21,7 +31,7 @@ export default function History() {
         <>
             <MenuResponsive isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />
 
-            <div className={`wrapSendMetaDatas ${isMenuOpen ? "menu-open" : ""}`}>
+            <div className={`wrapSendMetaDatas ${isMenuOpen ? "menu-open2" : ""}`}>
                 <div className='search'>
                     <SearchBar onSearch={handleSearch} />
                 </div>

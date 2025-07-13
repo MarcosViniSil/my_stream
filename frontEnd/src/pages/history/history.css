@@ -5,3 +5,13 @@
     font-size: x-large;
     margin-left: 15px;
 }
+
+.menu-open2 {
+  margin-left: 200px; 
+}
+
+@media (max-width: 960px) {
+  .menu-open2 {
+    margin-left: 0;
+  }
+}
