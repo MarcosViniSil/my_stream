@@ -24,34 +24,35 @@ function SearchBar({ onSearch }) {
       <Stack direction={stackDirection} spacing={2}>
         <InputGroup width={{ md: "300px" }}>
           <InputLeftElement pointerEvents="none">
-            <SearchIcon />
+            <SearchIcon color="gray.400" />
           </InputLeftElement>
           <Input
             type="text"
-            placeholder="Busque um vídeo"
+            placeholder="Pesquisar"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            bg="white"
-            color="black"
-            border="none"
-            _focus={{ boxShadow: "none", border: "none" }}
+            bg="#121212"
+            color="white"
+            border="1px solid #333"
+            borderRadius="full"
+            _placeholder={{ color: "gray.500" }}
+            _focus={{
+              boxShadow: "none",
+              borderColor: "#555",
+            }}
           />
         </InputGroup>
 
         <Button
           type="submit"
-          className="buttonSendSearch"
-          color="white"
-          backgroundColor="#419181"
-          _hover={{
-            backgroundColor: "#2f6f60",
-          }}
-          _active={{
-            backgroundColor: "#265a4f",
-          }}
-          _focus={{
-            boxShadow: "0 0 0 2px #265a4f",
-          }}
+          color="gray.300"
+          bg="#121212"
+          border="1px solid #333"
+          borderRadius="full"
+          _hover={{ bg: "#1f1f1f", borderColor: "#555" }}
+          _active={{ bg: "#1f1f1f", borderColor: "#555" }}
+          _focus={{ boxShadow: "none", borderColor: "#555" }}
+          px={4}
         >
           <SearchIcon />
         </Button>

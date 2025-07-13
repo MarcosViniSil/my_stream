@@ -65,10 +65,10 @@ export async function getUserDatasAPI() {
         });
 
         if (!response.ok) {
-  const errorData = await response.json();
-  const err = new Error(errorData?.detail || "Erro ao atualizar dados");
-  err.status = response.status;
-  throw err;
+            const errorData = await response.json();
+            const err = new Error(errorData?.detail || "Erro ao atualizar dados");
+            err.status = response.status;
+            throw err;
         }
 
         return response.json();
@@ -95,12 +95,12 @@ export async function updateUserDatas(user) {
             body: JSON.stringify(userBody),
         });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw { status: response.status, message: errorData?.detail || "Erro ao realizar dislike no vídeo" };
-    }
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, message: errorData?.detail || "Erro ao realizar dislike no vídeo" };
+        }
 
-    return response.json();
+        return response.json();
     } catch (error) {
         throw new Error(error.message || "Erro ao obter dados do perfil");
     }

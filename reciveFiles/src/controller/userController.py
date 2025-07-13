@@ -71,3 +71,11 @@ async def updatePassword(
 ):
     
     return userService.updatePassword(userPassword)
+
+@userRouter.get("/user/token")
+async def updatePassword(
+    access_token: str = Cookie(...),
+    userService: UserService = Depends(getUserService)
+):
+    
+    return userService.isTokenValid(access_token)

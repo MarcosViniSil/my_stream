@@ -1,17 +1,37 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState,useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { uploadVideo } from "../../service/videoService";
 import { BsUpload } from "react-icons/bs";
 import { BsSend } from "react-icons/bs";
 import { Toaster, toast } from 'sonner';
 import { useNavigate } from "react-router-dom";
+import { isCookieValid } from "../../service/videoService.js"
 
 import './receiveVideo.css';
 
 function ReceiveVideo() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileSelected, setFileSelected] = useState("");
+  const [userHasLogin, setUserHasLogin] = useState(null); 
   const navigate = useNavigate();
+
+    useEffect(() => {
+      const getUserDatas = async () => {
+        try {
+          await isCookieValid();
+          setUserHasLogin(true);
+        } catch (err) {
+          console.log(err);
+          if (err.status === 422 || err.status === 401) {
+            setUserHasLogin(false);
+          } else {
+            sendError(err.message);
+          }
+        }
+      };
+  
+      getUserDatas();
+    }, []);
 
   const sendSuccess = (toastId) => {
     toast.success("Vídeo enviado com sucesso!", {
@@ -85,6 +105,18 @@ function ReceiveVideo() {
       setFileSelected(``)
     }
   };
+  if (userHasLogin === null) {
+    return <p style={{ color: "white", textAlign: "center" }}>Carregando...</p>;
+  }
+
+  if (!userHasLogin) {
+    return (
+      <div className='wrapMessageLogin'>
+        <h3>Realize o login para poder enviar seu vídeo</h3>
+        <a href="/login">login</a>
+      </div>
+    );
+  }
 
   return (
 

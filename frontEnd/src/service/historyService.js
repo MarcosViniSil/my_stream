@@ -1,5 +1,5 @@
 export async function insertVideoOnHistory(videoId) {
-  
+
   const formData = new FormData();
 
   formData.append("videoId", videoId);
@@ -13,17 +13,19 @@ export async function insertVideoOnHistory(videoId) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData?.detail || "Erro ao inserir video no histórico"); 
+      const err = new Error(errorData?.detail || "Erro ao atualizar dados");
+      err.status = response.status;
+      throw err;
     }
 
     return response.json();
   } catch (error) {
-    throw new Error(error.message || "Erro ao inserir video no histórico");
+    throw error;
   }
 }
 
 
-export async function addTimeWatched(videoId,timeAt) {
+export async function addTimeWatched(videoId, timeAt) {
   console.log(videoId)
   console.log(timeAt)
   timeAt = parseInt(timeAt, 10);
@@ -41,7 +43,7 @@ export async function addTimeWatched(videoId,timeAt) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData?.detail || "Erro ao adicionar tempo asistido"); 
+      throw new Error(errorData?.detail || "Erro ao adicionar tempo asistido");
     }
 
     return response.json();

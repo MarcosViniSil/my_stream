@@ -424,8 +424,9 @@ function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
                 bg="#212121"
                 border="none"
                 boxShadow="none"
+                borderRadius="md"
               >
-                <PopoverBody bg="#212121cb" p={4}>
+                <PopoverBody bg="#212121cb" p={4} borderRadius="md">
                   <Box textAlign="center" color="white">
                     { messageLike }
                     <br />
@@ -464,8 +465,9 @@ function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
                 bg="#212121"
                 border="none"
                 boxShadow="none"
+                borderRadius="md"
               >
-                <PopoverBody bg="#212121cb" p={4}>
+                <PopoverBody bg="#212121cb" p={4} borderRadius="md">
                   <Box textAlign="center" color="white">
                     {messageDisLike}
                     <br />

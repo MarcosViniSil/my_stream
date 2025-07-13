@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactPaginate from 'react-paginate';
 import VideoList from '../../components/videoList/videoList';
-import { getQuantityVideos, getVideosUser, deleteVideo } from '../../service/videoService.js';
+import { getQuantityVideos, getVideosUser, deleteVideo,isCookieValid } from '../../service/videoService.js';
 import { Spinner } from '@chakra-ui/react';
 import { useNavigate } from "react-router-dom";
 import { AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, Button, } from '@chakra-ui/react';
@@ -20,6 +20,7 @@ export default function VideoPagination() {
   const [isOpen, setIsOpen] = useState(false);
   const [videoToDelete, setVideoToDelete] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
+  
 
   const cancelRef = useRef();
   const navigate = useNavigate();

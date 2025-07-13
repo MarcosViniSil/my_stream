@@ -19,7 +19,7 @@ export default function ProfileComponent() {
 
   const [formData, setFormData] = useState({ userName: '', userEmail: '' });
   const [isFetching, setIsFetching] = useState(false);
-  const [userHasLogin, setUserHasLogin] = useState(null); // null = carregando
+  const [userHasLogin, setUserHasLogin] = useState(null); 
 
   useEffect(() => {
     const getUserDatas = async () => {

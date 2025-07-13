@@ -11,7 +11,7 @@ export async function uploadVideo(file) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData?.detail || "Erro ao enviar o vídeo"); 
+      throw new Error(errorData?.detail || "Erro ao enviar o vídeo");
     }
 
     return response.json();
@@ -19,6 +19,29 @@ export async function uploadVideo(file) {
     throw new Error(error.message || "Erro ao enviar o vídeo");
   }
 }
+
+export async function isCookieValid() {
+
+  try {
+    const response = await fetch("http://localhost:8000/user/token", {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.log(errorData)
+      const err = new Error(errorData?.detail || "Erro ao atualizar dados");
+      err.status = response.status;
+      throw err;
+    }
+
+    return response.json();
+  } catch (error) {
+    throw error
+  }
+}
+
 
 export async function getQuantityVideos() {
   try {
@@ -29,7 +52,7 @@ export async function getQuantityVideos() {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData?.detail || "Erro ao obter quantidade de vídeos"); 
+      throw new Error(errorData?.detail || "Erro ao obter quantidade de vídeos");
     }
 
     return response.json();
@@ -52,7 +75,7 @@ export async function getVideosUser(offset) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData?.detail || "Erro ao obter detalhes de vídeos do usuário"); 
+      throw new Error(errorData?.detail || "Erro ao obter detalhes de vídeos do usuário");
     }
 
     return response.json();
@@ -75,7 +98,7 @@ export async function deleteVideo(videoId) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData?.detail || "Erro ao deletar vídeo"); 
+      throw new Error(errorData?.detail || "Erro ao deletar vídeo");
     }
 
     return response.json();
@@ -94,7 +117,7 @@ export async function getVideosInitialPage(offset) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData?.detail || "Erro ao obter vídeos da página inicial"); 
+      throw new Error(errorData?.detail || "Erro ao obter vídeos da página inicial");
     }
 
     return response.json();
@@ -112,7 +135,7 @@ export async function getVideosUserQuery(query) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData?.detail || "Erro ao obter vídeos da página inicial"); 
+      throw new Error(errorData?.detail || "Erro ao obter vídeos da página inicial");
     }
 
     return response.json();
@@ -130,7 +153,7 @@ export async function getDatasVideoToStream(videoId) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData?.detail || "Erro ao obter vídeos da página inicial"); 
+      throw new Error(errorData?.detail || "Erro ao obter vídeos da página inicial");
     }
 
     return response.json();
@@ -148,14 +171,29 @@ export async function getHistory(offset) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData?.detail || "Erro ao obter vídeos da página inicial"); 
+
+      let message = "Erro ao buscar histórico";
+      if (Array.isArray(errorData?.detail)) {
+        message = errorData.detail.map(d => `${d.loc?.join('.')}: ${d.msg}`).join(' | ');
+      } else if (typeof errorData?.detail === 'string') {
+        message = errorData.detail;
+      }
+
+      const err = new Error(message);
+      err.status = response.status;
+      throw err;
     }
 
     return response.json();
   } catch (error) {
-    throw new Error(error.message || "Erro ao obter vídeos da página inicial");
+    if (!error.status) {
+      error.status = 0;
+    }
+    console.log(error);
+    throw error;
   }
 }
+
 
 export async function addLike(videoId) {
   const formData = new FormData();

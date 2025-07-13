@@ -180,6 +180,14 @@ class UserService:
 
         return {"message":"senha atualizada com sucesso"}
     
+    def isTokenValid(self,token:str) -> dict:
+        try:
+            self.getUserId(token)
+        except Exception as e:
+            raise HTTPException(status_code=401,detail="Token informadonão está associado a um login")
+        
+        return {"message":"sucesso"}
+
     def getUserDatas(self,token:str) -> UserDatas:
         userId = None
         try:

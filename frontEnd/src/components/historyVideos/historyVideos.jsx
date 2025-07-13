@@ -10,6 +10,7 @@ export default function HistoryVideos() {
     const [isFetching, setIsFetching] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(true);
+    const [userHasLogin, setUserHasLogin] = useState(null); 
 
     useEffect(() => {
         const handleScroll = () => {
@@ -30,15 +31,15 @@ export default function HistoryVideos() {
         const fetchMoreHistory = async () => {
             try {
                 const metadatasRe = await getHistory(offSet);
-                console.log(metadatasRe)
                 if (metadatasRe && metadatasRe.length > 0) {
                     setMetaDatas(prev => [...prev, ...metadatasRe]);
                     setOffSet(prev => prev + 1);
                 } else {
                     setHasMore(false);
                 }
+                setUserHasLogin(true);
             } catch (err) {
-                console.error("Erro ao carregar mais vídeos:", err);
+                console.log(err)
             } finally {
                 setIsFetching(false);
             }
@@ -57,8 +58,14 @@ export default function HistoryVideos() {
                 setMetaDatas(metadatasRe);
                 setLoading(false)
                 setOffSet(1);
+                setUserHasLogin(true);
             } catch (err) {
-                console.error("Erro ao buscar vídeos iniciais:", err);
+                if (err.status === 422 || err.status === 401) {
+                    setUserHasLogin(false);
+                } else {
+                    setUserHasLogin(false);
+                    //handle more options
+                }
             }
         };
 
@@ -90,7 +97,7 @@ export default function HistoryVideos() {
 
     const formatTimeWatched = (currentTime, totalTime) => {
         console.log("currentTime ", currentTime)
-        console.log("totalTime ",totalTime)
+        console.log("totalTime ", totalTime)
         if (currentTime >= totalTime) {
             return 100;
         }
@@ -107,7 +114,17 @@ export default function HistoryVideos() {
 
         return positionBar
     }
-
+    if (userHasLogin === null) {
+    return <p style={{ color: "white", textAlign: "center" }}>Carregando...</p>;
+  }
+  if (!userHasLogin) {
+    return (
+      <div className='wrapMessageLogin'>
+        <h3>Realize o login para visualizar o historico de vídeos assitidos</h3>
+        <a href="/login">login</a>
+      </div>
+    );
+  }
     return (
         <>
             {loading ? (
