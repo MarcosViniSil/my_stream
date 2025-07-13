@@ -14,160 +14,147 @@ import './profileComponent.css'
 import { useNavigate } from "react-router-dom";
 import { Toaster, toast } from 'sonner';
 
-
 export default function ProfileComponent() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState(null);
-  const [isFetching, setIsFetching] = useState(false)
 
+  const [formData, setFormData] = useState({ userName: '', userEmail: '' });
+  const [isFetching, setIsFetching] = useState(false);
+  const [userHasLogin, setUserHasLogin] = useState(null); // null = carregando
 
   useEffect(() => {
     const getUserDatas = async () => {
       try {
         const datas = await getUserDatasAPI();
-        console.log(datas)
         setFormData(datas);
+        setUserHasLogin(true);
       } catch (err) {
         console.log(err);
-      } finally {
-
+        if (err.status === 422 || err.status === 401) {
+          setUserHasLogin(false);
+        } else {
+          sendError(err.message);
+        }
       }
     };
 
     getUserDatas();
   }, []);
 
-  const sendSuccess = (toastId) => {
+  const sendSuccess = () => {
     toast.success("Dados atualizados com sucesso", {
-      style: {
-        background: '#346E62',
-        color: '#fff'
-      },
-      iconTheme: {
-        primary: '#A7D1C9',
-        secondary: '#fff'
-      },
-      id: toastId,
+      style: { background: '#346E62', color: '#fff' },
+      iconTheme: { primary: '#A7D1C9', secondary: '#fff' },
     });
-  }
+  };
 
-  const sendError = (message, toastId) => {
+  const sendError = (message) => {
     toast.error(`${message}`, {
-      style: {
-        background: '#8B0000',
-        color: '#fff'
-      },
-      id: toastId,
+      style: { background: '#8B0000', color: '#fff' },
     });
-  }
+  };
 
   const validateName = (name) => {
-    if (name.replace(/ /g, '').length == 0) {
-      sendError("O nome não pode conter apenas espaços em branco")
-      return false
+    if (name.trim().length === 0) {
+      sendError("O nome não pode conter apenas espaços em branco");
+      return false;
     }
-
     if (name.length < 3 || name.length > 40) {
-      sendError(`O nome deve conter no mínimo 3 e no máximo 40 caracteres, tamanho atual: ${name.length}`,)
-      return false
+      sendError(`O nome deve ter entre 3 e 40 caracteres (atual: ${name.length})`);
+      return false;
     }
+    return true;
+  };
 
-    return true
-  }
-
-  const validateEmail = (email) => { // source: https://stackoverflow.com/posts/46181/revisions
-    const isEmailValid = String(email)
-      .toLowerCase()
-      .match(
-        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-      );
+  const validateEmail = (email) => {
+    const isEmailValid = String(email).toLowerCase().match(
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    );
     if (!isEmailValid) {
-      sendError("O formato do email informado está incorreto")
-      return false
+      sendError("O formato do email informado está incorreto");
+      return false;
     }
-    return true
+    return true;
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const updateDatas = async () => {
-
     if (!validateName(formData.userName) || !validateEmail(formData.userEmail) || isFetching) {
-      return
+      return;
     }
-
 
     try {
-      setIsFetching(true)
-      await updateUserDatas(formData)
-      setIsFetching(false)
-      sendSuccess()
-      navigate("/profile")
+      setIsFetching(true);
+      await updateUserDatas(formData);
+      sendSuccess();
+      navigate("/profile");
     } catch (err) {
-      sendError(err.message)
-      setIsFetching(false)
+      if (err.status === 401) {
+        setUserHasLogin(false);
+      }else{
+        sendError(err.message);
+      }
+      
+    } finally {
+      setIsFetching(false);
     }
+  };
 
+  if (userHasLogin === null) {
+    return <p style={{ color: "white", textAlign: "center" }}>Carregando...</p>;
   }
 
+  if (!userHasLogin) {
+    return (
+      <div className='wrapMessageLogin'>
+        <h3>Realize o login para visualizar o perfil</h3>
+        <a href="/login">login</a>
+      </div>
+    );
+  }
 
   return (
     <>
       <Toaster position="top-right" />
-      <Flex
-        color="white"
-        align="center"
-        justify="center"
-      >
-        <Box
-          bg="gray.800"
-          p={8}
-          borderRadius="xl"
-          boxShadow="lg"
-          w="lg"
-        >
-
+      <Flex color="white" align="center" justify="center">
+        <Box bg="gray.800" p={8} borderRadius="xl" boxShadow="lg" w="lg">
           <VStack spacing={4}>
             <FormControl>
               <FormLabel>Nome</FormLabel>
               <Input
-                placeholder={formData ? "Nome" : "Carregando..."}
+                placeholder="Nome"
                 name="userName"
                 borderColor="whiteAlpha.500"
                 _placeholder={{ color: "gray.400" }}
-                value={formData?.userName || ""}
+                value={formData.userName}
                 onChange={handleChange}
                 _hover={{ borderColor: "white" }}
                 _focus={{ borderColor: "white" }}
                 rounded="full"
-                isDisabled={!formData}
               />
             </FormControl>
 
             <FormControl>
               <FormLabel>Email</FormLabel>
               <Input
-                placeholder={formData ? "Email" : "Carregando..."}
+                placeholder="Email"
                 name="userEmail"
                 type="email"
                 borderColor="whiteAlpha.500"
-                value={formData?.userEmail || ""}
+                value={formData.userEmail}
                 onChange={handleChange}
                 _placeholder={{ color: "gray.400" }}
                 _hover={{ borderColor: "white" }}
                 _focus={{ borderColor: "white" }}
                 rounded="full"
-                isDisabled={!formData}
               />
             </FormControl>
 
             <a className='changePassword' href="/password">Atualizar senha</a>
+
             <Button
               bg="#346E62"
               _hover={{ bg: "#419181" }}

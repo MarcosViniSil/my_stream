@@ -101,10 +101,8 @@ class UserService:
             raise ValueError("Ocorreu um erro ao obter token")
         datas = None
         
-        try:
-            datas = validateJwtToken(token)
-        except Exception as e:
-                raise ValueError("token inválido")
+        datas = validateJwtToken(token)
+
    
         if datas is None or datas["userEmail"] is None:
             raise ValueError("erro ao validar token")
@@ -146,20 +144,15 @@ class UserService:
         return {"message":"código enviado com sucesso"}
     
     def validateCode(self,email:str,code:int) -> None:
-        print("email : ",email)
-        print("code ",code)
 
         try:
             row = self.userRepository.getCodeById(email,code)
         except Exception as e:
             raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao obter o código {e}")
         
-        print(row)
         if row is None or row[0] is None or row[1] is None:
             raise HTTPException(status_code=400,detail="O código informado está incorreto")
         
-        print("int(row[0]) ",int(row[0]))
-        print("code ",code)
         if int(row[0]) != code:
             raise HTTPException(status_code=400,detail="O código informado está incorreto")
         
@@ -192,7 +185,7 @@ class UserService:
         try:
             userId = self.getUserId(token)
         except Exception as e:
-            raise HTTPException(status_code=400,detail="Ocorreu um erro ao obter id do usuário")
+            raise HTTPException(status_code=401,detail="Token informadonão está associado a um login")
         
         row = None
         try:

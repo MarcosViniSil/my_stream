@@ -65,13 +65,15 @@ export async function getUserDatasAPI() {
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData?.detail || "Erro ao criar usuário");
+  const errorData = await response.json();
+  const err = new Error(errorData?.detail || "Erro ao atualizar dados");
+  err.status = response.status;
+  throw err;
         }
 
         return response.json();
     } catch (error) {
-        throw new Error(error.message || "Erro ao criar usuário");
+        throw error;
     }
 }
 
@@ -93,14 +95,14 @@ export async function updateUserDatas(user) {
             body: JSON.stringify(userBody),
         });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData?.detail || "Erro ao criar usuário");
-        }
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw { status: response.status, message: errorData?.detail || "Erro ao realizar dislike no vídeo" };
+    }
 
-        return response.json();
+    return response.json();
     } catch (error) {
-        throw new Error(error.message || "Erro ao criar usuário");
+        throw new Error(error.message || "Erro ao obter dados do perfil");
     }
 }
 
@@ -147,7 +149,7 @@ export async function updatePassword(email, code, password) {
     try {
         const response = await fetch(`http://localhost:8000/user/password`, {
             method: "PUT",
-             headers: {
+            headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify(body)

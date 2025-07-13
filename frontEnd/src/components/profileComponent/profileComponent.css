@@ -3,3 +3,19 @@
     display: flex;
     align-items: baseline;
 }
+.wrapMessageLogin{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+.wrapMessageLogin > h3{
+    color: white;
+    font-size: x-large;
+    text-align: center;
+}
+.wrapMessageLogin > a{
+    font-size: 1.4rem;
+    text-decoration: underline;
+    color: #5db6a4;
+}

@@ -251,8 +251,11 @@ class UserVideosService:
         if not self.isIdValid(videoId):
             raise HTTPException(status_code=400,detail="id de vídeo inválido")
         
-        userId = self.getUserId(tokenUser)
-        
+        userId = None
+        try:
+            userId = self.getUserId(tokenUser)
+        except Exception as e:
+            return {"message":"usuário não possui login"}
         try:
             datas = self.videoRepository.getWatchedSeconds(userId,videoId)
             if datas is None:

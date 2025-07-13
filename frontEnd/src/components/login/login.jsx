@@ -11,6 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { Toaster, toast } from 'sonner';
 import { loginUser } from '../../service/userService.js'
+import { useNavigate } from "react-router-dom";
 
 import './login.css'
 
@@ -19,6 +20,7 @@ export default function Login() {
         email: "",
         password: "",
     });
+    const navigate = useNavigate();
     const [isFetching, setIsFetching] = useState(false)
 
     const handleChange = (e) => {
@@ -101,6 +103,8 @@ export default function Login() {
             sendSuccess()
             
             setIsFetching(false)
+
+            navigate("/")
 
         } catch (err) {
             sendError(err.message)
