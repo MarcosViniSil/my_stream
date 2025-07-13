@@ -12,11 +12,21 @@ import { AiFillDislike } from "react-icons/ai";
 import { MdSubtitles } from "react-icons/md";
 import { MdSubtitlesOff } from "react-icons/md";
 import { addDisLike, addLike } from '../../service/videoService.js'
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  Box,
+  PopoverBody,
+  Link,
+} from "@chakra-ui/react";
 
 import "./playVideo.css";
+import { useNavigate } from "react-router-dom";
 
 function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
   const videoRef = useRef(null);
+  const navigate = useNavigate();
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [volume, setVolume] = useState(0.4);
@@ -30,7 +40,11 @@ function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
   const [dislike, setDislike] = useState(0)
   const [isFetching, setIsFetching] = useState(false)
   const [reaction, setReaction] = useState(0);
-
+  const [showTooltip, setShowToolTip] = useState(false)
+  const [showTooltip2, setShowToolTip2] = useState(false)
+  const [messageLike, setMessageLike] = useState("Você precisa estar logado para curtir o vídeo.")
+  const [messageDisLike, setMessageDisLike] = useState("Você precisa estar logado para reagir ao vídeo.")
+  
   useEffect(() => {
     const video = videoRef.current;
     if (Hls.isSupported()) {
@@ -260,7 +274,16 @@ function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
       }
 
     } catch (err) {
-      console.log(err);
+      if (err.status === 422) {
+        setShowToolTip(true)
+      } else if (err.status === 401) {
+        console.log("erro 401")
+         setMessageLike("O seu login expirou, realize novamente o login para poder curtir o vídeo")
+          setShowToolTip(true);
+         console.log(messageLike)
+      } else {
+        alert("Erro inesperado ao curtir o vídeo.");
+      }
     } finally {
       setIsFetching(false);
     }
@@ -287,10 +310,23 @@ function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
       }
 
     } catch (err) {
-      console.log(err);
+      console.log(err)
+    if (err.status === 422) {
+        setShowToolTip2(true)
+      } else if (err.status === 401) {
+        setMessageDisLike("O seu login expirou, realize o login novamente para poder reagir")
+        setShowToolTip2(true)
+      } else {
+        alert("Erro inesperado ao curtir o vídeo.");
+      }
+  
     } finally {
       setIsFetching(false);
     }
+  }
+
+  const handleLoginClick = () => {
+    navigate("/login")
   }
 
   return (
@@ -369,9 +405,87 @@ function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
             <p className="authorPlayVideo">criado por {videoDatas.userName} em {videoDatas.videoDate}</p>
           </div>
           <div className="likesAndDislikes">
-            <button onClick={sendLike} className={`likes ${reaction === 1 ? 'activeLike' : ''}`}> <AiFillLike className="iconLike" /> <span className="valueLD">{formatReactionNumber(like)}</span>  </button>
-            <button onClick={sendDisLike} className={`dislikes ${reaction === -1 ? 'activeDislike' : ''}`}> <AiFillDislike className="iconDisLike" />  <span className="valueLD">{formatReactionNumber(dislike)}</span> </button>
+            <Popover
+              boxShadow="none"
+              border="none"
+              isOpen={showTooltip}
+              onClose={() => setShowToolTip(false)}
+            >
+              <PopoverTrigger>
+                <button
+                  onClick={sendLike}
+                  className={`likes ${reaction === 1 ? "activeLike" : ""}`}
+                >
+                  <AiFillLike className="iconLike" />
+                  <span className="valueLD">{formatReactionNumber(like)}</span>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent
+                bg="#212121"
+                border="none"
+                boxShadow="none"
+              >
+                <PopoverBody bg="#212121cb" p={4}>
+                  <Box textAlign="center" color="white">
+                    { messageLike }
+                    <br />
+                    <Link
+                      onClick={handleLoginClick}
+                      display="block"
+                      mt={2}
+                      color="white"
+                      cursor="pointer"
+                      fontWeight="bold"
+                      _hover={{ color: "#4caf50", textDecoration: "underline" }}
+                    >
+                      login
+                    </Link>
+                  </Box>
+                </PopoverBody>
+              </PopoverContent>
+            </Popover>
+
+            <Popover
+              boxShadow="none"
+              border="none"
+              isOpen={showTooltip2}
+              onClose={() => setShowToolTip2(false)}
+            >
+              <PopoverTrigger>
+                <button
+                  onClick={sendDisLike}
+                  className={`dislikes ${reaction === -1 ? "activeDislike" : ""}`}
+                >
+                  <AiFillDislike className="iconDisLike" />
+                  <span className="valueLD">{formatReactionNumber(dislike)}</span>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent
+                bg="#212121"
+                border="none"
+                boxShadow="none"
+              >
+                <PopoverBody bg="#212121cb" p={4}>
+                  <Box textAlign="center" color="white">
+                    {messageDisLike}
+                    <br />
+                    <Link
+                      onClick={handleLoginClick}
+                      display="block"
+                      mt={2}
+                      color="white"
+                      cursor="pointer"
+                      fontWeight="bold"
+                      _hover={{ color: "#4caf50", textDecoration: "underline" }}
+                    >
+                      login
+                    </Link>
+                  </Box>
+                </PopoverBody>
+              </PopoverContent>
+            </Popover>
           </div>
+
         </div>
       </div>
     </div>

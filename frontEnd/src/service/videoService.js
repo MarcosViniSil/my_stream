@@ -161,23 +161,22 @@ export async function addLike(videoId) {
   const formData = new FormData();
   formData.append("videoId", videoId);
 
-  try {
-    const response = await fetch("http://localhost:8000/video/like", {
-      method: "POST",
-      credentials: "include",
-      body: formData,
-    });
+  const response = await fetch("http://localhost:8000/video/like", {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData?.detail || "Erro ao realizar o like em um vídeo"); 
-    }
-
-    return response.json();
-  } catch (error) {
-    throw new Error(error.message || "Erro ao enviar o realizar like no vídeo");
+  if (!response.ok) {
+    const errorData = await response.json();
+    const error = new Error(errorData?.detail || "Erro ao realizar o like em um vídeo");
+    error.status = response.status;
+    throw error;
   }
+
+  return response.json();
 }
+
 
 export async function addDisLike(videoId) {
   const formData = new FormData();
@@ -192,14 +191,16 @@ export async function addDisLike(videoId) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData?.detail || "Erro ao realizar o dislike em um vídeo"); 
+      throw { status: response.status, message: errorData?.detail || "Erro ao realizar dislike no vídeo" };
     }
 
     return response.json();
   } catch (error) {
-    throw new Error(error.message || "Erro ao enviar o realizar dislike no vídeo");
+    if (error.status) throw error;
+    throw { status: 0, message: error.message || "Erro desconhecido ao enviar dislike" };
   }
 }
+
 
 
 

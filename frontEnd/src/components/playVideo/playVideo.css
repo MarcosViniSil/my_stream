@@ -290,6 +290,7 @@
   color: white;
   width: 93%;
   padding: 10px;
+  padding-bottom: 0px;
 }
 
 .wrapAuthorAndTitle {
@@ -357,6 +358,10 @@
 
 .hideCursor {
   cursor: none;
+}
+
+.linkToLogin{
+  cursor: pointer;
 }
 @media (max-width:700px) {
   .wrapAuthorAndTitle>h3 {

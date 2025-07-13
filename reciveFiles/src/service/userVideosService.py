@@ -326,7 +326,6 @@ class UserVideosService:
 
         try:
             row = self.videoRepository.getVideoReaction(videoId,userId)
-            print(row)
         except Exception as e:
             raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao buscar videos já curtidos")
 
@@ -454,6 +453,6 @@ class UserVideosService:
         try:
             userId = self.userService.getUserId(token)
         except Exception as e:
-            raise HTTPException(status_code=400,detail=str(e))
+            raise HTTPException(status_code=401,detail=str(e))
         
         return userId
