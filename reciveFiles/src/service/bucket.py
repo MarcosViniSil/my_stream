@@ -5,13 +5,15 @@ from dotenv import load_dotenv
 from botocore.exceptions import ClientError
 from botocore.client import Config
 from urllib.parse import urlparse
-
+from urllib.parse import urlparse
 load_dotenv()
 
 class Bucket:
 
     def __init__(self):
         self.BUCKET_NAME = os.environ["BUCKET_NAME"]
+        self.MINIO_INTERNAL_ENDPOINT = os.getenv("MINIO_INTERNAL_ENDPOINT", "minio")
+        self.MINIO_PUBLIC_ENDPOINT = os.getenv("MINIO_PUBLIC_ENDPOINT", "localhost")
 
     def saveFileOnBucket(self, pathFile: str) -> str:
         if not pathFile:
@@ -40,12 +42,16 @@ class Bucket:
         client = self.createConnection()
         self.removeFolderFromBucket(client,self.BUCKET_NAME,folderName)
     
+
     def generatePresignedUrl(self, full_url, expiration=900):
-        parsed = urlparse(full_url)
+
+        internal_url = full_url.replace(self.MINIO_PUBLIC_ENDPOINT, self.MINIO_INTERNAL_ENDPOINT)
+
+        parsed = urlparse(internal_url)
         path = parsed.path.lstrip('/')
         bucket_name = path.split('/')[0]
         object_key = '/'.join(path.split('/')[1:])
-        print(object_key)
+        print(f"[INFO] bucket: {bucket_name}, key: {object_key}")
 
         client = self.createConnection()
 
@@ -54,18 +60,24 @@ class Bucket:
         except client.exceptions.NoSuchKey:
             raise Exception("Objeto não encontrado no bucket")
 
-        url = client.generate_presigned_url(
+        # gera presigned URL com endpoint interno
+        presigned_url = client.generate_presigned_url(
             'get_object',
             Params={'Bucket': bucket_name, 'Key': object_key},
             ExpiresIn=expiration
         )
-        return url
+
+        # substitui o host interno pelo público para devolver ao navegador
+        public_url = presigned_url.replace(self.MINIO_INTERNAL_ENDPOINT, self.MINIO_PUBLIC_ENDPOINT)
+
+        return public_url
+
     
     def createConnection(self):
         try:
             client = boto3.client(
             "s3",
-            endpoint_url='http://localhost:9000',
+            endpoint_url=f'http://{self.MINIO_INTERNAL_ENDPOINT}:9000',
             aws_access_key_id=os.environ["ACCESS_KEY_AWS"],
             aws_secret_access_key=os.environ["SECRET_KEY_AWS"],
             aws_session_token=None,

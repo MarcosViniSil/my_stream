@@ -124,7 +124,7 @@ class UserService:
         try:
             userId = self.userRepository.getUserId(email=email)
         except Exception as e:
-            raise HTTPException(status_code=400,detail="Ocorreu um erro ao obter id do usuário")
+            raise HTTPException(status_code=400,detail=f"Ocorreu um erro ao obter id do usuário {e}")
         
         if userId is None or userId[0] is None:
             raise HTTPException(status_code=400,detail="Email não encontrado")

@@ -72,7 +72,7 @@ class UserRepository:
 
         except Exception as e:
             print(e)
-            raise ValueError("Erro ao verificar dados para login", e)
+            raise ValueError(e)
         
     def getUserData(self,userId:bytes) -> dict:
 

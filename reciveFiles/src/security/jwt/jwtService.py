@@ -45,7 +45,7 @@ def validateJwtToken(token: str) -> dict:
 def createPayLoad(email:str) -> dict:
     payload = {
         'userEmail': email,
-        'exp': datetime.now() + timedelta(hours=24) 
+        'exp': datetime.now() + timedelta(hours=168) 
     }
 
     return payload

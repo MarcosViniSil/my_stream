@@ -65,7 +65,7 @@ class ReciveVideo:
 
             return file_path
         except Exception as e:
-             raise HTTPException(status_code=400, detail="Erro a baixar o vídeo localmente")
+             raise HTTPException(status_code=400, detail=f"Erro a baixar o vídeo localmente {e}")
         
     def isVideoContainAudio(self,fileName: str) -> bool:
         resultado = subprocess.run(["ffprobe", "-i",f"{UPLOAD_DIR}/{fileName}","-show_streams","-select_streams","a","-loglevel","error"], 

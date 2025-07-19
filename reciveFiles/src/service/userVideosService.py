@@ -217,7 +217,7 @@ class UserVideosService:
                         reaction = row[8],
                         videoDuration = row[9]
                     ) 
-                reponse.videoUrl = self.bucket.generatePresignedUrl(reponse.videoUrl)
+                #reponse.videoUrl = self.bucket.generatePresignedUrl(reponse.videoUrl)
                 return reponse
 
         except Exception as e:

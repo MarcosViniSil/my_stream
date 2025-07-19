@@ -246,7 +246,7 @@ class ProcessFiles:
         try:
             s3 = boto3.client(
                 "s3",
-                endpoint_url="http://localhost:9000",
+                endpoint_url="http://minio:9000",
                 aws_access_key_id=os.environ["ACCESS_KEY_AWS"],
                 aws_secret_access_key=os.environ["SECRET_KEY_AWS"],
                 aws_session_token=None,

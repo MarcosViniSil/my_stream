@@ -9,16 +9,16 @@ import re
 
 app = FastAPI()
 
-# origins = [
-#     "http://localhost:5173",
-#     "http://localhost:5174",
-#     "http://localhost:5177",
-#     #"http://mydomain",
-# ]
+origins = [
+    "http://172.26.100.134:3000",
+    "http://192.168.3.103:3000",
+    "http://localhost:3000",
+    "http://localhost:5173"
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"http://localhost:\d+",
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

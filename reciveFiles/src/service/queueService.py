@@ -11,6 +11,7 @@ class QueueService:
         self.password   =   os.environ["PASSWORD_RABBITMQ"] 
         self.exchange   =   os.environ["EXCHANGE_RABBITMQ"] 
         self.routingKey =   os.environ["ROUTINGKEY_RABBITMQ"]
+        self.host = os.getenv("RABBITMQ_HOST", "rabbitmq")
 
     def sendMessageQueue(self,message : dict) -> None:
 
@@ -35,7 +36,7 @@ class QueueService:
     def createConnection(self) -> BlockingConnection:
         try:
             credentials = PlainCredentials(self.user,self.password)
-            connection  = BlockingConnection(ConnectionParameters(host="localhost", credentials= credentials))
+            connection  = BlockingConnection(ConnectionParameters(host=self.host, credentials= credentials))
             return connection
         except Exception as e:
             raise ValueError("Erro ao criar conexão com a fila de mensagens")

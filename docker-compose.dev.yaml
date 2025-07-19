@@ -1,0 +1,101 @@
+
+services:
+  minio:
+    image: quay.io/minio/minio
+    container_name: minio-s3
+    ports:
+      - 9000:9000 
+      - 9001:9001  
+    environment:
+      - MINIO_ROOT_USER=root
+      - MINIO_ROOT_PASSWORD=root1234
+    volumes:
+      - ~/minio/data:/data
+    command: server /data --console-address ":9001"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      - RABBITMQ_DEFAULT_USER=root
+      - RABBITMQ_DEFAULT_PASS=root123
+    volumes:
+      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq/
+
+  mysql:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: my_stream
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+      - ./sql-scripts:/docker-entrypoint-initdb.d
+
+  mystream-api:
+    image: maacosv/mystream-api
+    ports:
+      - "8000:8000"
+    environment:
+      ACCESS_KEY_AWS: ""
+      SECRET_KEY_AWS: ""
+      BUCKET_NAME: "python-test-bucket"
+      HOST_DATABASE: "mysql"
+      PORT_DATABASE: 3306
+      USER_DATABASE: "root"
+      PASSWORD_DATABASE: "password"
+      NAME_DATABASE: "my_stream"
+      USER_RABBITMQ: "root"
+      PASSWORD_RABBITMQ: "root123"
+      EXCHANGE_RABBITMQ: "test"
+      ROUTINGKEY_RABBITMQ: "C"
+      KEY_JWT: "password"
+      EMAIL_USER_NAME: ""
+      EMAIL_PASSWORD: ""
+      MINIO_INTERNAL_ENDPOINT: minio
+      MINIO_PUBLIC_ENDPOINT: localhost
+      RABBITMQ_HOST : "rabbitmq"
+    depends_on:
+      - mysql
+      - rabbitmq
+      - minio
+
+  mystream-front:
+    image: maacosv/mystream-front
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mystream-api
+
+  mystream-processing:
+    image: maacosv/mystream-processing
+    environment:
+      ACCESS_KEY_AWS: ""
+      SECRET_KEY_AWS: ""
+      BUCKET_NAME: "python-test-bucket"
+      HOST_DATABASE: "mysql"
+      PORT_DATABASE: 3306
+      USER_DATABASE: "root"
+      PASSWORD_DATABASE: "password"
+      NAME_DATABASE: "my_stream"
+      USER_RABBITMQ: "root"
+      PASSWORD_RABBITMQ: "root123"
+      EXCHANGE_RABBITMQ: "test"
+      ROUTINGKEY_RABBITMQ: "C"
+      KEY_JWT: "password"
+      EMAIL_USER_NAME: ""
+      EMAIL_PASSWORD: ""
+      GEMINI_KEY : ""
+    depends_on:
+      - mysql
+      - rabbitmq
+      - minio
+
+volumes:
+  mysql_data:

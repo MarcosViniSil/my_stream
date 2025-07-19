@@ -57,6 +57,57 @@ class StreamRepository:
             print(e)
             raise ValueError(f"Erro ao atualizar status para fail do vídeo {videoId} ",e)
         
+    def getVideoByStatusFail(self) -> dict:
+        self.Db.createConnection()
+
+        sql = """
+                SELECT videoId,thumbnailUrl,videoUrl,videoSubTitles FROM tb_video WHERE videoStatus = 'FAIL' LIMIT 5;
+              """
+        try:
+            self.Db.myCursor.execute(sql,)
+            myresult = self.Db.myCursor.featchAll()
+            if len(myresult) == 0:
+                return []
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+            return myresult
+        except Exception as e:
+            print(e)
+            raise ValueError(f"erro ao obter vídeo que possuem status FAIL, erro: {e}",e)
+        
+    def getVideoByDeleted(self) -> dict:
+        self.Db.createConnection()
+
+        sql = """
+                SELECT videoId,thumbnailUrl,videoUrl,videoSubTitles FROM tb_video WHERE isDeleted = TRUE LIMIT 5;
+              """
+        try:
+            self.Db.myCursor.execute(sql,)
+            myresult = self.Db.myCursor.featchAll()
+            if len(myresult) == 0:
+                return []
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+            return myresult
+        except Exception as e:
+            print(e)
+            raise ValueError(f"erro ao obter vídeo que possuem status FAIL, erro: {e}",e)
+
+    def deleteRowById(self,id:bytes) -> None:
+        videoIdBytes = uuid.UUID(id).bytes
+
+        self.Db.createConnection()
+        
+        sql = """
+                DELETE FROM tb_video WHERE videoId = %s
+              """
+        try:
+            self.Db.myCursor.execute(sql, (videoIdBytes,))
+            self.Db.myDb.commit()
+            self.Db.closeConnection()
+        except Exception as e:
+            print(e)
+        
     def insertSubTitles(self, videoId:str, psthSubTitles:str) -> None:
         videoIdBytes = uuid.UUID(videoId).bytes
 
