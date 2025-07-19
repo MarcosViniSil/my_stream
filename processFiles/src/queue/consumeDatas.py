@@ -26,7 +26,7 @@ class ConsumeQueue:
         for attempt in range(retries):
             try:
                 credentials = PlainCredentials(self.user, self.password)
-                connection = BlockingConnection(ConnectionParameters(host="rabbitmq", credentials=credentials,heartbeat=0))
+                connection = BlockingConnection(ConnectionParameters(host="localhost", credentials=credentials,heartbeat=0))
                 return connection
             except Exception as e:
                 print(f"[TENTATIVA {attempt+1}/{retries}] Erro ao conectar ao RabbitMQ: {e}")
