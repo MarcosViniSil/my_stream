@@ -30,5 +30,5 @@
 
 
 ## Geração de legendas
-### A api go google gemini foi utilizada para geração de legendas de um vídeo, o áudio é extraido utilizando o `ffmpeg` e enviado para o google gemini para geração da legenda em formato `.vtt`, posteriormente utilizando a url da legenda no atributo `src` da tag `track` para exibição.
+### A api do google gemini foi utilizada para geração de legendas de um vídeo, o áudio é extraido utilizando o `ffmpeg` e enviado para o google gemini para geração da legenda em formato `.vtt`, posteriormente utilizando a url da legenda no atributo `src` da tag `track` para exibição.
 ![Fase 3](assets/images/geracao-legenda.PNG)
