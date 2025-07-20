@@ -3,11 +3,11 @@
 ### O projeto tem como objetivo realizar o stream de um vídeo em mp4 enviado por um usuário
 
 ## Como funciona?
-### Fase 1
+### Fase 1 - Receber o vídeo do usuário
 ![Fase 1](assets/images/fase-1.PNG)
-### Fase 2
+### Fase 2 - Processar o vídeo recebido
 ![Fase 2](assets/images/fase2.PNG)
-### Fase 3
+### Fase 3 - Disponibilizar o vídeo convertido
 ![Fase 3](assets/images/fase3.PNG)
 
 ## Tecnologias utilizadas
