@@ -8,7 +8,7 @@ export async function createUser(user) {
 
 
     try {
-        const response = await fetch("http://localhost:8000/sign/up", {
+        const response = await fetch("http://172.26.100.134:8000/sign/up", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -36,7 +36,7 @@ export async function loginUser(user) {
 
 
     try {
-        const response = await fetch("http://localhost:8000/sign/in", {
+        const response = await fetch("http://172.26.100.134:8000/sign/in", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -59,9 +59,9 @@ export async function loginUser(user) {
 export async function getUserDatasAPI() {
 
     try {
-        const response = await fetch("http://localhost:8000/user/datas", {
+        const response = await fetch("http://172.26.100.134:8000/user/datas", {
             method: "GET",
-            credentials: "include",
+            //credentials: "include",
         });
 
         if (!response.ok) {
@@ -86,12 +86,12 @@ export async function updateUserDatas(user) {
 
 
     try {
-        const response = await fetch("http://localhost:8000/user/datas", {
+        const response = await fetch("http://172.26.100.134:8000/user/datas", {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
             },
-            credentials: "include",
+            //credentials: "include",
             body: JSON.stringify(userBody),
         });
 
@@ -108,7 +108,7 @@ export async function updateUserDatas(user) {
 
 export async function sendCodeService(email) {
     try {
-        const response = await fetch(`http://localhost:8000/user/code?email=${email}`, {
+        const response = await fetch(`http://172.26.100.134:8000/user/code?email=${email}`, {
             method: "GET",
         });
 
@@ -125,7 +125,7 @@ export async function sendCodeService(email) {
 
 export async function verifyCodeService(email, code) {
     try {
-        const response = await fetch(`http://localhost:8000/user/verify/code?email=${email}&code=${code}`, {
+        const response = await fetch(`http://172.26.100.134:8000/user/verify/code?email=${email}&code=${code}`, {
             method: "GET",
         });
 
@@ -147,7 +147,7 @@ export async function updatePassword(email, code, password) {
         "password": password
     }
     try {
-        const response = await fetch(`http://localhost:8000/user/password`, {
+        const response = await fetch(`http://172.26.100.134:8000/user/password`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"

@@ -3,9 +3,9 @@ export async function uploadVideo(file) {
   formData.append("file", file);
 
   try {
-    const response = await fetch("http://localhost:8000/upload/video", {
+    const response = await fetch("http://172.26.100.134:8000/upload/video", {
       method: "POST",
-      credentials: "include",
+      //credentials: "include",
       body: formData,
     });
 
@@ -23,9 +23,9 @@ export async function uploadVideo(file) {
 export async function isCookieValid() {
 
   try {
-    const response = await fetch("http://localhost:8000/user/token", {
+    const response = await fetch("http://172.26.100.134:8000/user/token", {
       method: "GET",
-      credentials: "include",
+      //credentials: "include",
     });
 
     if (!response.ok) {
@@ -45,9 +45,9 @@ export async function isCookieValid() {
 
 export async function getQuantityVideos() {
   try {
-    const response = await fetch("http://localhost:8000/user/videos/quantity", {
+    const response = await fetch("http://172.26.100.134:8000/user/videos/quantity", {
       method: "POST",
-      credentials: "include",
+      //credentials: "include",
     });
 
     if (!response.ok) {
@@ -67,9 +67,9 @@ export async function getVideosUser(offset) {
   formData.append("offset", offset);
 
   try {
-    const response = await fetch("http://localhost:8000/user/videos", {
+    const response = await fetch("http://172.26.100.134:8000/user/videos", {
       method: "POST",
-      credentials: "include",
+      //credentials: "include",
       body: formData,
     });
 
@@ -90,9 +90,9 @@ export async function deleteVideo(videoId) {
   formData.append("videoId", videoId);
 
   try {
-    const response = await fetch(`http://localhost:8000/user/video?videoId=${videoId}`, {
+    const response = await fetch(`http://172.26.100.134:8000/user/video?videoId=${videoId}`, {
       method: "DELETE",
-      credentials: "include",
+      //credentials: "include",
       body: formData,
     });
 
@@ -110,9 +110,9 @@ export async function deleteVideo(videoId) {
 export async function getVideosInitialPage(offset) {
 
   try {
-    const response = await fetch(`http://localhost:8000/videos?offset=${offset}`, {
+    const response = await fetch(`http://172.26.100.134:8000/videos?offset=${offset}`, {
       method: "GET",
-      credentials: "include",
+      //credentials: "include",
     });
 
     if (!response.ok) {
@@ -128,9 +128,9 @@ export async function getVideosInitialPage(offset) {
 
 export async function getVideosUserQuery(query) {
   try {
-    const response = await fetch(`http://localhost:8000/videos/query/?param=${query}`, {
+    const response = await fetch(`http://172.26.100.134:8000/videos/query/?param=${query}`, {
       method: "GET",
-      credentials: "include",
+      //credentials: "include",
     });
 
     if (!response.ok) {
@@ -146,9 +146,9 @@ export async function getVideosUserQuery(query) {
 
 export async function getDatasVideoToStream(videoId) {
   try {
-    const response = await fetch(`http://localhost:8000/streaming/video?videoId=${videoId}`, {
+    const response = await fetch(`http://172.26.100.134:8000/streaming/video?videoId=${videoId}`, {
       method: "GET",
-      credentials: "include",
+      //credentials: "include",
     });
 
     if (!response.ok) {
@@ -164,9 +164,9 @@ export async function getDatasVideoToStream(videoId) {
 
 export async function getHistory(offset) {
   try {
-    const response = await fetch(`http://localhost:8000/videos/history/?offset=${offset}`, {
+    const response = await fetch(`http://172.26.100.134:8000/videos/history/?offset=${offset}`, {
       method: "GET",
-      credentials: "include",
+      //credentials: "include",
     });
 
     if (!response.ok) {
@@ -199,9 +199,9 @@ export async function addLike(videoId) {
   const formData = new FormData();
   formData.append("videoId", videoId);
 
-  const response = await fetch("http://localhost:8000/video/like", {
+  const response = await fetch("http://172.26.100.134:8000/video/like", {
     method: "POST",
-    credentials: "include",
+    //credentials: "include",
     body: formData,
   });
 
@@ -221,9 +221,9 @@ export async function addDisLike(videoId) {
   formData.append("videoId", videoId);
 
   try {
-    const response = await fetch("http://localhost:8000/video/dislike", {
+    const response = await fetch("http://172.26.100.134:8000/video/dislike", {
       method: "POST",
-      credentials: "include",
+      //credentials: "include",
       body: formData,
     });
 

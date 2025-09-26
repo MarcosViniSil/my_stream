@@ -64,8 +64,6 @@ class Subtitles:
             response = client.models.generate_content(
                 model="gemini-2.5-flash",
                 contents=[self.createPrompt(messageError), myfile],
-                stream=False,              
-                automatic_function_calling=None,  
                 )
             subscribleId = uuid.uuid4().bytes
             subscribleIdStr = str(uuid.UUID(bytes=subscribleId))

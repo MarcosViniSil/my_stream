@@ -1,4 +1,5 @@
 from uuid import UUID
+import uuid
 from src.service.queueService import QueueService
 from src.repository.videoRepository import VideoRepository
 from src.service.bucket import Bucket
@@ -105,7 +106,7 @@ class ReciveVideo:
         except Exception as e:
             print(e)
             os.remove(file_path)
-            raise HTTPException(status_code=400, detail="Erro ao salvar video em bucket na nuvem")
+            raise HTTPException(status_code=400, detail=f"Erro ao salvar video em bucket na nuvem {e}")
     
     def removeLocalVideo(self,hashVideoBucket: str,file_path: str) -> None:
 
@@ -131,13 +132,17 @@ class ReciveVideo:
             raise HTTPException(status_code=400, detail="Erro ao salvar url no banco")
     
     def getUserId(self,token:str) -> bytes:
-        userId = None
-        try:
-            userId = self.userService.getUserId(token)
-        except Exception as e:
-            raise HTTPException(status_code=400,detail=str(e))
+        uuidStr = '3f06af63-a93c-11e4-9797-00505690773d'
+        return uuid.UUID(uuidStr).bytes
+
+    # def getUserId(self,token:str) -> bytes:
+    #     userId = None
+    #     try:
+    #         userId = self.userService.getUserId(token)
+    #     except Exception as e:
+    #         raise HTTPException(status_code=400,detail=str(e))
         
-        return userId
+    #     return userId
     
     def createReactionVideo(self,videoId:str,hashVideo : str) -> None:
         try:

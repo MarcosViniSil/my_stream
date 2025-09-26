@@ -67,7 +67,6 @@ class Bucket:
             ExpiresIn=expiration
         )
 
-        # substitui o host interno pelo público para devolver ao navegador
         public_url = presigned_url.replace(self.MINIO_INTERNAL_ENDPOINT, self.MINIO_PUBLIC_ENDPOINT)
 
         return public_url
@@ -77,7 +76,7 @@ class Bucket:
         try:
             client = boto3.client(
             "s3",
-            endpoint_url=f'http://{self.MINIO_INTERNAL_ENDPOINT}:9000',
+            endpoint_url=f'http://localhost:9000',
             aws_access_key_id=os.environ["ACCESS_KEY_AWS"],
             aws_secret_access_key=os.environ["SECRET_KEY_AWS"],
             aws_session_token=None,

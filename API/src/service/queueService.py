@@ -11,7 +11,7 @@ class QueueService:
         self.password   =   os.environ["PASSWORD_RABBITMQ"] 
         self.exchange   =   os.environ["EXCHANGE_RABBITMQ"] 
         self.routingKey =   os.environ["ROUTINGKEY_RABBITMQ"]
-        self.host = os.getenv("RABBITMQ_HOST", "rabbitmq")
+        self.host = "localhost"
 
     def sendMessageQueue(self,message : dict) -> None:
 

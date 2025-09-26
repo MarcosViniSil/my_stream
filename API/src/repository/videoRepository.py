@@ -232,7 +232,7 @@ class VideoRepository:
 
         except Exception as e:
             print(e)
-            raise ValueError("Erro ao buscar vídeos da página inicial")
+            raise ValueError(f"Erro ao buscar vídeos da página inicial")
 
     def searchVideosByTitle(self, param: str, userId: str) -> dict:
         self.Db.createConnection()
