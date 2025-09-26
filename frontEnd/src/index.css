@@ -6,10 +6,22 @@
   font-family: "Montserrat", sans-serif;
 }
 
-HTML {
-
+html {
   font-optical-sizing: auto;
+  background-color: #141414; 
+  transition: background-color 0.3s ease;
+}
+
+html.lightTheme {
+  background-color: #f5f5f5;
+}
+
+html.darkTheme {
   background-color: #141414;
+}
+
+#root {
+  background-color: inherit;
 }
 
 .main-content {
@@ -25,5 +37,14 @@ HTML {
 }
 
 #root {
+  background-color: inherit; /* herda do html */
+  transition: background-color 0.3s ease;
+}
+
+#root.darkTheme {
   background-color: #141414;
+}
+
+#root.lightTheme {
+  background-color: #f5f5f5;
 }

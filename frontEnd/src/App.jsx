@@ -14,11 +14,15 @@ import Register from './pages/register/register'
 import LoginPage from './pages/login/login'
 import Profile from './pages/profile/profile'
 import RecoverPassword from './pages/recoverPassword/recoverPassword'
+import { AccessibleProvider } from './context/AccessibleContext';
+import { ThemeProvider } from './context/themeContext';
 import './App.css';
 
 function App() {
 
   return (
+    <ThemeProvider>
+    <AccessibleProvider>
     <BrowserRouter>
       <Routes>
         <Route path="/register" element={ <Register/> }/> 
@@ -36,6 +40,8 @@ function App() {
         
       </Routes>
     </BrowserRouter>
+    </AccessibleProvider>
+    </ThemeProvider>
   );
 }
 

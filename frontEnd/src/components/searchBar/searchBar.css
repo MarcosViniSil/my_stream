@@ -7,3 +7,20 @@
     background-color: #5bb6a4bb;
 }
 
+
+.wrapAllBar form {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px; 
+}
+
+form .buttonAccess {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  color: white;
+}
+
+

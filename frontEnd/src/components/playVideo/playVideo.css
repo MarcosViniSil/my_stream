@@ -70,7 +70,9 @@
   border-radius: 50%;
   cursor: pointer;
 }
-
+.wrapProgress input[type="range"]::-webkit-slider-thumb {
+  background: #df1451; /* Verde mais vívido */
+}
 .wrapControls {
   display: flex;
   justify-content: space-between;
@@ -325,12 +327,13 @@
   font-size: x-large;
 }
 
+
 .likes.activeLike .iconLike {
-  color: #4caf50; 
+  color: rgb(35, 90, 243); 
 }
 
 .dislikes.activeDislike .iconDisLike {
-  color: #f44336;
+  color: rgb(231, 155, 13);
 }
 
 .likes,
@@ -380,6 +383,129 @@
   .wrapVideo {
     width: 100%;
   }
+}
+
+.lightTheme {
+  background-color: #f5f5f5;
+  color: #1a1a1a;
+}
+html.lightTheme {
+  background-color: #f5f5f5;
+  color: #1a1a1a;
+}
+
+html.darkTheme {
+  background-color: #141414;
+  color: #F0F0F0;
+}
+
+.accessible video::cue {
+  opacity: 1;
+  background-color: black;
+  font-size: 30px !important;
+}
+.lightTheme #progress::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #4caf50 var(--progress, 0%), #ccc var(--progress, 0%));
+}
+
+.lightTheme #volume::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #4caf50 var(--progress, 0%), #ccc var(--progress, 0%));
+}
+
+.lightTheme .wrapAuthorAndTitle h3 {
+  color: #1a1a1a;
+}
+
+.lightTheme .authorPlayVideo {
+  color: #333;
+}
+
+.lightTheme .likes,
+.lightTheme .dislikes {
+  color: #1a1a1a;
+}
+
+.lightTheme .activeLike .iconLike {
+  color: #1976d2;
+}
+
+.lightTheme .activeDislike .iconDisLike {
+  color: #ff9800;
+}
+
+.lightTheme .wrapVolume input[type="range"]::-webkit-slider-thumb {
+  background: #4caf50;
+}
+
+.lightTheme .wrapProgress input[type="range"]::-webkit-slider-thumb {
+  background: #4caf50;
+}
+
+
+.accessible #progress::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #00C853 var(--progress, 0%), #999 var(--progress, 0%));
+}
+
+.accessible #volume::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #00C853 var(--progress, 0%), #999 var(--progress, 0%));
+}
+
+.wrapControls button {
+  color: #FFFFFF;
+}
+
+.accessible .wrapControls button,
+.accessible .subTitles,
+.accessible .fullScreen {
+  min-width: 44px;
+  min-height: 44px;
+  font-size: 22px; 
+}
+
+.accessible button:focus,
+.accessible input:focus {
+  outline: 3px solid #FFD600;
+  outline-offset: 3px;
+}
+
+.wrapAuthorAndTitle > h3 {
+  font-size: 1.8rem;
+}
+
+.accessible .wrapAuthorAndTitle > h3{
+  font-size: 2.3em;
+}
+
+.accessible .likes,.accessible .dislikes{
+  font-size: 26px;
+}
+.accessible .wrapTimeVideo{
+  font-size: 22px;
+}
+.accessible .wrapVolume{
+  font-size: 22px;
+}
+.accessible .wrapControls{
+   background-color: black;
+}
+.accessible .authorPlayVideo{
+  font-size: 1.6em;
+}
+.accessible #volume {
+  height: 8px; 
+  margin-left: 20px;
+}
+.accessible .volumeIcon,
+.accessible .volumeIconLow {
+  font-size: 60px; 
+}
+.authorPlayVideo {
+  font-size: 1.1rem;
+}
+.accessible body {
+  line-height: 1.5;
+  word-spacing: 0.16em;   
+  letter-spacing: 0.12em;
 }
 
 @media (min-width:260px) and (max-width:360px) {

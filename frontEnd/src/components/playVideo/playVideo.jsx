@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useContext } from "react";
 import Hls from "hls.js";
 import { FaPlay } from "react-icons/fa";
 import { FaPause } from "react-icons/fa";
@@ -8,6 +8,7 @@ import { IoIosVolumeOff } from "react-icons/io";
 import { IoIosVolumeHigh } from "react-icons/io";
 import { FaVolumeXmark } from "react-icons/fa6";
 import { AiFillLike } from "react-icons/ai";
+import { SlLike } from "react-icons/sl";
 import { AiFillDislike } from "react-icons/ai";
 import { MdSubtitles } from "react-icons/md";
 import { MdSubtitlesOff } from "react-icons/md";
@@ -20,8 +21,9 @@ import {
   PopoverBody,
   Link,
 } from "@chakra-ui/react";
-
+import { AccessibleContext } from "../../context/AccessibleContext";
 import "./playVideo.css";
+import { ThemeContext } from "../../context/themeContext.jsx";
 import { useNavigate } from "react-router-dom";
 
 function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
@@ -44,6 +46,9 @@ function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
   const [showTooltip2, setShowToolTip2] = useState(false)
   const [messageLike, setMessageLike] = useState("Você precisa estar logado para curtir o vídeo.")
   const [messageDisLike, setMessageDisLike] = useState("Você precisa estar logado para reagir ao vídeo.")
+  const { accessible } = useContext(AccessibleContext);
+
+  const { theme } = useContext(ThemeContext);
   
   useEffect(() => {
     const video = videoRef.current;
@@ -133,7 +138,7 @@ function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
     const handleMouseMove = () => {
       setShowControls(true);
       clearTimeout(timeout);
-      timeout = setTimeout(() => setShowControls(false), 800);
+      timeout = setTimeout(() => setShowControls(false), 1800);
     };
 
     wrapper.addEventListener('mousemove', handleMouseMove);
@@ -278,9 +283,9 @@ function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
         setShowToolTip(true)
       } else if (err.status === 401) {
         console.log("erro 401")
-         setMessageLike("O seu login expirou, realize novamente o login para poder curtir o vídeo")
-          setShowToolTip(true);
-         console.log(messageLike)
+        setMessageLike("O seu login expirou, realize novamente o login para poder curtir o vídeo")
+        setShowToolTip(true);
+        console.log(messageLike)
       } else {
         alert("Erro inesperado ao curtir o vídeo.");
       }
@@ -311,7 +316,7 @@ function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
 
     } catch (err) {
       console.log(err)
-    if (err.status === 422) {
+      if (err.status === 422) {
         setShowToolTip2(true)
       } else if (err.status === 401) {
         setMessageDisLike("O seu login expirou, realize o login novamente para poder reagir")
@@ -319,7 +324,7 @@ function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
       } else {
         alert("Erro inesperado ao curtir o vídeo.");
       }
-  
+
     } finally {
       setIsFetching(false);
     }
@@ -330,164 +335,168 @@ function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
   }
 
   return (
-    <div className="wrapAll">
-      <div className="videoContainer">
-        <div className={`wrapVideo ${!showControls ? 'hideCursor' : ''}`}>
+    <div className={`videoPlayerWrapper ${accessible ? "accessible" : ""} ${theme ? "darkTheme" : "lightTheme"}`}>
 
-          <video crossOrigin="anonymous" onClick={togglePlay} muted autoPlay ref={videoRef} className="videoPlayer">
-            {videoDatas.videoSubtitles != "" && (
-              <track
-                src={videoDatas.videoSubtitles}
-                kind="subtitles"
-                srcLang="pt"
-                label="Português"
-                default
-              />
+      <div className="wrapAll">
+        <div className="videoContainer">
+          <div className={`wrapVideo ${!showControls ? 'hideCursor' : ''}`}>
+
+            <video crossOrigin="anonymous" onClick={togglePlay} muted autoPlay ref={videoRef} className="videoPlayer" aria-label={isPlaying ? "Pausar vídeo" : "Reproduzir vídeo"}>
+              {videoDatas.videoSubtitles != "" && (
+                <track
+                  src={videoDatas.videoSubtitles}
+                  kind="subtitles"
+                  srcLang="pt"
+                  label="Português"
+                  default
+                />
+              )}
+
+
+            </video>
+
+            <div className={`controls ${!showControls ? 'hideControls' : ''}`}>
+
+              <div className="wrapProgress">
+                <input id="progress" type="range" min="0" max="100" value={progress} onChange={handleProgressChange} style={{
+                  '--progress': `${progress}%`
+                }} />
+              </div>
+
+              <div className="wrapControls">
+                <div className="volumeTimeAndPlay">
+
+                  <button onClick={togglePlay}> {isPlaying ? <FaPause /> : <FaPlay />} </button>
+
+                  {!isMobile && (<div className="wrapVolume">
+                    <label id="labelVolume" htmlFor="volume"> {volume == 0 ? <p className="volumeIcon"><IoIosVolumeOff /></p> : volume == 1 ? <p className="volumeIcon"> <IoIosVolumeHigh /> </p> : <p className="volumeIconLow"><IoIosVolumeLow /></p>}</label>
+                    <input id="volume" type="range" min="0" max="1" step="0.01" value={volume} onChange={handleVolumeChange} style={{
+                      '--progress': `${volume * 100}%`
+                    }} />
+                  </div>)}
+
+                  <div className="timeDisplay">
+                    {<div className="wrapTimeVideo">
+                      <span className="wrapTimeVideoCurrent">{formatTime(currentTime)}</span>
+                      <span className="separator"> / </span>
+                      <span className="wrapTimeVideoTotal">{formatTime(duration)}</span>
+                    </div>}
+                  </div>
+
+                </div>
+                <div className="containerSubtitlesAndFullScreen">
+                  <button onClick={changeSubtitles}>
+                    {isSubtitle ? (
+                      <MdSubtitles className="subTitles" />
+                    ) : (
+                      <MdSubtitlesOff className="subTitles" />
+                    )}
+                  </button>
+                  <button aria-label="Tela cheia" >
+                    <MdFullscreen className="fullScreen" onClick={handleFullscreen} />
+                  </button>
+                </div>
+
+              </div>
+
+            </div>
+            {showUnmuteButton && (
+              <button id="buttonActivateSound" onClick={unmute}>
+                <FaVolumeXmark />
+                Clique para ativar o som
+              </button>
             )}
+          </div>
+          <div className="wrapDatasVideo">
+            <div className="wrapAuthorAndTitle">
+              <h3>{videoDatas.videoTitle}</h3>
+              <p className="authorPlayVideo">criado por {videoDatas.userName} em {videoDatas.videoDate}</p>
+            </div>
+            <div className="likesAndDislikes">
+              <Popover
+                boxShadow="none"
+                border="none"
+                isOpen={showTooltip}
+                onClose={() => setShowToolTip(false)}
+              >
+                <PopoverTrigger>
+                  <button aria-label="Gostei do vídeo"
+                    onClick={sendLike}
+                    className={`likes ${reaction === 1 ? "activeLike" : ""}`}
+                  >
+                    <AiFillLike className="iconLike" />
+                    <span className="valueLD">{formatReactionNumber(like)}</span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  bg="#212121"
+                  border="none"
+                  boxShadow="none"
+                  borderRadius="md"
+                >
+                  <PopoverBody bg="#212121cb" p={4} borderRadius="md">
+                    <Box textAlign="center" color="white">
+                      {messageLike}
+                      <br />
+                      <Link
+                        onClick={handleLoginClick}
+                        display="block"
+                        mt={2}
+                        color="white"
+                        cursor="pointer"
+                        fontWeight="bold"
+                        _hover={{ color: "#4caf50", textDecoration: "underline" }}
+                      >
+                        login
+                      </Link>
+                    </Box>
+                  </PopoverBody>
+                </PopoverContent>
+              </Popover>
 
-
-          </video>
-
-          <div className={`controls ${!showControls ? 'hideControls' : ''}`}>
-
-            <div className="wrapProgress">
-              <input id="progress" type="range" min="0" max="100" value={progress} onChange={handleProgressChange} style={{
-                '--progress': `${progress}%`
-              }} />
+              <Popover
+                boxShadow="none"
+                border="none"
+                isOpen={showTooltip2}
+                onClose={() => setShowToolTip2(false)}
+              >
+                <PopoverTrigger>
+                  <button
+                    onClick={sendDisLike} aria-label="Não gostei do vídeo"
+                    className={`dislikes ${reaction === -1 ? "activeDislike" : ""}`}
+                  >
+                    <AiFillDislike className="iconDisLike" />
+                    <span className="valueLD">{formatReactionNumber(dislike)}</span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  bg="#212121"
+                  border="none"
+                  boxShadow="none"
+                  borderRadius="md"
+                >
+                  <PopoverBody bg="#212121cb" p={4} borderRadius="md">
+                    <Box textAlign="center" color="white">
+                      {messageDisLike}
+                      <br />
+                      <Link
+                        onClick={handleLoginClick}
+                        display="block"
+                        mt={2}
+                        color="white"
+                        cursor="pointer"
+                        fontWeight="bold"
+                        _hover={{ color: "#4caf50", textDecoration: "underline" }}
+                      >
+                        login
+                      </Link>
+                    </Box>
+                  </PopoverBody>
+                </PopoverContent>
+              </Popover>
             </div>
 
-            <div className="wrapControls">
-              <div className="volumeTimeAndPlay">
-
-                <button onClick={togglePlay}> {isPlaying ? <FaPause /> : <FaPlay />} </button>
-
-                {!isMobile && (<div className="wrapVolume">
-                  <label id="labelVolume" htmlFor="volume"> {volume == 0 ? <p className="volumeIcon"><IoIosVolumeOff /></p> : volume == 1 ? <p className="volumeIcon"> <IoIosVolumeHigh /> </p> : <p className="volumeIconLow"><IoIosVolumeLow /></p>}</label>
-                  <input id="volume" type="range" min="0" max="1" step="0.01" value={volume} onChange={handleVolumeChange} style={{
-                    '--progress': `${volume * 100}%`
-                  }} />
-                </div>)}
-
-                <div className="timeDisplay">
-                  {<div className="wrapTimeVideo">
-                    <span className="wrapTimeVideoCurrent">{formatTime(currentTime)}</span>
-                    <span className="separator"> / </span>
-                    <span className="wrapTimeVideoTotal">{formatTime(duration)}</span>
-                  </div>}
-                </div>
-
-              </div>
-              <div className="containerSubtitlesAndFullScreen">
-                <div onClick={changeSubtitles}>
-                  {isSubtitle ? (
-                    <MdSubtitles className="subTitles" />
-                  ) : (
-                    <MdSubtitlesOff className="subTitles" />
-                  )}
-                </div>
-
-                <MdFullscreen className="fullScreen" onClick={handleFullscreen} />
-              </div>
-
-            </div>
-
           </div>
-          {showUnmuteButton && (
-            <button id="buttonActivateSound" onClick={unmute}>
-              <FaVolumeXmark />
-              Clique para ativar o som
-            </button>
-          )}
-        </div>
-        <div className="wrapDatasVideo">
-          <div className="wrapAuthorAndTitle">
-            <h3>{videoDatas.videoTitle}</h3>
-            <p className="authorPlayVideo">criado por {videoDatas.userName} em {videoDatas.videoDate}</p>
-          </div>
-          <div className="likesAndDislikes">
-            <Popover
-              boxShadow="none"
-              border="none"
-              isOpen={showTooltip}
-              onClose={() => setShowToolTip(false)}
-            >
-              <PopoverTrigger>
-                <button
-                  onClick={sendLike}
-                  className={`likes ${reaction === 1 ? "activeLike" : ""}`}
-                >
-                  <AiFillLike className="iconLike" />
-                  <span className="valueLD">{formatReactionNumber(like)}</span>
-                </button>
-              </PopoverTrigger>
-              <PopoverContent
-                bg="#212121"
-                border="none"
-                boxShadow="none"
-                borderRadius="md"
-              >
-                <PopoverBody bg="#212121cb" p={4} borderRadius="md">
-                  <Box textAlign="center" color="white">
-                    { messageLike }
-                    <br />
-                    <Link
-                      onClick={handleLoginClick}
-                      display="block"
-                      mt={2}
-                      color="white"
-                      cursor="pointer"
-                      fontWeight="bold"
-                      _hover={{ color: "#4caf50", textDecoration: "underline" }}
-                    >
-                      login
-                    </Link>
-                  </Box>
-                </PopoverBody>
-              </PopoverContent>
-            </Popover>
-
-            <Popover
-              boxShadow="none"
-              border="none"
-              isOpen={showTooltip2}
-              onClose={() => setShowToolTip2(false)}
-            >
-              <PopoverTrigger>
-                <button
-                  onClick={sendDisLike}
-                  className={`dislikes ${reaction === -1 ? "activeDislike" : ""}`}
-                >
-                  <AiFillDislike className="iconDisLike" />
-                  <span className="valueLD">{formatReactionNumber(dislike)}</span>
-                </button>
-              </PopoverTrigger>
-              <PopoverContent
-                bg="#212121"
-                border="none"
-                boxShadow="none"
-                borderRadius="md"
-              >
-                <PopoverBody bg="#212121cb" p={4} borderRadius="md">
-                  <Box textAlign="center" color="white">
-                    {messageDisLike}
-                    <br />
-                    <Link
-                      onClick={handleLoginClick}
-                      display="block"
-                      mt={2}
-                      color="white"
-                      cursor="pointer"
-                      fontWeight="bold"
-                      _hover={{ color: "#4caf50", textDecoration: "underline" }}
-                    >
-                      login
-                    </Link>
-                  </Box>
-                </PopoverBody>
-              </PopoverContent>
-            </Popover>
-          </div>
-
         </div>
       </div>
     </div>
