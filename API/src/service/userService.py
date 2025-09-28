@@ -94,30 +94,28 @@ class UserService:
         
         return {"message":"dados atualizados com sucesso"}
         
-    # def getUserId(self,token:str) -> bytes:
-    #     try:
-    #         token = ast.literal_eval(token)['token']
-    #     except Exception as e:
-    #         raise ValueError("Ocorreu um erro ao obter token")
-    #     datas = None
-        
-    #     datas = validateJwtToken(token)
+    def getUserId(self,token:str) -> bytes:
+         try:
+             token = ast.literal_eval(token)['token']
+         except Exception as e:
+             raise ValueError("Ocorreu um erro ao obter token")
+         datas = None
+       
+         datas = validateJwtToken(token)
 
    
-    #     if datas is None or datas["userEmail"] is None:
-    #         raise ValueError("erro ao validar token")
-    #     userEmail = datas["userEmail"]
-        
-    #     try:
-    #         row = self.userRepository.getUserId(userEmail)
-    #         if row is None or row[0] is None:
-    #             raise ValueError("erro ao consultar banco para validar usuário, dados nulos")
-    #         return row[0]
-    #     except Exception as e:
-    #         raise ValueError("Ocoreru um erro ao acessar banco de dados para obter token do usuário")
-    def getUserId(self,token:str) -> bytes:
-        uuidStr = '3f06af63-a93c-11e4-9797-00505690773d'
-        return uuid.UUID(uuidStr).bytes
+         if datas is None or datas["userEmail"] is None:
+             raise ValueError("erro ao validar token")
+         userEmail = datas["userEmail"]
+       
+         try:
+             row = self.userRepository.getUserId(userEmail)
+             if row is None or row[0] is None:
+                 raise ValueError("erro ao consultar banco para validar usuário, dados nulos")
+             return row[0]
+         except Exception as e:
+             raise ValueError("Ocoreru um erro ao acessar banco de dados para obter token do usuário")
+
     
     def sendCodeToUser(self,email:str) -> None:
         self.validateEmail(email)
@@ -199,11 +197,12 @@ class UserService:
             raise HTTPException(status_code=401,detail="Token informadonão está associado a um login")
         
         row = None
+        print(userId)
         try:
             row = self.userRepository.getUserData(userId)
         except Exception as e:
             raise HTTPException(status_code=400,detail="Ocorreu um erro ao obter dados do usuário")
-        
+        print(row)
         if row is None or row[0] is None or row[1] is None:
             raise HTTPException(status_code=400,detail="Não foi possível obter todos os dados do usuário")
         

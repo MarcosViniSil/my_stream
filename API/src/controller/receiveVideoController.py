@@ -8,7 +8,7 @@ router = APIRouter()
 @router.post("/upload/video", response_model=VideoResponse)
 async def upload_video(
     file: UploadFile = File(...),
-    #access_token: str = Cookie(...),
+    access_token: str = Cookie(...),
     recive_video: ReciveVideo = Depends(getReciveVideo)
 ):
-    return await recive_video.processReceivedVideo(file,"token")
+    return await recive_video.processReceivedVideo(file,access_token)

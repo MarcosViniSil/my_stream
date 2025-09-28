@@ -4,7 +4,7 @@ export async function UploadMetaDatas(id,title,photo) {
   formData.append("videoTitle", title);
   formData.append("thumbnailImage", photo);
   try {
-    const response = await fetch("http://172.26.100.134:8000/upload/metadata", {
+    const response = await fetch("http://localhost:8000/upload/metadata", {
       method: "POST",
       credentials: "include",
       body: formData,
@@ -24,7 +24,7 @@ export async function UploadMetaDatas(id,title,photo) {
 export async function getVideoMetadatas(idVideo) {
 
   try {
-    const response = await fetch(`http://172.26.100.134:8000/user/metadatas/${idVideo}`,{
+    const response = await fetch(`http://localhost:8000/user/metadatas/${idVideo}`,{
       method: "GET",
     });
 
@@ -42,7 +42,7 @@ export async function getVideoMetadatas(idVideo) {
 export async function getStatusVideo(videoId) {
 
   try {
-    const response = await fetch(`http://172.26.100.134:8000/user/video/status/${videoId}`, {
+    const response = await fetch(`http://localhost:8000/user/video/status/${videoId}`, {
       method: "GET",
     });
 

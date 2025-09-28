@@ -5,9 +5,9 @@ export async function insertVideoOnHistory(videoId) {
   formData.append("videoId", videoId);
 
   try {
-    const response = await fetch("http://172.26.100.134:8000/video/history", {
+    const response = await fetch("http://localhost:8000/video/history", {
       method: "POST",
-      //credentials: "include",
+      credentials: "include",
       body: formData,
     });
 
@@ -35,9 +35,9 @@ export async function addTimeWatched(videoId, timeAt) {
   formData.append("timeWatched", timeAt);
 
   try {
-    const response = await fetch("http://172.26.100.134:8000/video/time", {
+    const response = await fetch("http://localhost:8000/video/time", {
       method: "POST",
-      //credentials: "include",
+      credentials: "include",
       body: formData,
     });
 

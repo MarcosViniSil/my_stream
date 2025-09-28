@@ -20,31 +20,31 @@ async def loginUser(
     userService: UserService = Depends(getUserService)
 ):
     token = userService.logInUser(user)
-    # response.set_cookie(
-    #     key="access_token",
-    #     value=token,
-    #     httponly=True,
-    #     secure=True,
-    #     samesite="Strict"
-    # )
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        secure=True,
+        samesite="Strict"
+    )
     return {"message": token}
 
 @userRouter.get("/user/datas")
 async def loginUser(
-    #access_token: str = Cookie(...),
+    access_token: str = Cookie(...),
     userService: UserService = Depends(getUserService)
 ):
     
-    return userService.getUserDatas("token")
+    return userService.getUserDatas(access_token)
 
 @userRouter.put("/user/datas")
 async def updateUserDatas(
     user: UserDatas,
-    #access_token: str = Cookie(...),
+    access_token: str = Cookie(...),
     userService: UserService = Depends(getUserService)
 ):
     
-    return userService.updateUserDatas(user,"token")
+    return userService.updateUserDatas(user,access_token)
 
 @userRouter.get("/user/code")
 async def sendCodeToUser(
@@ -74,8 +74,8 @@ async def updatePassword(
 
 @userRouter.get("/user/token")
 async def updatePassword(
-    #access_token: str = Cookie(...),
+    access_token: str = Cookie(...),
     userService: UserService = Depends(getUserService)
 ):
     
-    return userService.isTokenValid("token")
+    return userService.isTokenValid(access_token)

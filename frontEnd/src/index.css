@@ -12,16 +12,11 @@ html {
   transition: background-color 0.3s ease;
 }
 
-html.lightTheme {
-  background-color: #f5f5f5;
-}
-
-html.darkTheme {
-  background-color: #141414;
-}
 
 #root {
-  background-color: inherit;
+    background-color: inherit; /* herda do html */
+    transition: background-color 0.3s ease;
+    background-color: #141414;
 }
 
 .main-content {
@@ -36,8 +31,3 @@ html.darkTheme {
   }
 }
 
-#root {
-  background-color: inherit; /* herda do html */
-  transition: background-color 0.3s ease;
-  background-color: #141414;
-}

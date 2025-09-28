@@ -131,18 +131,16 @@ class ReciveVideo:
             self.removeRemoteFile(hashVideo.split("/")[-1])
             raise HTTPException(status_code=400, detail="Erro ao salvar url no banco")
     
-    def getUserId(self,token:str) -> bytes:
-        uuidStr = '3f06af63-a93c-11e4-9797-00505690773d'
-        return uuid.UUID(uuidStr).bytes
+ 
 
-    # def getUserId(self,token:str) -> bytes:
-    #     userId = None
-    #     try:
-    #         userId = self.userService.getUserId(token)
-    #     except Exception as e:
-    #         raise HTTPException(status_code=400,detail=str(e))
-        
-    #     return userId
+    def getUserId(self,token:str) -> bytes:
+         userId = None
+         try:
+             userId = self.userService.getUserId(token)
+         except Exception as e:
+             raise HTTPException(status_code=400,detail=str(e))
+       
+         return userId
     
     def createReactionVideo(self,videoId:str,hashVideo : str) -> None:
         try:

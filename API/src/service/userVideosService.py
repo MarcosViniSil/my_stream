@@ -452,5 +452,4 @@ class UserVideosService:
             return False
         
     def getUserId(self,token:str) -> bytes:
-        uuidStr = '3f06af63-a93c-11e4-9797-00505690773d'
-        return uuid.UUID(uuidStr).bytes
+        return self.userService.getUserId(token)

@@ -12,8 +12,8 @@ async def upload_metadata(
     id = Form(...),
     videoTitle: str = Form(...),
     thumbnailImage: UploadFile = File(...),
-    #access_token: str = Cookie(...),
+    access_token: str = Cookie(...),
     reciveMetadata: ReceiveMetadaService = Depends(getReceiveMetaData)
     
 ):
-    return await reciveMetadata.processMetaData(id,videoTitle,thumbnailImage,"token")
+    return await reciveMetadata.processMetaData(id,videoTitle,thumbnailImage,access_token)
