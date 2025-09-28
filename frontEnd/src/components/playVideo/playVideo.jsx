@@ -49,7 +49,7 @@ function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
   const { accessible } = useContext(AccessibleContext);
 
   const { theme } = useContext(ThemeContext);
-  
+
   useEffect(() => {
     const video = videoRef.current;
     if (Hls.isSupported()) {
@@ -146,6 +146,31 @@ function VideoPlayer({ videoDatas, timeAt, onTimeUpdate }) {
     return () => {
       wrapper.removeEventListener('mousemove', handleMouseMove);
       clearTimeout(timeout);
+    };
+  }, []);
+
+  useEffect(() => {
+    const controls = document.querySelector(".controls");
+    if (!controls) return;
+
+    const handleFocusIn = () => {
+      setShowControls(true);
+      clearTimeout(timeout);
+    };
+
+    const handleFocusOut = (e) => {
+
+      if (!controls.contains(e.relatedTarget)) {
+        timeout = setTimeout(() => setShowControls(false), 1800);
+      }
+    };
+
+    controls.addEventListener("focusin", handleFocusIn);
+    controls.addEventListener("focusout", handleFocusOut);
+
+    return () => {
+      controls.removeEventListener("focusin", handleFocusIn);
+      controls.removeEventListener("focusout", handleFocusOut);
     };
   }, []);
 
